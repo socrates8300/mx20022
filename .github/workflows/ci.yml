@@ -67,6 +67,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      # Remove rust-toolchain.toml so it doesn't conflict with the
+      # musl-based container used by cargo-deny-action.
+      - run: rm -f rust-toolchain.toml
       - uses: EmbarkStudios/cargo-deny-action@v2
 
   docs:
