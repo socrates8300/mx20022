@@ -24,7 +24,7 @@ serde = { version = "1", features = ["derive"] }
 # Collections
 indexmap = "2"
 # XML
-quick-xml = { version = "0.37", features = ["serialize"] }
+quick-xml = { version = "0.39", features = ["serialize"] }
 # Error handling
 thiserror = "2"
 # Regex
