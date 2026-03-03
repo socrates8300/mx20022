@@ -1,0 +1,84 @@
+{
+  "metadata": {
+    "task_short": "builder-api",
+    "agent_abbr": "rust",
+    "datetime_utc": "2026-03-02T19:00:00Z",
+    "filename": "2026-03-02T19-00-00Z__builder-api__rust.json",
+    "supersedes": null,
+    "version": "1.0"
+  },
+  "state": {
+    "objectives": [
+      "Add builder pattern code generation to the mx20022 codegen pipeline",
+      "Generate BuilderError common type in mx20022-model",
+      "Wire emit_builder into emit/mod.rs for all StructDef types",
+      "Regenerate all 13 message schemas",
+      "Pass all quality gates: check, clippy -D warnings, test, fmt"
+    ],
+    "constraints": [
+      "Do not break existing roundtrip tests",
+      "MSRV 1.75.0 — use stable Rust only",
+      "Generated code must pass clippy -D warnings",
+      "Builder field types must exactly match the struct field types (ChoiceWrapper<T> for xs:choice)"
+    ],
+    "important_facts": [
+      "The codegen uses proc_macro2/quote for token generation, prettyplease for formatting",
+      "xs:choice fields are wrapped in ChoiceWrapper<T> — builders must replicate this",
+      "Structs with no required fields emit a simpler build() body (no let mut missing) to avoid unused_mut lint",
+      "Default derive works on builder structs because Option<T> and Vec<T> both impl Default",
+      "The insta snapshot test needed updating after builder code was added",
+      "cargo-insta is not installed; update snapshots by cp .snap.new to .snap"
+    ],
+    "decisions_made": [
+      "Use #[derive(Default)] on builder structs instead of manual impl — cleaner and avoids default_field_inits generation",
+      "Add #[must_use] to all setter methods to satisfy clippy::missing_must_use on Self-returning methods",
+      "Add #[allow(clippy::struct_field_names)] on builder structs — ISO 20022 field names share prefixes by design",
+      "Emit build() body conditionally based on has_required — avoids unused_mut lint for all-optional structs",
+      "Put integration tests in mx20022-model/tests/builder_test.rs and roundtrip tests in mx20022-parse/tests/roundtrip.rs (not mx20022-model, which has no parse dependency)"
+    ],
+    "artifacts": [
+      "crates/mx20022-model/src/common/builder.rs",
+      "crates/mx20022-model/src/common/mod.rs (updated)",
+      "crates/mx20022-codegen/src/emit/builders.rs",
+      "crates/mx20022-codegen/src/emit/mod.rs (updated)",
+      "crates/mx20022-model/tests/builder_test.rs",
+      "crates/mx20022-parse/tests/roundtrip.rs (builder tests appended)",
+      "crates/mx20022-codegen/tests/snapshots/snapshots__head_001_001_04_emit.snap (updated)",
+      "All 13 generated model files regenerated"
+    ],
+    "dependencies": [
+      "DB item #8 (builder-api) — now complete",
+      "DB item #9 (business-rule-validation) — next"
+    ],
+    "risks_issues": []
+  },
+  "iteration": {
+    "summary": "Implemented the full builder pattern code generation pipeline. Created BuilderError in common/builder.rs with Display and Error impls. Created emit/builders.rs with emit_builder() generating builder struct, Default derive, #[must_use] setters with chaining, and a validated build() method. Wired emit_builder into emit/mod.rs so every StructDef emits both its struct and its builder. Fixed several clippy issues in generated code (unused_mut, struct_field_names, must_use, match_same_arms). Regenerated all 13 ISO 20022 schemas. Added 10 unit tests in builders.rs, 7 integration tests in model/tests/builder_test.rs, and 2 roundtrip tests in parse/tests/roundtrip.rs. All quality gates pass with zero failures.",
+    "inputs_consulted": [
+      "crates/mx20022-codegen/src/emit/mod.rs",
+      "crates/mx20022-codegen/src/emit/structs.rs",
+      "crates/mx20022-codegen/src/emit/util.rs",
+      "crates/mx20022-codegen/src/ir/types.rs",
+      "crates/mx20022-model/src/common/mod.rs",
+      "crates/mx20022-model/src/common/choice.rs",
+      "crates/mx20022-model/src/generated/head/head_001_001_04.rs",
+      "crates/mx20022-parse/tests/roundtrip.rs",
+      "docs/agent_context.db"
+    ],
+    "outputs_produced": [
+      "crates/mx20022-model/src/common/builder.rs — BuilderError type",
+      "crates/mx20022-codegen/src/emit/builders.rs — emit_builder() function with 10 unit tests",
+      "crates/mx20022-model/tests/builder_test.rs — 7 integration tests",
+      "Builder roundtrip tests appended to crates/mx20022-parse/tests/roundtrip.rs",
+      "13 regenerated model files",
+      "Updated insta snapshot"
+    ],
+    "next_actions": [
+      "Item #9: extend business rule validation (BIC, IBAN, date range checks)",
+      "Run cargo deny to verify license/advisory compliance before release"
+    ]
+  },
+  "cross_agent_notes": {
+    "mentions": []
+  }
+}

@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Document xmlns="urn:iso:std:iso:20022:tech:xsd:pain.013.001.09">
+  <CdtrPmtActvtnReq>
+    <GrpHdr>
+      <MsgId>PAIN013-20240101-001</MsgId>
+      <CreDtTm>2024-01-01T12:00:00Z</CreDtTm>
+      <NbOfTxs>1</NbOfTxs>
+      <InitgPty>
+        <Nm>Bob Jones</Nm>
+      </InitgPty>
+    </GrpHdr>
+    <PmtInf>
+      <PmtMtd>TRF</PmtMtd>
+      <ReqdExctnDt>
+        <Dt>2024-01-02</Dt>
+      </ReqdExctnDt>
+      <Dbtr>
+        <Nm>Bob Jones</Nm>
+      </Dbtr>
+      <DbtrAgt>
+        <FinInstnId>
+          <BICFI>AAAAGB2LXXX</BICFI>
+        </FinInstnId>
+      </DbtrAgt>
+    </PmtInf>
+  </CdtrPmtActvtnReq>
+</Document>

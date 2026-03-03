@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Document xmlns="urn:iso:std:iso:20022:tech:xsd:camt.029.001.12">
+  <RsltnOfInvstgtn>
+    <Assgnmt>
+      <Id>RSLINV-20240101-001</Id>
+      <Assgnr>
+        <Agt>
+          <FinInstnId>
+            <BICFI>AAAAGB2LXXX</BICFI>
+          </FinInstnId>
+        </Agt>
+      </Assgnr>
+      <Assgne>
+        <Agt>
+          <FinInstnId>
+            <BICFI>BBBBUS33XXX</BICFI>
+          </FinInstnId>
+        </Agt>
+      </Assgne>
+      <CreDtTm>2024-01-01T12:00:00Z</CreDtTm>
+    </Assgnmt>
+    <Sts>
+      <AssgnmtCxlConf>true</AssgnmtCxlConf>
+    </Sts>
+  </RsltnOfInvstgtn>
+</Document>

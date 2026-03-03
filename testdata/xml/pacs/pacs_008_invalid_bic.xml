@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Document xmlns="urn:iso:std:iso:20022:tech:xsd:pacs.008.001.13">
+  <FIToFICstmrCdtTrf>
+    <GrpHdr>
+      <MsgId>INVALID-BIC-TEST-001</MsgId>
+      <CreDtTm>2024-01-01T12:00:00Z</CreDtTm>
+      <NbOfTxs>1</NbOfTxs>
+      <SttlmInf>
+        <SttlmMtd>CLRG</SttlmMtd>
+      </SttlmInf>
+    </GrpHdr>
+    <CdtTrfTxInf>
+      <PmtId>
+        <EndToEndId>E2E-20240101-001</EndToEndId>
+      </PmtId>
+      <IntrBkSttlmAmt Ccy="USD">500.00</IntrBkSttlmAmt>
+      <IntrBkSttlmDt>2024-01-01</IntrBkSttlmDt>
+      <Dbtr>
+        <Nm>Test Debtor</Nm>
+      </Dbtr>
+      <DbtrAgt>
+        <FinInstnId>
+          <BICFI>NOTABIC</BICFI>
+        </FinInstnId>
+      </DbtrAgt>
+      <CdtrAgt>
+        <FinInstnId>
+          <BICFI>ALSOBAD</BICFI>
+        </FinInstnId>
+      </CdtrAgt>
+      <Cdtr>
+        <Nm>Test Creditor</Nm>
+      </Cdtr>
+    </CdtTrfTxInf>
+  </FIToFICstmrCdtTrf>
+</Document>

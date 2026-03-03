@@ -1,0 +1,93 @@
+{
+  "metadata": {
+    "task_short": "mx20022-cli",
+    "agent_abbr": "rust",
+    "datetime_utc": "2026-03-02T18:52:00Z",
+    "filename": "2026-03-02T18-52-00Z__mx20022-cli__rust.json",
+    "supersedes": null,
+    "version": "1.0"
+  },
+  "state": {
+    "objectives": [
+      "Build the mx20022-cli crate with inspect, validate, and codegen subcommands",
+      "Pass cargo check/clippy/test/fmt for the full workspace"
+    ],
+    "constraints": [
+      "Edition 2021, MSRV 1.75.0",
+      "cargo clippy --workspace --all-features -- -D warnings must pass",
+      "cargo fmt --all -- --check must pass",
+      "No unsafe code (workspace forbids it)"
+    ],
+    "important_facts": [
+      "mx20022-parse exposes envelope::detect_message_type returning MessageId{family, msg_id, variant, version}",
+      "mx20022-validate exposes RuleRegistry::with_defaults() (IBAN_CHECK, BIC_CHECK) and SchemaValidator",
+      "mx20022-codegen pipeline: xsd::parse(BufReader) -> ir::lower(&schema) -> emit::emit(&graph) -> String",
+      "mx20022-model has features: head, pacs, pain, camt, all",
+      "validate command uses lightweight XML text scanning (not typed deserialization) to avoid feature-gated model types",
+      "BIC validation: tags BICFI, BIC; IBAN validation: tag IBAN",
+      "Integration tests use CARGO_BIN_EXE_mx20022-cli env var to locate binary",
+      "rustfmt.toml uses nightly-only settings (imports_granularity) — warns but does not fail on stable"
+    ],
+    "decisions_made": [
+      "Used Box<dyn std::error::Error> in main() to unify heterogeneous error types from each command module: avoids a top-level error enum while keeping each command's error type focused",
+      "validate command scans raw XML with simple string search rather than typed deserialization: command is message-version-agnostic and avoids coupling to feature-gated generated types",
+      "Each command module defines its own error enum implementing std::error::Error: clear error provenance, no cross-command dependencies"
+    ],
+    "artifacts": [
+      "crates/mx20022-cli/Cargo.toml",
+      "crates/mx20022-cli/src/main.rs",
+      "crates/mx20022-cli/src/commands/mod.rs",
+      "crates/mx20022-cli/src/commands/inspect.rs",
+      "crates/mx20022-cli/src/commands/validate.rs",
+      "crates/mx20022-cli/src/commands/codegen.rs",
+      "crates/mx20022-cli/tests/cli_integration.rs",
+      "testdata/xml/pacs/pacs_008_001_13_minimal.xml",
+      "testdata/xml/pacs/pacs_008_invalid_bic.xml"
+    ],
+    "dependencies": [
+      "mx20022-parse (workspace)",
+      "mx20022-validate (workspace)",
+      "mx20022-codegen (workspace)",
+      "mx20022-model (workspace, features=[all])",
+      "mx20022-translate (workspace)",
+      "clap (workspace, derive feature)"
+    ],
+    "risks_issues": []
+  },
+  "iteration": {
+    "summary": "Built the mx20022-cli crate from scratch. Added three subcommands: inspect (detects and displays message type from XML), validate (scans XML for IBAN/BIC fields and runs rule validation), codegen (XSD -> IR -> Rust source via mx20022-codegen pipeline). Updated Cargo.toml to add mx20022-codegen and mx20022-model dependencies. Wrote 9 integration tests exercising all three commands against real fixtures. Added two pacs fixture files to testdata/. All checks pass: cargo check, clippy, test, fmt.",
+    "inputs_consulted": [
+      "crates/mx20022-parse/src/envelope.rs",
+      "crates/mx20022-parse/src/lib.rs",
+      "crates/mx20022-parse/src/de.rs",
+      "crates/mx20022-validate/src/lib.rs",
+      "crates/mx20022-validate/src/error.rs",
+      "crates/mx20022-validate/src/rules/mod.rs",
+      "crates/mx20022-validate/src/schema/mod.rs",
+      "crates/mx20022-codegen/src/lib.rs",
+      "crates/mx20022-codegen/src/emit/mod.rs",
+      "crates/mx20022-codegen/src/ir/mod.rs",
+      "crates/mx20022-model/Cargo.toml",
+      "testdata/xml/head/head_001_001_04_minimal.xml"
+    ],
+    "outputs_produced": [
+      "crates/mx20022-cli/Cargo.toml (updated)",
+      "crates/mx20022-cli/src/main.rs",
+      "crates/mx20022-cli/src/commands/mod.rs",
+      "crates/mx20022-cli/src/commands/inspect.rs",
+      "crates/mx20022-cli/src/commands/validate.rs",
+      "crates/mx20022-cli/src/commands/codegen.rs",
+      "crates/mx20022-cli/tests/cli_integration.rs",
+      "testdata/xml/pacs/pacs_008_001_13_minimal.xml",
+      "testdata/xml/pacs/pacs_008_invalid_bic.xml"
+    ],
+    "next_actions": [
+      "Consider adding --quiet / --json output modes for machine-readable validation results",
+      "Consider adding a translate subcommand once mx20022-translate is implemented",
+      "Add scheme-specific validation (FedNow, SEPA, CBPR) once mx20022-validate scheme modules are built"
+    ]
+  },
+  "cross_agent_notes": {
+    "mentions": []
+  }
+}

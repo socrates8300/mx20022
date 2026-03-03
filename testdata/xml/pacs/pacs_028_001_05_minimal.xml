@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Document xmlns="urn:iso:std:iso:20022:tech:xsd:pacs.028.001.05">
+  <FIToFIPmtStsReq>
+    <GrpHdr>
+      <MsgId>PACS028-20240101-001</MsgId>
+      <CreDtTm>2024-01-01T12:00:00Z</CreDtTm>
+    </GrpHdr>
+    <TxInf>
+      <StsReqId>STSREQ-20240101-001</StsReqId>
+      <OrgnlGrpInf>
+        <OrgnlMsgId>PACS008-20231201-001</OrgnlMsgId>
+        <OrgnlMsgNmId>pacs.008.001.13</OrgnlMsgNmId>
+      </OrgnlGrpInf>
+      <OrgnlEndToEndId>E2E-20231201-001</OrgnlEndToEndId>
+      <OrgnlUETR>97ed4827-7b6f-4491-a06f-b548d5a7512d</OrgnlUETR>
+    </TxInf>
+  </FIToFIPmtStsReq>
+</Document>

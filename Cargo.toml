@@ -1,0 +1,61 @@
+[workspace]
+resolver = "2"
+members = [
+    "crates/mx20022",
+    "crates/mx20022-cli",
+    "crates/mx20022-codegen",
+    "crates/mx20022-model",
+    "crates/mx20022-parse",
+    "crates/mx20022-translate",
+    "crates/mx20022-validate",
+]
+
+[workspace.package]
+edition = "2021"
+rust-version = "1.75.0"
+license = "Apache-2.0 OR MIT"
+repository = "https://github.com/jamesray/mx20022"
+keywords = ["iso20022", "swift", "payments", "financial", "xml"]
+categories = ["finance", "parser-implementations", "encoding"]
+
+[workspace.dependencies]
+# Serialization
+serde = { version = "1", features = ["derive"] }
+# Collections
+indexmap = "2"
+# XML
+quick-xml = { version = "0.37", features = ["serialize"] }
+# Error handling
+thiserror = "2"
+# Regex
+regex = "1"
+# CLI
+clap = { version = "4", features = ["derive"] }
+# Code generation
+proc-macro2 = "1"
+quote = "1"
+syn = { version = "2", features = ["full"] }
+prettyplease = "0.2"
+# Testing
+pretty_assertions = "1"
+insta = { version = "1", features = ["yaml"] }
+criterion = { version = "0.5", features = ["html_reports"] }
+# Internal crates
+mx20022 = { path = "crates/mx20022" }
+mx20022-model = { path = "crates/mx20022-model" }
+mx20022-parse = { path = "crates/mx20022-parse" }
+mx20022-validate = { path = "crates/mx20022-validate" }
+mx20022-translate = { path = "crates/mx20022-translate" }
+mx20022-codegen = { path = "crates/mx20022-codegen" }
+mx20022-cli = { path = "crates/mx20022-cli" }
+
+[workspace.lints.rust]
+unsafe_code = "forbid"
+
+[workspace.lints.clippy]
+pedantic = { level = "warn", priority = -1 }
+module_name_repetitions = "allow"
+must_use_candidate = "allow"
+missing_errors_doc = "allow"
+too_many_lines = "allow"
+struct_excessive_bools = "allow"

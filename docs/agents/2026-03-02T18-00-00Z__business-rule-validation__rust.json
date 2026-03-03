@@ -1,0 +1,87 @@
+{
+  "metadata": {
+    "task_short": "business-rule-validation",
+    "agent_abbr": "rust",
+    "datetime_utc": "2026-03-02T18:00:00Z",
+    "filename": "2026-03-02T18-00-00Z__business-rule-validation__rust.json",
+    "supersedes": null,
+    "version": "1.0"
+  },
+  "state": {
+    "objectives": [
+      "Implement 5 new Rule trait implementations for extended ISO 20022 validation",
+      "Register all new rules in RuleRegistry::with_defaults()",
+      "Create parse->validate integration test using pacs.008 fixture",
+      "Update CLI validate command to scan new field types"
+    ],
+    "constraints": [
+      "cargo check/test/clippy/fmt must all pass",
+      "No external date library — structural validation only",
+      "No hand-editing of generated/ model files",
+      "MSRV 1.75.0, Edition 2021"
+    ],
+    "important_facts": [
+      "LEI MOD 97-10: expand full 20-char string to numeric (no rearrangement, unlike IBAN)",
+      "LEI check digit derivation: 98 - (numeric(prefix+'00') mod 97), result zero-padded to 2 digits",
+      "Valid LEI test vectors: 7ZW8QJWVPR4P1S5PX088, 5493001KJTIIGC8Y1R12, 213800WSGIIZCXF1P572",
+      "pacs_008_001_13_minimal.xml was missing required ChrgBr field — fixed by adding <ChrgBr>SLEV</ChrgBr>",
+      "ChoiceWrapper<T> used in model: access enum via .inner field",
+      "AmountFormatRule uses f64::parse for zero-check only after structural validation"
+    ],
+    "decisions_made": [
+      "LEI: no rearrangement in mod-97 unlike IBAN — ISO 17442 treats full string directly",
+      "datetime.rs: structural only (year 1900-2099, month 01-12, day 01-31) — no calendar awareness, matches ISO 20022 schema behavior",
+      "Currency/Country: static &[&str] slice with binary search via Contains, not HashSet — simpler, adequate at these sizes",
+      "Integration test: reads testdata from workspace root via CARGO_MANIFEST_DIR/../..",
+      "CLI: attribute extraction handled separately from element extraction (new extract_all_attributes fn)"
+    ],
+    "artifacts": [
+      "crates/mx20022-validate/src/rules/currency.rs",
+      "crates/mx20022-validate/src/rules/country.rs",
+      "crates/mx20022-validate/src/rules/lei.rs",
+      "crates/mx20022-validate/src/rules/amount.rs",
+      "crates/mx20022-validate/src/rules/datetime.rs",
+      "crates/mx20022-validate/src/rules/mod.rs",
+      "crates/mx20022-validate/tests/integration.rs",
+      "crates/mx20022-validate/Cargo.toml",
+      "crates/mx20022-cli/src/commands/validate.rs",
+      "testdata/xml/pacs/pacs_008_001_13_minimal.xml"
+    ],
+    "dependencies": [
+      "DB items 81,82,83,84,85,88,89 all marked complete"
+    ],
+    "risks_issues": [
+      "ZZZ is not in ISO 4217 set (correct — ZZZ is not a valid ISO 4217 code; XTS and XXX are reserved testing codes and ARE included)",
+      "f64 parsing for amount zero-check: safe since structural pre-validation ensures the string is well-formed before parse"
+    ]
+  },
+  "iteration": {
+    "summary": "Implemented 6 new validation rule modules for mx20022-validate: CurrencyRule (ISO 4217, ~164 codes), CountryCodeRule (ISO 3166-1 alpha-2, 250 codes), LeiRule (ISO 17442, MOD 97-10 on full 20-char string), AmountFormatRule (positive decimal, max 18 int / 5 frac digits), IsoDateTimeRule and IsoDateRule (structural ISO 8601). Updated mod.rs to register all 8 rules in with_defaults(). Created 15-test integration test that deserializes a pacs.008 fixture and validates extracted fields. Updated CLI validate command to check Ccy attributes/elements, LEI, CreDtTm, and IntrBkSttlmDt. Fixed a bug in the pacs.008 test fixture (missing required ChrgBr field). Fixed a clippy lint (as u16 -> u16::from). All 133 tests pass and all quality gates clear.",
+    "inputs_consulted": [
+      "crates/mx20022-validate/src/rules/iban.rs",
+      "crates/mx20022-validate/src/rules/bic.rs",
+      "crates/mx20022-validate/src/rules/mod.rs",
+      "crates/mx20022-validate/src/error.rs",
+      "crates/mx20022-cli/src/commands/validate.rs",
+      "crates/mx20022-model/src/generated/pacs/pacs_008_001_13.rs",
+      "testdata/xml/pacs/pacs_008_001_13_minimal.xml",
+      "docs/agent_context.db"
+    ],
+    "outputs_produced": [
+      "crates/mx20022-validate/src/rules/currency.rs — CurrencyRule",
+      "crates/mx20022-validate/src/rules/country.rs — CountryCodeRule",
+      "crates/mx20022-validate/src/rules/lei.rs — LeiRule",
+      "crates/mx20022-validate/src/rules/amount.rs — AmountFormatRule",
+      "crates/mx20022-validate/src/rules/datetime.rs — IsoDateTimeRule + IsoDateRule",
+      "crates/mx20022-validate/tests/integration.rs — 15 integration tests",
+      "Updated: rules/mod.rs, validate/Cargo.toml, cli validate.rs, test fixture"
+    ],
+    "next_actions": [
+      "Iteration 8: MT parser (mt-parser items)",
+      "Iteration 9: MT<->MX translation (mt-mx-translation items)"
+    ]
+  },
+  "cross_agent_notes": {
+    "mentions": []
+  }
+}

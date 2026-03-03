@@ -1,0 +1,30 @@
+[package]
+name = "mx20022-codegen"
+version = "0.1.0"
+description = "XSD to Rust code generator for ISO 20022 message types"
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+keywords.workspace = true
+categories.workspace = true
+
+[[bin]]
+name = "mx20022-codegen"
+path = "src/main.rs"
+
+[dependencies]
+quick-xml.workspace = true
+thiserror.workspace = true
+proc-macro2.workspace = true
+quote.workspace = true
+syn.workspace = true
+indexmap.workspace = true
+prettyplease.workspace = true
+
+[dev-dependencies]
+pretty_assertions.workspace = true
+insta.workspace = true
+
+[lints]
+workspace = true

@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Document xmlns="urn:iso:std:iso:20022:tech:xsd:camt.054.001.11">
+  <BkToCstmrDbtCdtNtfctn>
+    <GrpHdr>
+      <MsgId>CAMT054-20240101-001</MsgId>
+      <CreDtTm>2024-01-01T12:00:00Z</CreDtTm>
+    </GrpHdr>
+  </BkToCstmrDbtCdtNtfctn>
+</Document>

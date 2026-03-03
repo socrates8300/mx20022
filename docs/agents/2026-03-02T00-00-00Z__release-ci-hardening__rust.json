@@ -1,0 +1,69 @@
+{
+  "metadata": {
+    "task_short": "release-ci-hardening",
+    "agent_abbr": "rust",
+    "datetime_utc": "2026-03-02T00:00:00Z",
+    "filename": "2026-03-02T00-00-00Z__release-ci-hardening__rust.json",
+    "supersedes": null,
+    "version": "1.0"
+  },
+  "state": {
+    "objectives": [
+      "Update CHANGELOG.md from stub to comprehensive 0.1.0 release entry",
+      "Create .github/workflows/release.yml for crates.io publish + GitHub Release",
+      "Harden .github/workflows/ci.yml with bench-check and examples-check jobs"
+    ],
+    "constraints": [
+      "MSRV 1.75.0, Edition 2021",
+      "cargo check/test/clippy must pass before commit",
+      "cargo fmt pre-existing failures in example files are not caused by these changes",
+      "Only modify CHANGELOG.md, release.yml, ci.yml — no Rust source changes"
+    ],
+    "important_facts": [
+      "Workspace has 7 crates: mx20022 (umbrella), mx20022-model, mx20022-parse, mx20022-validate, mx20022-translate, mx20022-codegen, mx20022-cli",
+      "Release publish order: model -> codegen -> parse -> validate -> translate -> cli -> mx20022 (umbrella)",
+      "cargo fmt fails on example files due to nightly-only rustfmt.toml options (imports_granularity, group_imports) — pre-existing, not caused by this iteration",
+      "CI uses .github/workflows/ci.yml which is reused by release.yml via `uses: ./.github/workflows/ci.yml`",
+      "release.yml requires `crates-io` GitHub environment with CARGO_REGISTRY_TOKEN secret"
+    ],
+    "decisions_made": [
+      "Coverage job kept as commented block inside jobs section with proper indentation — not activated until test suite is more mature",
+      "bench-check and examples-check both gated on `needs: check` to run in parallel with test/clippy/docs",
+      "30-second sleep between each crates.io publish step to allow index propagation",
+      "Changelog uses MT<->MX arrows (ASCII) instead of Unicode arrows for portability",
+      "Added [Unreleased] comparison link and [0.1.0] release tag link at bottom of CHANGELOG"
+    ],
+    "artifacts": [
+      "/Volumes/Everything/Development/mx20022/CHANGELOG.md",
+      "/Volumes/Everything/Development/mx20022/.github/workflows/release.yml",
+      "/Volumes/Everything/Development/mx20022/.github/workflows/ci.yml"
+    ],
+    "dependencies": [
+      "GitHub environment `crates-io` must be configured with CARGO_REGISTRY_TOKEN secret before release workflow can publish"
+    ],
+    "risks_issues": [
+      "cargo fmt check fails on example files due to nightly-only rustfmt options: pre-existing, not introduced here — CI fmt job runs on stable so it may fail there too"
+    ]
+  },
+  "iteration": {
+    "summary": "Completed all three deliverables for iteration 12 release polish. CHANGELOG.md was replaced from a 3-line stub to a comprehensive entry documenting all 7 crates and their features across iterations 1-12. Created release.yml workflow that reuses ci.yml via workflow_call, publishes 7 crates to crates.io in dependency order with index propagation sleeps, then creates a GitHub Release with changelog-extracted notes. Hardened ci.yml by adding bench-check and examples-check compile-only jobs gated on the check job, plus a commented-out coverage block ready to activate. All quality gates passed except cargo fmt which has pre-existing failures in example Rust files unrelated to these changes.",
+    "inputs_consulted": [
+      "/Volumes/Everything/Development/mx20022/CHANGELOG.md",
+      "/Volumes/Everything/Development/mx20022/.github/workflows/ci.yml",
+      "/Volumes/Everything/Development/mx20022/.github/dependabot.yml"
+    ],
+    "outputs_produced": [
+      "/Volumes/Everything/Development/mx20022/CHANGELOG.md — full 0.1.0 release entry",
+      "/Volumes/Everything/Development/mx20022/.github/workflows/release.yml — new release workflow",
+      "/Volumes/Everything/Development/mx20022/.github/workflows/ci.yml — added bench-check, examples-check, coverage stub"
+    ],
+    "next_actions": [
+      "Configure `crates-io` GitHub environment with CARGO_REGISTRY_TOKEN secret",
+      "Fix pre-existing cargo fmt failures in example files (use stable-compatible rustfmt settings or apply fmt with nightly)",
+      "Tag v0.1.0 to trigger the release workflow once all crates are ready for publish"
+    ]
+  },
+  "cross_agent_notes": {
+    "mentions": []
+  }
+}

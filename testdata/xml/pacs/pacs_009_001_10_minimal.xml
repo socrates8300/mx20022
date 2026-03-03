@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Document xmlns="urn:iso:std:iso:20022:tech:xsd:pacs.009.001.10">
+  <FICdtTrf>
+    <GrpHdr>
+      <MsgId>PACS009-20240101-001</MsgId>
+      <CreDtTm>2024-01-01T12:00:00Z</CreDtTm>
+      <NbOfTxs>1</NbOfTxs>
+      <SttlmInf>
+        <SttlmMtd>CLRG</SttlmMtd>
+      </SttlmInf>
+    </GrpHdr>
+    <CdtTrfTxInf>
+      <PmtId>
+        <EndToEndId>E2E-20240101-001</EndToEndId>
+        <UETR>97ed4827-7b6f-4491-a06f-b548d5a7512d</UETR>
+      </PmtId>
+      <IntrBkSttlmAmt Ccy="USD">5000.00</IntrBkSttlmAmt>
+      <IntrBkSttlmDt>2024-01-01</IntrBkSttlmDt>
+      <InstgAgt>
+        <FinInstnId>
+          <BICFI>AAAAGB2LXXX</BICFI>
+        </FinInstnId>
+      </InstgAgt>
+      <InstdAgt>
+        <FinInstnId>
+          <BICFI>BBBBUS33XXX</BICFI>
+        </FinInstnId>
+      </InstdAgt>
+      <Dbtr>
+        <FinInstnId>
+          <BICFI>AAAAGB2LXXX</BICFI>
+        </FinInstnId>
+      </Dbtr>
+      <Cdtr>
+        <FinInstnId>
+          <BICFI>BBBBUS33XXX</BICFI>
+        </FinInstnId>
+      </Cdtr>
+    </CdtTrfTxInf>
+  </FICdtTrf>
+</Document>
