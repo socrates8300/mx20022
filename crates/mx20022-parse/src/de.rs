@@ -1,7 +1,7 @@
 //! Deserialization of ISO 20022 XML messages.
 //!
 //! Thin wrappers around [`quick_xml::de`] that translate errors into
-//! [`ParseError`][crate::ParseError].
+//! [`ParseError`].
 //!
 //! # Examples
 //!

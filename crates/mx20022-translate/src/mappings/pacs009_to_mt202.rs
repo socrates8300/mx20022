@@ -7,7 +7,7 @@ use crate::mappings::{
     helpers::{format_mt_message, iso_date_to_yymmdd},
 };
 
-/// Translate a `pacs.009.001.10` [`Document`] to an MT202 message string.
+/// Translate a `pacs.009.001.10` `Document` to an MT202 message string.
 ///
 /// # Errors
 ///

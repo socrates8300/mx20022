@@ -7,7 +7,7 @@ use crate::mappings::{
     helpers::{code_to_charges, format_mt_message, iso_date_to_yymmdd},
 };
 
-/// Translate a `pacs.008.001.13` [`Document`] to an MT103 message string.
+/// Translate a `pacs.008.001.13` `Document` to an MT103 message string.
 ///
 /// Only the first `CdtTrfTxInf` entry is translated.  A warning is added when
 /// the document contains more than one transaction.

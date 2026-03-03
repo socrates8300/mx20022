@@ -10,7 +10,7 @@ use crate::mappings::{
 };
 use crate::mt::fields::mt103::Mt103;
 
-/// Translate an [`Mt103`] into a `pacs.008.001.13` [`Document`].
+/// Translate an `Mt103` into a `pacs.008.001.13` `Document`.
 ///
 /// `msg_id` is used for `GrpHdr.MsgId` (max 35 chars).
 /// `creation_time` is used for `GrpHdr.CreDtTm` (ISO datetime, e.g.

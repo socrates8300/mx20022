@@ -6,7 +6,7 @@ use mx20022_model::generated::camt::camt_053_001_11 as camt053;
 use crate::mappings::error::{TranslationError, TranslationResult, TranslationWarnings};
 use crate::mt::fields::mt940::{Balance, Mt940, StatementLine};
 
-/// Translate an [`Mt940`] into a `camt.053.001.11` [`Document`].
+/// Translate an `Mt940` into a `camt.053.001.11` `Document`.
 ///
 /// # Errors
 ///

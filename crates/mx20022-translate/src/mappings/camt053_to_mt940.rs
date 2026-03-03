@@ -7,7 +7,7 @@ use mx20022_model::generated::camt::camt_053_001_11 as camt053;
 use crate::mappings::error::{TranslationError, TranslationResult, TranslationWarnings};
 use crate::mappings::helpers::iso_date_to_yymmdd;
 
-/// Translate a `camt.053.001.11` [`Document`] to an MT940 message string.
+/// Translate a `camt.053.001.11` `Document` to an MT940 message string.
 ///
 /// Only the first `Stmt` entry is translated.  A warning is added when there
 /// are multiple statements.

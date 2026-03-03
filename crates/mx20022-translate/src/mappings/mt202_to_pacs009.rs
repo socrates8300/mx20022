@@ -6,7 +6,7 @@ use crate::mappings::error::{TranslationError, TranslationResult, TranslationWar
 use crate::mt::fields::common::PartyInfo;
 use crate::mt::fields::mt202::Mt202;
 
-/// Translate an [`Mt202`] into a `pacs.009.001.10` [`Document`].
+/// Translate an `Mt202` into a `pacs.009.001.10` `Document`.
 ///
 /// # Errors
 ///

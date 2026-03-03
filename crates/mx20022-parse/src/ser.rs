@@ -1,7 +1,7 @@
 //! Serialization of ISO 20022 message types to XML.
 //!
 //! Thin wrappers around [`quick_xml::se`] that translate errors into
-//! [`ParseError`][crate::ParseError].
+//! [`ParseError`].
 //!
 //! # Examples
 //!
