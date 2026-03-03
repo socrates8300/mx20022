@@ -1,0 +1,28 @@
+[package]
+name = "mx20022-parse"
+version = "0.1.0"
+description = "XML parsing and serialization for ISO 20022 messages"
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+keywords.workspace = true
+categories.workspace = true
+
+[dependencies]
+mx20022-model = { workspace = true, features = ["all"] }
+quick-xml.workspace = true
+serde.workspace = true
+thiserror.workspace = true
+
+[dev-dependencies]
+pretty_assertions.workspace = true
+insta.workspace = true
+criterion.workspace = true
+
+[[bench]]
+name = "parse_bench"
+harness = false
+
+[lints]
+workspace = true

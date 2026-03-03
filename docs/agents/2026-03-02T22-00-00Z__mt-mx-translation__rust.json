@@ -1,0 +1,92 @@
+{
+  "metadata": {
+    "task_short": "mt-mx-translation",
+    "agent_abbr": "rust",
+    "datetime_utc": "2026-03-02T22:00:00Z",
+    "filename": "2026-03-02T22-00-00Z__mt-mx-translation__rust.json",
+    "supersedes": null,
+    "version": "1.0"
+  },
+  "state": {
+    "objectives": [
+      "Implement full MT<->MX bidirectional translation framework in mx20022-translate crate",
+      "All 6 translation directions: MT103<->pacs.008.001.13, MT202<->pacs.009.001.10, MT940<->camt.053.001.11",
+      "CLI translate subcommand wiring",
+      "Pass cargo check, test, clippy -D warnings, and fmt checks"
+    ],
+    "constraints": [
+      "Edition 2021, MSRV 1.75.0",
+      "Clippy -D warnings must pass",
+      "ChoiceWrapper is a named struct { inner: T }, not a tuple struct — use ::new() for construction, .inner for access",
+      "pacs.009 uses BranchAndFinancialInstitutionIdentification6 (not 8 like pacs.008)",
+      "TranslationResult<T> requires T: Debug"
+    ],
+    "important_facts": [
+      "ChoiceWrapper<T> has pub inner: T, ::new(val), and Deref to T — NOT tuple struct",
+      "pacs008 uses BranchAndFinancialInstitutionIdentification8 + FinancialInstitutionIdentification23",
+      "pacs009 uses BranchAndFinancialInstitutionIdentification6 + FinancialInstitutionIdentification18",
+      "camt053 ReportEntry13 builder: required fields are amt, cdt_dbt_ind, sts, bk_tx_cd",
+      "camt053 CashBalance8 builder: required fields are tp, amt, cdt_dbt_ind, dt",
+      "TranslationWarnings.warnings is Vec<TranslationWarning>, not a slice directly",
+      "mx20022_parse exports de::from_str and ser::to_string_with_declaration (not at crate root)",
+      "MT :21: in MT202 is the related reference (not transaction reference) - maps to tx_id",
+      "pacs009_to_mt202 test was wrong: :21: should be REL-REF-001, not TXN-REF-202-001"
+    ],
+    "decisions_made": [
+      "Use ChoiceWrapper::new() for all construction, .inner for field access in patterns: consistent with actual struct definition",
+      "TranslationResult<T: Debug> has #[derive(Debug)] bound: required by test unwrap_err calls",
+      "CLI translate.rs uses mx20022_parse::de::from_str and mx20022_parse::ser::to_string_with_declaration: only exported via module paths",
+      "camt053_to_mt940 renames field_28c/field_60f/field_62f to seq_number/opening_balance/closing_balance: fix similar_names clippy lint",
+      "pacs008_to_mt103 renames field_32a/field_50k/field_59/field_71a to sttlm_field/ordering_party/beneficiary/charge_bearer: fix similar_names lint"
+    ],
+    "artifacts": [
+      "crates/mx20022-translate/src/mappings/error.rs",
+      "crates/mx20022-translate/src/mappings/charset.rs",
+      "crates/mx20022-translate/src/mappings/helpers.rs",
+      "crates/mx20022-translate/src/mappings/mt103_to_pacs008.rs",
+      "crates/mx20022-translate/src/mappings/pacs008_to_mt103.rs",
+      "crates/mx20022-translate/src/mappings/mt202_to_pacs009.rs",
+      "crates/mx20022-translate/src/mappings/pacs009_to_mt202.rs",
+      "crates/mx20022-translate/src/mappings/mt940_to_camt053.rs",
+      "crates/mx20022-translate/src/mappings/camt053_to_mt940.rs",
+      "crates/mx20022-translate/src/mappings/mod.rs",
+      "crates/mx20022-translate/tests/translation.rs",
+      "crates/mx20022-cli/src/commands/translate.rs",
+      "crates/mx20022-cli/src/commands/mod.rs",
+      "crates/mx20022-cli/src/main.rs",
+      "testdata/translation/mt103_pacs008/input.txt",
+      "testdata/translation/mt202_pacs009/input.txt",
+      "testdata/translation/mt940_camt053/input.txt"
+    ],
+    "dependencies": [
+      "mx20022-model (generated types, ChoiceWrapper, BuilderError)",
+      "mx20022-parse (de::from_str, ser::to_string_with_declaration)",
+      "thiserror (TranslationError)",
+      "mx20022-translate (mt parser, field parsers)"
+    ],
+    "risks_issues": []
+  },
+  "iteration": {
+    "summary": "Completed the MT<->MX translation framework for mx20022-translate crate. Fixed ChoiceWrapper usage throughout (named struct, not tuple). Fixed TranslationResult Debug bound. Added CLI translate subcommand using correct mx20022_parse module paths. Fixed 33 clippy errors including similar_names (variable renames), format!-appended-to-String (write! macro), map.unwrap_or -> map_or, redundant closures, identical match arms, and missing Panics docs. All quality gates pass: cargo check, cargo test (78 unit + 39 integration tests), cargo clippy -D warnings, cargo fmt.",
+    "inputs_consulted": [
+      "crates/mx20022-model/src/common/choice.rs (ChoiceWrapper struct definition)",
+      "crates/mx20022-parse/src/lib.rs (module exports)",
+      "crates/mx20022-cli/src/main.rs (CLI structure)",
+      "crates/mx20022-cli/src/commands/inspect.rs (command pattern)",
+      "crates/mx20022-translate/src/mappings/*.rs (all mapping modules)"
+    ],
+    "outputs_produced": [
+      "All 9 mapping modules (6 translation directions + charset + error + helpers)",
+      "CLI translate subcommand (translate.rs)",
+      "Integration test suite (tests/translation.rs)",
+      "Test fixtures in testdata/translation/"
+    ],
+    "next_actions": [
+      "Task #14: Implement scheme-specific validation (FedNow, SEPA, CBPR+)",
+      "Task #15: Release polish (documentation, examples, benchmarks)"
+    ]
+  },
+  "cross_agent_notes": {
+    "mentions": []
+  }
+}

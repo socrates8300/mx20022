@@ -1,0 +1,35 @@
+[package]
+name = "mx20022"
+version = "0.1.0"
+description = "ISO 20022 financial message library"
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+keywords.workspace = true
+categories.workspace = true
+
+[dependencies]
+mx20022-model = { workspace = true, features = ["all"] }
+mx20022-parse.workspace = true
+mx20022-validate.workspace = true
+mx20022-translate.workspace = true
+
+[[example]]
+name = "parse_pacs008"
+path = "examples/parse_pacs008.rs"
+
+[[example]]
+name = "validate_message"
+path = "examples/validate_message.rs"
+
+[[example]]
+name = "translate_mt103"
+path = "examples/translate_mt103.rs"
+
+[[example]]
+name = "roundtrip"
+path = "examples/roundtrip.rs"
+
+[lints]
+workspace = true

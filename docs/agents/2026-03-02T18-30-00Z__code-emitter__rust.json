@@ -1,0 +1,88 @@
+{
+  "metadata": {
+    "task_short": "code-emitter",
+    "agent_abbr": "rust",
+    "datetime_utc": "2026-03-02T18:30:00Z",
+    "filename": "2026-03-02T18-30-00Z__code-emitter__rust.json",
+    "supersedes": "2026-03-02T00-00-00Z__ir-type-graph__rust.json",
+    "version": "1.0"
+  },
+  "state": {
+    "objectives": [
+      "Implement emit module for mx20022-codegen (XSD IR -> Rust source)",
+      "All generated code must be valid Rust (syn::parse_file check)",
+      "Pass cargo check/clippy/test for entire workspace"
+    ],
+    "constraints": [
+      "Edition 2021, MSRV 1.75.0",
+      "cargo clippy --workspace --all-features -- -D warnings must pass",
+      "No unsafe code (workspace lint: forbid)",
+      "Rust keywords must be handled with Ident::new_raw (r# prefix)"
+    ],
+    "important_facts": [
+      "prettyplease = '0.2' added to workspace and codegen Cargo.toml",
+      "emit module lives at crates/mx20022-codegen/src/emit/",
+      "TypeRef::Builtin(Decimal | Date | DateTime) all map to String (not rust_decimal)",
+      "serde rename_all is NOT used; per-field #[serde(rename = 'XmlName')] always emitted",
+      "Opaque types use #[serde(rename = '$value')] for xs:any content",
+      "ValueWithAttr uses '$value' for text content and '@AttrName' for attributes",
+      "head.001.001.04 does not have ValueWithAttr types (no simpleContent with attributes); only Opaque (SignatureEnvelope) uses $value",
+      "Snapshot test at tests/snapshots.rs produces tests/snapshots/snapshots__head_001_001_04_emit.snap"
+    ],
+    "decisions_made": [
+      "Use proc_macro2 + quote for token generation, prettyplease for formatting: avoids string manipulation, guarantees valid Rust",
+      "util::make_ident uses Ident::new_raw for keywords, Ident::new otherwise: handles 'type', 'ref', etc.",
+      "BoundedVec emits Vec<T> with doc comment noting upper bound: simpler than a custom type",
+      "Optional attributes in ValueWithAttr become Option<T> with skip_serializing_if: matches serde conventions",
+      "CLI uses hand-rolled arg parsing (not clap): keeps the binary footprint small for a dev tool"
+    ],
+    "artifacts": [
+      "crates/mx20022-codegen/src/emit/mod.rs",
+      "crates/mx20022-codegen/src/emit/util.rs",
+      "crates/mx20022-codegen/src/emit/structs.rs",
+      "crates/mx20022-codegen/src/emit/enums.rs",
+      "crates/mx20022-codegen/src/emit/newtypes.rs",
+      "crates/mx20022-codegen/src/emit/code_enums.rs",
+      "crates/mx20022-codegen/src/emit/value_with_attr.rs",
+      "crates/mx20022-codegen/src/emit/opaque.rs",
+      "crates/mx20022-codegen/src/main.rs (updated CLI)",
+      "crates/mx20022-codegen/src/lib.rs (added emit module)",
+      "crates/mx20022-codegen/tests/snapshots.rs",
+      "crates/mx20022-codegen/tests/snapshots/snapshots__head_001_001_04_emit.snap"
+    ],
+    "dependencies": [
+      "prettyplease = '0.2' (new workspace dep)",
+      "proc-macro2, quote, syn (existing workspace deps)",
+      "insta (existing dev dep)"
+    ],
+    "risks_issues": [
+      "ValueWithAttr test in snapshot uses head schema which has no simpleContent+attributes: fixed by testing only $value presence (SignatureEnvelope is Opaque, not ValueWithAttr)"
+    ]
+  },
+  "iteration": {
+    "summary": "Implemented the complete code emission module for mx20022-codegen. Created 7 emit submodules (mod, util, structs, enums, newtypes, code_enums, value_with_attr, opaque) using proc_macro2 + quote for token generation and prettyplease for formatting. Added prettyplease to workspace and codegen Cargo.toml. Updated main.rs with a real CLI (XSD_FILE + --output flag). Wrote 106 total tests: unit tests in each submodule, integration tests, and insta snapshot tests against head.001.001.04. All pass. Full workspace cargo check, clippy (-D warnings), and test pass cleanly.",
+    "inputs_consulted": [
+      "crates/mx20022-codegen/src/ir/types.rs",
+      "crates/mx20022-codegen/src/ir/lower.rs",
+      "crates/mx20022-codegen/src/lib.rs",
+      "crates/mx20022-codegen/Cargo.toml",
+      "Cargo.toml (workspace)",
+      "schemas/head/head.001.001.04.xsd"
+    ],
+    "outputs_produced": [
+      "emit module: 7 source files + util module",
+      "updated lib.rs and main.rs",
+      "snapshot test file + accepted snapshot",
+      "106 passing tests (104 unit + 2 integration snapshot)",
+      "cargo check/clippy/test all pass workspace-wide"
+    ],
+    "next_actions": [
+      "Items 40-54: Generate model types using codegen into mx20022-model/src/generated/",
+      "Build the parse/validate/CLI crates (Phase 1 completion)",
+      "Consider: ValueWithAttr E2E test needs a schema with simpleContent (pacs schemas have ActiveCurrencyAndAmount)"
+    ]
+  },
+  "cross_agent_notes": {
+    "mentions": []
+  }
+}

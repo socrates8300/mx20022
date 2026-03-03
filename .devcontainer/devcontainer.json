@@ -1,0 +1,26 @@
+{
+  "name": "mx20022",
+  "build": { "dockerfile": "Dockerfile" },
+  "features": {
+    "ghcr.io/devcontainers/features/git:1": {},
+    "ghcr.io/devcontainers/features/github-cli:1": {}
+  },
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "rust-lang.rust-analyzer",
+        "tamasfe.even-better-toml",
+        "serayuzgur.crates",
+        "vadimcn.vscode-lldb"
+      ],
+      "settings": {
+        "rust-analyzer.check.command": "clippy",
+        "rust-analyzer.check.allTargets": true,
+        "rust-analyzer.check.extraArgs": ["--all-features"],
+        "[rust]": { "editor.formatOnSave": true }
+      }
+    }
+  },
+  "postCreateCommand": "scripts/install-hooks.sh && rustup toolchain install 1.75.0 --no-self-update",
+  "remoteUser": "vscode"
+}

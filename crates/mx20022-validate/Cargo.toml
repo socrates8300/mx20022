@@ -1,0 +1,28 @@
+[package]
+name = "mx20022-validate"
+version = "0.1.0"
+description = "Schema and business rule validation for ISO 20022 messages"
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+keywords.workspace = true
+categories.workspace = true
+
+[dependencies]
+mx20022-model.workspace = true
+thiserror.workspace = true
+regex.workspace = true
+
+[dev-dependencies]
+pretty_assertions.workspace = true
+mx20022-parse = { workspace = true }
+mx20022-model = { workspace = true, features = ["all"] }
+criterion.workspace = true
+
+[[bench]]
+name = "validate_bench"
+harness = false
+
+[lints]
+workspace = true

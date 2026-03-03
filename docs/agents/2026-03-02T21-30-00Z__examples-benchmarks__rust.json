@@ -1,0 +1,100 @@
+{
+  "metadata": {
+    "task_short": "examples-benchmarks",
+    "agent_abbr": "rust",
+    "datetime_utc": "2026-03-02T21:30:00Z",
+    "filename": "2026-03-02T21-30-00Z__examples-benchmarks__rust.json",
+    "supersedes": null,
+    "version": "1.0"
+  },
+  "state": {
+    "objectives": [
+      "Create 4 runnable examples in crates/mx20022/examples/ using umbrella crate",
+      "Create 3 criterion benchmark suites in crate-local benches/ directories",
+      "Register all examples and benches in Cargo.toml files",
+      "Ensure all 4 quality gates pass: check, test, clippy, fmt"
+    ],
+    "constraints": [
+      "Examples use paths relative to crate root: ../../../testdata/...",
+      "Benches registered with harness = false in each crate's Cargo.toml",
+      "criterion.workspace = true added as dev-dependency to 3 crates",
+      "mx20022 umbrella Cargo.toml updated: mx20022-model now has features = ['all']",
+      "No hand-edits to generated/ code"
+    ],
+    "important_facts": [
+      "All 4 examples run successfully and produce correct output",
+      "cargo check, test, clippy, fmt all pass cleanly",
+      "parse_pacs008 example uses envelope::detect_message_type + de::from_str",
+      "validate_message uses RuleRegistry::with_defaults() + FedNowValidator",
+      "translate_mt103 shows MT103 fields then translates to pacs.008 XML",
+      "roundtrip shows MT103->pacs.008->MT103 with field-level spot checks (all OK)",
+      "Benchmarks cover: parse (3 fns), validate (5 fns), translate (5 fns)",
+      "workspace-root examples/.gitkeep and benches/.gitkeep removed"
+    ],
+    "decisions_made": [
+      "Put examples in crates/mx20022/examples/ not workspace root (virtual workspace has no [package])",
+      "Put benches in each respective crate's benches/ dir (avoids ugly relative paths from umbrella)",
+      "Include only parse, validate, translate benches — not a combined umbrella bench (cleaner separation)",
+      "Added SepaValidator bench alongside FedNow for broader coverage"
+    ],
+    "artifacts": [
+      "crates/mx20022/examples/parse_pacs008.rs",
+      "crates/mx20022/examples/validate_message.rs",
+      "crates/mx20022/examples/translate_mt103.rs",
+      "crates/mx20022/examples/roundtrip.rs",
+      "crates/mx20022-parse/benches/parse_bench.rs",
+      "crates/mx20022-validate/benches/validate_bench.rs",
+      "crates/mx20022-translate/benches/translate_bench.rs",
+      "crates/mx20022/Cargo.toml (modified: added [[example]] entries, features=[all] for model)",
+      "crates/mx20022-parse/Cargo.toml (modified: criterion dev-dep + [[bench]])",
+      "crates/mx20022-validate/Cargo.toml (modified: criterion dev-dep + [[bench]])",
+      "crates/mx20022-translate/Cargo.toml (modified: criterion dev-dep + [[bench]])"
+    ],
+    "dependencies": [],
+    "risks_issues": []
+  },
+  "iteration": {
+    "summary": "Created 4 runnable examples and 3 criterion benchmark suites for the mx20022 workspace. All examples produce meaningful output verified by actually running them. All quality gates (cargo check, test, clippy, fmt) pass cleanly. The benchmarks cover XML parse/detect/serialize, IBAN/BIC/FedNow/SEPA validation, and MT103 parse/translate/roundtrip paths.",
+    "inputs_consulted": [
+      "crates/mx20022/Cargo.toml",
+      "crates/mx20022/src/lib.rs",
+      "crates/mx20022-parse/src/de.rs",
+      "crates/mx20022-parse/src/ser.rs",
+      "crates/mx20022-parse/src/envelope.rs",
+      "crates/mx20022-validate/src/lib.rs",
+      "crates/mx20022-validate/src/rules/mod.rs",
+      "crates/mx20022-validate/src/schemes/mod.rs",
+      "crates/mx20022-validate/src/schemes/fednow.rs",
+      "crates/mx20022-translate/src/lib.rs",
+      "crates/mx20022-translate/src/mt/mod.rs",
+      "crates/mx20022-translate/src/mt/types.rs",
+      "crates/mx20022-translate/src/mt/fields/mt103.rs",
+      "crates/mx20022-translate/src/mappings/mod.rs",
+      "crates/mx20022-translate/src/mappings/mt103_to_pacs008.rs",
+      "crates/mx20022-translate/src/mappings/pacs008_to_mt103.rs",
+      "crates/mx20022-translate/src/mappings/error.rs",
+      "crates/mx20022-model/src/generated/pacs/pacs_008_001_13.rs (struct field inspection)",
+      "testdata/xml/pacs/pacs_008_001_13_minimal.xml",
+      "testdata/mt/mt103.txt",
+      "testdata/schemes/fednow/valid_pacs008.xml",
+      "testdata/schemes/sepa/valid_pacs008.xml"
+    ],
+    "outputs_produced": [
+      "crates/mx20022/examples/parse_pacs008.rs",
+      "crates/mx20022/examples/validate_message.rs",
+      "crates/mx20022/examples/translate_mt103.rs",
+      "crates/mx20022/examples/roundtrip.rs",
+      "crates/mx20022-parse/benches/parse_bench.rs",
+      "crates/mx20022-validate/benches/validate_bench.rs",
+      "crates/mx20022-translate/benches/translate_bench.rs"
+    ],
+    "next_actions": [
+      "Run benches with: cargo bench -p mx20022-parse / mx20022-validate / mx20022-translate",
+      "Consider adding more message types to examples (pain.001, camt.053)",
+      "Consider adding --release mode benchmark baseline to docs/"
+    ]
+  },
+  "cross_agent_notes": {
+    "mentions": []
+  }
+}

@@ -1,0 +1,73 @@
+{
+  "metadata": {
+    "task_short": "ir-type-graph",
+    "agent_abbr": "rust",
+    "datetime_utc": "2026-03-02T00:00:00Z",
+    "filename": "2026-03-02T00-00-00Z__ir-type-graph__rust.json",
+    "supersedes": null,
+    "version": "1.0"
+  },
+  "state": {
+    "objectives": [
+      "Implement IR module (ir/types.rs, ir/lower.rs, ir/mod.rs) for mx20022-codegen",
+      "Lower xsd::Schema AST to TypeGraph IR",
+      "Pass cargo check, clippy -D warnings, and cargo test -p mx20022-codegen"
+    ],
+    "constraints": [
+      "Edition 2021, MSRV 1.75.0",
+      "No unsafe code (workspace forbids it)",
+      "Clippy pedantic with specific allows in workspace Cargo.toml",
+      "cargo fmt --all must produce no diff"
+    ],
+    "important_facts": [
+      "indexmap = '2' added to [workspace.dependencies] in root Cargo.toml",
+      "indexmap.workspace = true added to crates/mx20022-codegen/Cargo.toml",
+      "pub mod ir added to crates/mx20022-codegen/src/lib.rs",
+      "IR module lives at crates/mx20022-codegen/src/ir/{mod.rs,types.rs,lower.rs}",
+      "TypeGraph uses IndexMap<String, TypeDef> for insertion-order preservation",
+      "xml_to_snake_case handles PascalCase, all-caps runs (BICFI->bicfi), FIToFI->fi_to_fi",
+      "code_to_pascal_case converts ADDR->Addr, CODU->Codu, handles hyphen splits",
+      "map_builtin strips xs:/xsd: prefix before matching"
+    ],
+    "decisions_made": [
+      "SimpleType with zero facets or only non-enum facets becomes NewtypeDef: xs:simpleType with empty restriction is still a valid newtype",
+      "SimpleType with ALL facets being Enumeration becomes CodeEnumDef: mixed enum+constraint facets treated as Newtype (no ISO 20022 schema has this pattern)",
+      "Variant names for Choice types kept verbatim (already PascalCase in ISO 20022): no snake_case conversion for enum variants",
+      "RustType::Decimal used for xs:decimal and all integer/float variants: can be refined to rust_decimal later without IR change",
+      "Cardinality::Vec used for both min=0 and min=1 unbounded: non-empty enforcement is a validate-crate concern"
+    ],
+    "artifacts": [
+      "crates/mx20022-codegen/src/ir/types.rs",
+      "crates/mx20022-codegen/src/ir/lower.rs",
+      "crates/mx20022-codegen/src/ir/mod.rs",
+      "crates/mx20022-codegen/src/lib.rs (added pub mod ir)",
+      "crates/mx20022-codegen/Cargo.toml (added indexmap.workspace = true)",
+      "Cargo.toml (added indexmap = '2' to workspace.dependencies)"
+    ],
+    "dependencies": [],
+    "risks_issues": []
+  },
+  "iteration": {
+    "summary": "Implemented the complete IR module for mx20022-codegen. The ir/types.rs file defines TypeGraph, TypeDef (Struct/Enum/Newtype/CodeEnum/ValueWithAttr/Opaque), FieldDef with Cardinality, TypeRef, RustType, and Constraint. The ir/lower.rs file implements the lower() function mapping xsd::Schema to TypeGraph, plus xml_to_snake_case and code_to_pascal_case name converters. 54 unit tests and 5 doc tests all pass. cargo check, clippy -D warnings, fmt --check all clean.",
+    "inputs_consulted": [
+      "crates/mx20022-codegen/src/xsd/types.rs",
+      "crates/mx20022-codegen/src/xsd/mod.rs",
+      "crates/mx20022-codegen/src/lib.rs",
+      "crates/mx20022-codegen/Cargo.toml",
+      "Cargo.toml",
+      "schemas/head/head.001.001.04.xsd"
+    ],
+    "outputs_produced": [
+      "crates/mx20022-codegen/src/ir/types.rs",
+      "crates/mx20022-codegen/src/ir/lower.rs",
+      "crates/mx20022-codegen/src/ir/mod.rs"
+    ],
+    "next_actions": [
+      "Build emit module (ir/TypeGraph -> proc_macro2 TokenStream)",
+      "Task #3: code emitter (items 28-39)"
+    ]
+  },
+  "cross_agent_notes": {
+    "mentions": []
+  }
+}

@@ -1,0 +1,25 @@
+[package]
+name = "mx20022-cli"
+version = "0.1.0"
+description = "CLI tool for ISO 20022 message processing"
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+keywords.workspace = true
+categories.workspace = true
+
+[[bin]]
+name = "mx20022-cli"
+path = "src/main.rs"
+
+[dependencies]
+mx20022-parse = { workspace = true }
+mx20022-validate = { workspace = true }
+mx20022-translate = { workspace = true }
+mx20022-codegen = { workspace = true }
+mx20022-model = { workspace = true, features = ["all"] }
+clap.workspace = true
+
+[lints]
+workspace = true

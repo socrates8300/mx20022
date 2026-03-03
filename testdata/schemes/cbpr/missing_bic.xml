@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- CBPR+ violation: InstgAgt is missing BICFI -->
+<BizMsgEnvlp>
+  <AppHdr xmlns="urn:iso:std:iso:20022:tech:xsd:head.001.001.04">
+    <Fr><FIId><FinInstnId><BICFI>AAAAGB2LXXX</BICFI></FinInstnId></FIId></Fr>
+    <To><FIId><FinInstnId><BICFI>BBBBUS33XXX</BICFI></FinInstnId></FIId></To>
+    <BizMsgIdr>CBPR-MISSING-BIC-001</BizMsgIdr>
+    <MsgDefIdr>pacs.008.001.13</MsgDefIdr>
+    <CreDt>2024-01-01T12:00:00Z</CreDt>
+  </AppHdr>
+  <Document xmlns="urn:iso:std:iso:20022:tech:xsd:pacs.008.001.13">
+    <FIToFICstmrCdtTrf>
+      <GrpHdr>
+        <MsgId>CBPR-MISSING-BIC-001</MsgId>
+        <CreDtTm>2024-01-01T12:00:00Z</CreDtTm>
+        <NbOfTxs>1</NbOfTxs>
+        <SttlmInf>
+          <SttlmMtd>INGA</SttlmMtd>
+        </SttlmInf>
+        <InstgAgt>
+          <FinInstnId>
+            <!-- BICFI is intentionally missing here -->
+            <Nm>Instructing Bank</Nm>
+          </FinInstnId>
+        </InstgAgt>
+        <InstdAgt>
+          <FinInstnId>
+            <BICFI>BBBBUS33XXX</BICFI>
+          </FinInstnId>
+        </InstdAgt>
+      </GrpHdr>
+      <CdtTrfTxInf>
+        <PmtId>
+          <EndToEndId>E2E-CBPR-MISSING-001</EndToEndId>
+          <UETR>97ed4827-7b6f-4491-a06f-b548d5a7512d</UETR>
+        </PmtId>
+        <IntrBkSttlmAmt Ccy="USD">50000.00</IntrBkSttlmAmt>
+        <IntrBkSttlmDt>2024-01-01</IntrBkSttlmDt>
+        <ChrgBr>SHAR</ChrgBr>
+        <Dbtr>
+          <Nm>Alice Smith</Nm>
+        </Dbtr>
+        <DbtrAcct>
+          <Id>
+            <IBAN>GB82WEST12345698765432</IBAN>
+          </Id>
+        </DbtrAcct>
+        <DbtrAgt>
+          <FinInstnId>
+            <BICFI>AAAAGB2LXXX</BICFI>
+          </FinInstnId>
+        </DbtrAgt>
+        <CdtrAgt>
+          <FinInstnId>
+            <BICFI>BBBBUS33XXX</BICFI>
+          </FinInstnId>
+        </CdtrAgt>
+        <Cdtr>
+          <Nm>Bob Jones</Nm>
+        </Cdtr>
+        <CdtrAcct>
+          <Id>
+            <IBAN>DE89370400440532013000</IBAN>
+          </Id>
+        </CdtrAcct>
+      </CdtTrfTxInf>
+    </FIToFICstmrCdtTrf>
+  </Document>
+</BizMsgEnvlp>

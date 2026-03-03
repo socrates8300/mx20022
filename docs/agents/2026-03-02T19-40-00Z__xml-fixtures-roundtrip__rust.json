@@ -1,0 +1,89 @@
+{
+  "metadata": {
+    "task_short": "xml-fixtures-roundtrip",
+    "agent_abbr": "rust",
+    "datetime_utc": "2026-03-02T19:40:00Z",
+    "filename": "2026-03-02T19-40-00Z__xml-fixtures-roundtrip__rust.json",
+    "supersedes": null,
+    "version": "1.0"
+  },
+  "state": {
+    "objectives": [
+      "Create minimal XML test fixtures for 10 new ISO 20022 message types",
+      "Create roundtrip integration tests in crates/mx20022-parse/tests/roundtrip_all.rs",
+      "Ensure cargo test --workspace --all-features passes"
+    ],
+    "constraints": [
+      "Fixtures must use correct namespace URI: urn:iso:std:iso:20022:tech:xsd:{msg_id}",
+      "Document root element with message-specific child element",
+      "Only include required (non-optional) fields in fixtures and struct constructions",
+      "Generated types must not be hand-edited",
+      "MSRV 1.75.0, edition 2021"
+    ],
+    "important_facts": [
+      "ChoiceWrapper<T> wraps xs:choice enums via #[serde(rename = '$value')] for quick-xml compatibility",
+      "Document structs have no struct-level serde rename - they serialize as <Document>",
+      "quick-xml de::from_str ignores xmlns attribute during deserialization - namespace-bearing fixtures parse cleanly",
+      "pacs_009 CreditTransferTransaction56: dbtr and cdtr are required (non-optional) BranchAndFinancialInstitutionIdentification6",
+      "Integration tests use relative path ../../testdata/xml/ from crates/mx20022-parse/",
+      "All 10 new message families are feature-gated: pain and camt require features = ['all'] (already enabled in parse Cargo.toml)"
+    ],
+    "decisions_made": [
+      "Fixture-based tests for envelope detection and struct-level roundtrip tests built from Rust code: avoids namespace serialization gaps since quick-xml se does not emit xmlns attributes",
+      "Both fixture-parse and struct-roundtrip tests written: fixture-parse validates the XML files directly; roundtrip tests validate serialization identity",
+      "pacs_009 fixture required adding Dbtr and Cdtr elements after test failure revealed required fields missing from initial fixture"
+    ],
+    "artifacts": [
+      "testdata/xml/pacs/pacs_004_001_11_minimal.xml",
+      "testdata/xml/pacs/pacs_009_001_10_minimal.xml",
+      "testdata/xml/pacs/pacs_028_001_05_minimal.xml",
+      "testdata/xml/pain/pain_001_001_11_minimal.xml",
+      "testdata/xml/pain/pain_002_001_13_minimal.xml",
+      "testdata/xml/pain/pain_013_001_09_minimal.xml",
+      "testdata/xml/camt/camt_053_001_11_minimal.xml",
+      "testdata/xml/camt/camt_054_001_11_minimal.xml",
+      "testdata/xml/camt/camt_056_001_11_minimal.xml",
+      "testdata/xml/camt/camt_029_001_12_minimal.xml",
+      "crates/mx20022-parse/tests/roundtrip_all.rs"
+    ],
+    "dependencies": [
+      "mx20022-model with features=['all'] (already in parse Cargo.toml)",
+      "mx20022-parse (de, ser, envelope modules)",
+      "quick-xml 0.37 with serialize feature"
+    ],
+    "risks_issues": [
+      "pacs_028 TxInf fixture includes fields that are all optional - fixture parses without them: resolved",
+      "pacs_009 CreditTransferTransaction56.dbtr and .cdtr are required non-optional: fixture updated to include them"
+    ]
+  },
+  "iteration": {
+    "summary": "Created 10 minimal XML fixture files and a 909-line roundtrip_all.rs test file covering all 10 newly generated ISO 20022 message types. Each message type has: a struct-level serialize/deserialize roundtrip test asserting identity, an envelope detection test using the fixture file, and a fixture-parse test verifying the XML file deserializes correctly. All 30 new tests pass alongside the existing 220+ tests across the workspace. The pacs_009 fixture required a correction after the initial run revealed that CreditTransferTransaction56.dbtr and .cdtr are required (non-optional) fields.",
+    "inputs_consulted": [
+      "crates/mx20022-model/src/generated/pacs/pacs_004_001_11.rs",
+      "crates/mx20022-model/src/generated/pacs/pacs_009_001_10.rs",
+      "crates/mx20022-model/src/generated/pacs/pacs_028_001_05.rs",
+      "crates/mx20022-model/src/generated/pain/pain_001_001_11.rs",
+      "crates/mx20022-model/src/generated/pain/pain_002_001_13.rs",
+      "crates/mx20022-model/src/generated/pain/pain_013_001_09.rs",
+      "crates/mx20022-model/src/generated/camt/camt_053_001_11.rs",
+      "crates/mx20022-model/src/generated/camt/camt_054_001_11.rs",
+      "crates/mx20022-model/src/generated/camt/camt_056_001_11.rs",
+      "crates/mx20022-model/src/generated/camt/camt_029_001_12.rs",
+      "crates/mx20022-model/src/common/choice.rs",
+      "crates/mx20022-parse/tests/roundtrip.rs",
+      "testdata/xml/pacs/pacs_008_001_13_minimal.xml"
+    ],
+    "outputs_produced": [
+      "10 minimal XML fixture files in testdata/xml/{family}/",
+      "crates/mx20022-parse/tests/roundtrip_all.rs with 30 tests (10 roundtrip + 10 envelope_detect + 10 fixture_parse)",
+      "All cargo test --workspace --all-features passing (30 new + 220+ existing)"
+    ],
+    "next_actions": [
+      "Consider adding fixture XML files for pain and camt to the CLI integration tests",
+      "Item #7 (download missing XSD schemas and generate Phase 1 types) should be marked complete"
+    ]
+  },
+  "cross_agent_notes": {
+    "mentions": []
+  }
+}

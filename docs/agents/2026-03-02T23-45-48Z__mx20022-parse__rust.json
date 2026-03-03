@@ -1,0 +1,97 @@
+{
+  "metadata": {
+    "task_short": "mx20022-parse",
+    "agent_abbr": "rust",
+    "datetime_utc": "2026-03-02T23:45:48Z",
+    "filename": "2026-03-02T23-45-48Z__mx20022-parse__rust.json",
+    "supersedes": null,
+    "version": "1.0"
+  },
+  "state": {
+    "objectives": [
+      "Build mx20022-parse crate: XML parsing and serialization for ISO 20022 messages",
+      "Implement de.rs, ser.rs, envelope.rs, error.rs modules",
+      "Write roundtrip integration tests for BusinessApplicationHeaderV04",
+      "Fix any compilation/test/lint issues before finishing"
+    ],
+    "constraints": [
+      "MSRV 1.75.0, Edition 2021",
+      "cargo check/test/clippy/fmt must all pass on full workspace",
+      "Do not hand-edit generated/ files - use codegen to regenerate",
+      "quick-xml 0.37 with serialize feature",
+      "thiserror 2, serde 1"
+    ],
+    "important_facts": [
+      "quick-xml cannot serialize/deserialize enum newtype variants in normal struct fields - requires $value wrapper",
+      "xs:choice types (EnumDef) need ChoiceWrapper<T> wrapper in struct fields for quick-xml compatibility",
+      "ChoiceWrapper<T> added to mx20022-model/src/common/choice.rs with Deref/DerefMut/From impls",
+      "Codegen struct emitter now takes HashSet<String> of choice type names and emits ChoiceWrapper<T> for those fields",
+      "Codegen enum emitter now emits #[allow(clippy::large_enum_variant)] on all choice enums",
+      "All 3 model files (head_001_001_04, pacs_008_001_13, pacs_002_001_14) regenerated with updated codegen",
+      "Codegen insta snapshot updated to reflect ChoiceWrapper usage",
+      "hdr.fr is now ChoiceWrapper<Party51Choice> - access inner via .inner or Deref (*hdr.fr)"
+    ],
+    "decisions_made": [
+      "Use ChoiceWrapper<T> wrapper struct with $value field instead of boxing enum variants: preserves serde compatibility and quick-xml round-trip without changing enum types",
+      "Implement Deref/DerefMut on ChoiceWrapper<T> for ergonomic access to inner enum: reduces boilerplate at call sites",
+      "Add #[allow(clippy::large_enum_variant)] to all xs:choice enums: boxing would break quick-xml serde mapping for newtype variants",
+      "Parse namespace detection uses string scanning rather than full XML parse: simpler, no extra deps, sufficient for the use case"
+    ],
+    "artifacts": [
+      "crates/mx20022-parse/src/lib.rs",
+      "crates/mx20022-parse/src/error.rs",
+      "crates/mx20022-parse/src/de.rs",
+      "crates/mx20022-parse/src/ser.rs",
+      "crates/mx20022-parse/src/envelope.rs",
+      "crates/mx20022-parse/tests/roundtrip.rs",
+      "crates/mx20022-parse/Cargo.toml (updated: mx20022-model features=[all])",
+      "crates/mx20022-model/src/common/mod.rs",
+      "crates/mx20022-model/src/common/choice.rs",
+      "crates/mx20022-model/src/lib.rs (updated: added pub mod common)",
+      "crates/mx20022-codegen/src/emit/structs.rs (updated: choice_types param)",
+      "crates/mx20022-codegen/src/emit/enums.rs (updated: large_enum_variant allow)",
+      "crates/mx20022-codegen/src/emit/mod.rs (updated: choice set, passes to emit_struct)",
+      "crates/mx20022-model/src/generated/head/head_001_001_04.rs (regenerated)",
+      "crates/mx20022-model/src/generated/pacs/pacs_008_001_13.rs (regenerated)",
+      "crates/mx20022-model/src/generated/pacs/pacs_002_001_14.rs (regenerated)",
+      "crates/mx20022-codegen/tests/snapshots/snapshots__head_001_001_04_emit.snap (updated)",
+      "testdata/xml/head/head_001_001_04_minimal.xml"
+    ],
+    "dependencies": [
+      "quick-xml 0.37 (workspace dep, serialize feature)",
+      "thiserror 2 (workspace dep)",
+      "serde 1 (workspace dep)",
+      "mx20022-model with features=[all]"
+    ],
+    "risks_issues": [
+      "quick-xml $value semantics: resolved - ChoiceWrapper handles this correctly",
+      "Large enum variants: resolved - #[allow(clippy::large_enum_variant)] on all EnumDef types"
+    ]
+  },
+  "iteration": {
+    "summary": "Built the complete mx20022-parse crate with four modules: error.rs (ParseError), de.rs (from_str/from_reader wrappers), ser.rs (to_string/to_string_with_declaration), envelope.rs (detect_message_type parsing ISO 20022 namespace URIs). Discovered that quick-xml cannot serialize/deserialize enum newtype variants in normal struct fields without a $value wrapper. Fixed this by introducing ChoiceWrapper<T> in mx20022-model/src/common/ and updating the codegen struct emitter to automatically detect and wrap xs:choice fields. Regenerated all three model files and updated the codegen snapshot. All 7 roundtrip integration tests pass including the full BusinessApplicationHeaderV04 serialize+deserialize identity test. Full workspace: check, clippy -D warnings, fmt --check, test all pass.",
+    "inputs_consulted": [
+      "crates/mx20022-model/src/generated/head/head_001_001_04.rs",
+      "crates/mx20022-model/src/generated/pacs/pacs_008_001_13.rs",
+      "quick-xml-0.37.5/src/de/mod.rs (docs table for enum serialization)",
+      "quick-xml-0.37.5/src/se/element.rs (serialize_newtype_variant)",
+      "crates/mx20022-codegen/src/emit/structs.rs",
+      "crates/mx20022-codegen/src/emit/enums.rs",
+      "crates/mx20022-codegen/src/emit/mod.rs"
+    ],
+    "outputs_produced": [
+      "crates/mx20022-parse/src/*.rs (4 modules)",
+      "crates/mx20022-parse/tests/roundtrip.rs (7 integration tests)",
+      "crates/mx20022-model/src/common/ (ChoiceWrapper<T>)",
+      "Updated codegen emitters + regenerated model types"
+    ],
+    "next_actions": [
+      "Build mx20022-validate crate (item 4 still in_progress per DB)",
+      "Build mx20022-cli crate",
+      "Update codegen snapshot for new enums.rs output (may need update if more schemas added)"
+    ]
+  },
+  "cross_agent_notes": {
+    "mentions": []
+  }
+}

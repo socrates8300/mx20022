@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Document xmlns="urn:iso:std:iso:20022:tech:xsd:camt.056.001.11">
+  <FIToFIPmtCxlReq>
+    <Assgnmt>
+      <Id>CXLREQ-20240101-001</Id>
+      <Assgnr>
+        <Agt>
+          <FinInstnId>
+            <BICFI>AAAAGB2LXXX</BICFI>
+          </FinInstnId>
+        </Agt>
+      </Assgnr>
+      <Assgne>
+        <Agt>
+          <FinInstnId>
+            <BICFI>BBBBUS33XXX</BICFI>
+          </FinInstnId>
+        </Agt>
+      </Assgne>
+      <CreDtTm>2024-01-01T12:00:00Z</CreDtTm>
+    </Assgnmt>
+  </FIToFIPmtCxlReq>
+</Document>

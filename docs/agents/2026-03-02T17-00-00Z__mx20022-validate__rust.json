@@ -1,0 +1,86 @@
+{
+  "metadata": {
+    "task_short": "mx20022-validate",
+    "agent_abbr": "rust",
+    "datetime_utc": "2026-03-02T17:00:00Z",
+    "filename": "2026-03-02T17-00-00Z__mx20022-validate__rust.json",
+    "supersedes": null,
+    "version": "1.0"
+  },
+  "state": {
+    "objectives": [
+      "Build mx20022-validate crate with real IBAN, BIC, length, and pattern validation",
+      "Implement RuleRegistry for composable rule dispatch",
+      "Implement schema constraint layer (ConstraintSet + SchemaValidator)",
+      "Pass cargo check, clippy -D warnings, fmt check, and all tests"
+    ],
+    "constraints": [
+      "Edition 2021, MSRV 1.75.0",
+      "No unsafe code (workspace forbids it)",
+      "Clippy pedantic with several allows pre-configured in workspace",
+      "regex = '1' added as workspace dep"
+    ],
+    "important_facts": [
+      "Rule::id() returns &str on the trait; impls returning static literals should use &'static str (clippy::unnecessary_literal_bound)",
+      "PatternRule::id() returns &self.rule_id (String field) so uses &str tied to self - fine",
+      "Generated model files need #![allow(clippy::large_enum_variant)] - added to head_001_001_04.rs, pacs_002_001_14.rs, pacs_008_001_13.rs",
+      "mx20022-codegen/src/ir/lower.rs needed PascalCase doc backtick fix",
+      "mx20022-parse/src/envelope.rs had pre-existing clippy issues (single_match_else, manual_let_else, doc_markdown) - all fixed",
+      "bah_deserialize_from_fixture test in mx20022-parse was ALREADY FAILING before our changes (pre-existing bug)"
+    ],
+    "decisions_made": [
+      "Rule trait uses &str return (not &'static str) to accommodate PatternRule's dynamic ID from a String field; static impls use &'static str covariance",
+      "LengthRangeRule is a convenience type combining min+max checks; emits MIN_LENGTH/MAX_LENGTH rule_ids (not LENGTH_RANGE) so registry lookups work",
+      "PatternRule anchors patterns with ^(?:pattern)$ to match XSD full-string semantics",
+      "IBAN validation strips whitespace (normalises spaced format) before checking",
+      "ConstraintSet stores Vec<FieldConstraint> (not HashMap) to support multiple constraints per path",
+      "Added #![allow(clippy::large_enum_variant)] at file level on generated files rather than boxing variants (avoids API changes)"
+    ],
+    "artifacts": [
+      "crates/mx20022-validate/src/lib.rs",
+      "crates/mx20022-validate/src/error.rs",
+      "crates/mx20022-validate/src/rules/mod.rs",
+      "crates/mx20022-validate/src/rules/iban.rs",
+      "crates/mx20022-validate/src/rules/bic.rs",
+      "crates/mx20022-validate/src/rules/length.rs",
+      "crates/mx20022-validate/src/rules/pattern.rs",
+      "crates/mx20022-validate/src/schema/mod.rs",
+      "crates/mx20022-validate/src/schema/constraints.rs",
+      "crates/mx20022-validate/Cargo.toml (added regex.workspace = true)",
+      "Cargo.toml (added regex = '1' to workspace.dependencies)"
+    ],
+    "dependencies": [
+      "regex = '1' (workspace dep)",
+      "thiserror = '2' (workspace dep)",
+      "mx20022-model (workspace dep)"
+    ],
+    "risks_issues": [
+      "bah_deserialize_from_fixture in mx20022-parse is pre-existing failure: unrelated to validate crate"
+    ]
+  },
+  "iteration": {
+    "summary": "Built the complete mx20022-validate crate from scratch. Implemented ValidationError/Severity/ValidationResult error types, a Rule trait with IBAN (ISO 13616 mod-97), BIC (ISO 9362), MinLength, MaxLength, LengthRange, and Pattern (regex-based) implementations, a RuleRegistry for named rule dispatch, and a schema layer (ConstraintSet + SchemaValidator) that wires constraints to rules. Also fixed 7 pre-existing clippy issues in mx20022-codegen, mx20022-model, and mx20022-parse that blocked the workspace clippy target. All 55 unit tests and 14 doc tests pass. cargo check, clippy, and fmt all clean.",
+    "inputs_consulted": [
+      "Cargo.toml (workspace)",
+      "crates/mx20022-validate/Cargo.toml",
+      "crates/mx20022-model/src/generated/head/head_001_001_04.rs",
+      "crates/mx20022-model/src/generated/pacs/pacs_002_001_14.rs",
+      "crates/mx20022-parse/src/envelope.rs",
+      "crates/mx20022-codegen/src/ir/lower.rs"
+    ],
+    "outputs_produced": [
+      "9 new source files in mx20022-validate/src/",
+      "regex dep added to workspace and validate crate",
+      "Pre-existing clippy fixes in 4 other files",
+      "55 unit tests + 14 doc tests all passing"
+    ],
+    "next_actions": [
+      "Wire validate into mx20022-cli (validate subcommand)",
+      "Add scheme-specific validation (FedNow, SEPA, CBPR) in src/schemes/",
+      "Implement Validator trait over generated message types (typed validation, not just string fields)"
+    ]
+  },
+  "cross_agent_notes": {
+    "mentions": []
+  }
+}

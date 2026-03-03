@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<AppHdr xmlns="urn:iso:std:iso:20022:tech:xsd:head.001.001.04">
+  <Fr>
+    <FIId>
+      <FinInstnId>
+        <BICFI>AAAAGB2LXXX</BICFI>
+      </FinInstnId>
+    </FIId>
+  </Fr>
+  <To>
+    <FIId>
+      <FinInstnId>
+        <BICFI>BBBBUS33XXX</BICFI>
+      </FinInstnId>
+    </FIId>
+  </To>
+  <BizMsgIdr>MSG-20240101-001</BizMsgIdr>
+  <MsgDefIdr>pacs.008.001.13</MsgDefIdr>
+  <CreDt>2024-01-01T12:00:00Z</CreDt>
+</AppHdr>

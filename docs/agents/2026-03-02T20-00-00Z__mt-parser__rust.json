@@ -1,0 +1,91 @@
+{
+  "metadata": {
+    "task_short": "mt-parser",
+    "agent_abbr": "rust",
+    "datetime_utc": "2026-03-02T20:00:00Z",
+    "filename": "2026-03-02T20-00-00Z__mt-parser__rust.json",
+    "supersedes": null,
+    "version": "1.0"
+  },
+  "state": {
+    "objectives": [
+      "Implement complete SWIFT MT message parser in mx20022-translate crate",
+      "Cover block-level parsing and field parsers for MT103, MT202, MT940",
+      "Pass all quality gates: check, test, clippy -D warnings, fmt --check"
+    ],
+    "constraints": [
+      "Edition 2021, MSRV 1.75.0",
+      "workspace lint: pedantic clippy -D warnings",
+      "No regex for block extraction — use brace-depth scanning",
+      "Regex only for field tag detection in block 4",
+      "No hand-edits to generated/ directories"
+    ],
+    "important_facts": [
+      "regex = '1' was already in workspace Cargo.toml, only needed regex.workspace = true in translate crate",
+      "parse_block4 returns Block4 directly (not Result) — clippy unnecessary_wraps caught this",
+      "HashMap::get requires &u8 reference, not integer literal — caught on first compile",
+      "All .gitkeep files removed from src/mt/, src/mt/fields/, src/mappings/, testdata/mt/",
+      "MT940 :61: field parsing: entry date detection uses lookahead for D/C/R char at pos+4",
+      "Block 4 continuation lines appended with '\\n' to previous field value",
+      "Block 3 and 5 use brace-depth counting for nested {tag:value} pairs"
+    ],
+    "decisions_made": [
+      "parse_block4 returns Block4 not Result<Block4>: the function never fails, clippy flagged unnecessary_wraps",
+      "Amount stored as decimal string with '.' separator, not f64: avoids floating-point precision issues",
+      "Year 2-digit cutoff at 80: yy>=80 -> 19xx, yy<80 -> 20xx, matching SWIFT convention",
+      "find_standalone_86 uses consumption count heuristic: :86: fields beyond consumed_count are standalone",
+      "Block2Input priority parsed with filter(matches!) — delivery_monitoring only if priority present"
+    ],
+    "artifacts": [
+      "crates/mx20022-translate/Cargo.toml — added regex.workspace = true",
+      "crates/mx20022-translate/src/lib.rs — added pub mod mt; pub mod mappings;",
+      "crates/mx20022-translate/src/mt/mod.rs",
+      "crates/mx20022-translate/src/mt/types.rs",
+      "crates/mx20022-translate/src/mt/error.rs",
+      "crates/mx20022-translate/src/mt/parser.rs",
+      "crates/mx20022-translate/src/mt/fields/mod.rs",
+      "crates/mx20022-translate/src/mt/fields/common.rs",
+      "crates/mx20022-translate/src/mt/fields/mt103.rs",
+      "crates/mx20022-translate/src/mt/fields/mt202.rs",
+      "crates/mx20022-translate/src/mt/fields/mt940.rs",
+      "crates/mx20022-translate/src/mappings/mod.rs",
+      "testdata/mt/mt103.txt",
+      "testdata/mt/mt202.txt",
+      "testdata/mt/mt940.txt",
+      "testdata/mt/mt103_output.txt",
+      "crates/mx20022-translate/tests/mt_parser.rs"
+    ],
+    "dependencies": [
+      "regex = '1' workspace dep (pre-existing)",
+      "thiserror = '2' workspace dep (pre-existing)",
+      "pretty_assertions dev-dep (pre-existing)"
+    ],
+    "risks_issues": [
+      "MT940 :61: field is complex positional format — entry date detection is heuristic: resolved",
+      "SWIFT 2-digit year ambiguity (cutoff 80) — documented in code: resolved"
+    ]
+  },
+  "iteration": {
+    "summary": "Implemented the complete SWIFT MT block-level parser using brace-depth scanning and field parsers for MT103, MT202, and MT940. Created 17 files (modified 2, created 15), removed 4 .gitkeep files. The parser correctly handles multi-line fields, nested block structures (blocks 3 and 5), and the complex :61: statement line format in MT940. All 83 tests pass (40 unit, 39 integration, 4 doctests) and all four quality gates are green.",
+    "inputs_consulted": [
+      "crates/mx20022-translate/Cargo.toml",
+      "Cargo.toml (workspace root)",
+      "crates/mx20022-translate/src/lib.rs"
+    ],
+    "outputs_produced": [
+      "83 tests passing",
+      "cargo check --workspace --all-features: PASS",
+      "cargo test --workspace --all-features: PASS",
+      "cargo clippy --workspace --all-features -- -D warnings: PASS",
+      "cargo fmt --all -- --check: PASS"
+    ],
+    "next_actions": [
+      "MT<->MX translation framework (task #13): implement mappings/ module with MT103->pacs.008, MT202->pacs.009, MT940->camt.053 field mappings",
+      "Scheme-specific validation (task #14)",
+      "Release polish (task #15)"
+    ]
+  },
+  "cross_agent_notes": {
+    "mentions": []
+  }
+}
