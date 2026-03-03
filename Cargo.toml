@@ -39,7 +39,7 @@ prettyplease = "0.2"
 # Testing
 pretty_assertions = "1"
 insta = { version = "1", features = ["yaml"] }
-criterion = { version = "0.5", features = ["html_reports"] }
+criterion = { version = "0.8", features = ["html_reports"] }
 # Internal crates
 mx20022 = { path = "crates/mx20022" }
 mx20022-model = { path = "crates/mx20022-model" }
