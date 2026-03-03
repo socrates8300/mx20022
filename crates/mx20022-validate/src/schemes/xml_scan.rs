@@ -5,6 +5,14 @@
 //! structures found in ISO 20022 messages but do not handle CDATA, comments,
 //! or namespace-qualified attributes.
 //!
+//! # Migration to typed validation
+//!
+//! **New code should prefer the typed validation path**
+//! ([`SchemeValidator::validate_typed`](super::SchemeValidator::validate_typed))
+//! which accesses fields directly on deserialized message structs. The
+//! `xml_scan` utilities remain available for cases where raw XML is the only
+//! input (e.g. CLI validation without deserialization).
+//!
 //! # Limitations
 //!
 //! - Element extraction is first-match only (use [`extract_all_elements`] for

@@ -13,12 +13,14 @@
 //!   25,000,000.00 USD for high-value participants).
 //! - Message size limits: 64 KB for pacs.008 / pacs.004, 32 KB for pacs.028.
 
-use super::xml_scan::{extract_attribute, extract_element, has_element, xml_byte_size};
-use super::SchemeValidator;
-use crate::error::{Severity, ValidationError, ValidationResult};
+use std::any::Any;
 use std::sync::OnceLock;
 
 use regex::Regex;
+
+use super::xml_scan::{extract_attribute, extract_element, has_element, xml_byte_size};
+use super::SchemeValidator;
+use crate::error::{Severity, ValidationError, ValidationResult};
 
 /// `FedNow` scheme validator.
 ///
@@ -84,12 +86,7 @@ impl SchemeValidator for FedNowValidator {
     }
 
     fn validate(&self, xml: &str, message_type: &str) -> ValidationResult {
-        // Determine the short message type (e.g. "pacs.008" from "pacs.008.001.13").
-        let short_type = message_type
-            .splitn(3, '.')
-            .take(2)
-            .collect::<Vec<_>>()
-            .join(".");
+        let short_type = super::short_message_type(message_type);
 
         if !self.supported_messages().contains(&short_type.as_str()) {
             return ValidationResult::default();
@@ -297,16 +294,251 @@ impl SchemeValidator for FedNowValidator {
 
         ValidationResult::new(errors)
     }
+
+    fn validate_typed(&self, msg: &dyn Any, message_type: &str) -> Option<ValidationResult> {
+        use mx20022_model::generated::pacs::pacs_008_001_13;
+
+        let short_type = super::short_message_type(message_type);
+        if !self.supported_messages().contains(&short_type.as_str()) {
+            return None;
+        }
+
+        // Only pacs.008 has typed field-level checks.
+        if short_type != "pacs.008" {
+            return None;
+        }
+
+        let doc = msg.downcast_ref::<pacs_008_001_13::Document>()?;
+
+        Some(self.validate_pacs008_typed(doc))
+    }
+}
+
+impl FedNowValidator {
+    /// Typed validation for pacs.008 messages.
+    fn validate_pacs008_typed(
+        &self,
+        doc: &mx20022_model::generated::pacs::pacs_008_001_13::Document,
+    ) -> ValidationResult {
+        use mx20022_model::generated::pacs::pacs_008_001_13::{
+            ChargeBearerType1Code, SettlementMethod1Code,
+        };
+
+        let mut errors: Vec<ValidationError> = Vec::new();
+        let msg = &doc.fi_to_fi_cstmr_cdt_trf;
+
+        // --- NbOfTxs must be "1" -------------------------------------------
+        if msg.grp_hdr.nb_of_txs.0 != "1" {
+            errors.push(ValidationError::new(
+                "/Document/FIToFICstmrCdtTrf/GrpHdr/NbOfTxs",
+                Severity::Error,
+                "FEDNOW_SINGLE_TX",
+                format!(
+                    "FedNow requires exactly one transaction per group (NbOfTxs = \"1\"), got \"{}\"",
+                    msg.grp_hdr.nb_of_txs.0
+                ),
+            ));
+        }
+
+        // --- Settlement method must be CLRG ---------------------------------
+        if msg.grp_hdr.sttlm_inf.sttlm_mtd != SettlementMethod1Code::Clrg {
+            errors.push(ValidationError::new(
+                "/Document/FIToFICstmrCdtTrf/GrpHdr/SttlmInf/SttlmMtd",
+                Severity::Error,
+                "FEDNOW_STTLM_MTD",
+                format!(
+                    "FedNow requires SttlmMtd = \"CLRG\", got {:?}",
+                    msg.grp_hdr.sttlm_inf.sttlm_mtd
+                ),
+            ));
+        }
+
+        // Validate each credit transfer transaction.
+        for tx in &msg.cdt_trf_tx_inf {
+            // --- ChrgBr must be SLEV ----------------------------------------
+            if tx.chrg_br != ChargeBearerType1Code::Slev {
+                errors.push(ValidationError::new(
+                    "/Document/FIToFICstmrCdtTrf/CdtTrfTxInf/ChrgBr",
+                    Severity::Error,
+                    "FEDNOW_CHRGBR",
+                    format!("FedNow requires ChrgBr = \"SLEV\", got {:?}", tx.chrg_br),
+                ));
+            }
+
+            // --- Currency must be USD ---------------------------------------
+            let ccy = &tx.intr_bk_sttlm_amt.ccy.0;
+            if ccy != "USD" {
+                errors.push(ValidationError::new(
+                    "/Document/FIToFICstmrCdtTrf/CdtTrfTxInf/IntrBkSttlmAmt/@Ccy",
+                    Severity::Error,
+                    "FEDNOW_CURRENCY",
+                    format!("FedNow only accepts USD transactions; found currency \"{ccy}\""),
+                ));
+            }
+
+            // --- Amount range -----------------------------------------------
+            let amt_str = &tx.intr_bk_sttlm_amt.value.0;
+
+            // Must have exactly 2 decimal places.
+            let decimal_ok = amt_str
+                .find('.')
+                .is_some_and(|dot| amt_str.len() - dot - 1 == 2);
+            if !decimal_ok {
+                errors.push(ValidationError::new(
+                    "/Document/FIToFICstmrCdtTrf/CdtTrfTxInf/IntrBkSttlmAmt",
+                    Severity::Error,
+                    "FEDNOW_AMOUNT_DECIMALS",
+                    format!("FedNow amounts must have exactly 2 decimal places; got \"{amt_str}\""),
+                ));
+            }
+
+            match parse_amount_cents(amt_str) {
+                Some(cents) => {
+                    if cents < 1 {
+                        errors.push(ValidationError::new(
+                            "/Document/FIToFICstmrCdtTrf/CdtTrfTxInf/IntrBkSttlmAmt",
+                            Severity::Error,
+                            "FEDNOW_AMOUNT_MIN",
+                            format!("FedNow minimum amount is 0.01 USD; got \"{amt_str}\""),
+                        ));
+                    }
+                    #[allow(clippy::cast_possible_truncation, clippy::cast_sign_loss)]
+                    let max_cents = (self.max_amount * 100.0) as u64;
+                    if cents > max_cents {
+                        errors.push(ValidationError::new(
+                            "/Document/FIToFICstmrCdtTrf/CdtTrfTxInf/IntrBkSttlmAmt",
+                            Severity::Error,
+                            "FEDNOW_AMOUNT_LIMIT",
+                            format!(
+                                "FedNow maximum amount is {:.2} USD; got \"{amt_str}\"",
+                                self.max_amount
+                            ),
+                        ));
+                    }
+                }
+                None => {
+                    errors.push(ValidationError::new(
+                        "/Document/FIToFICstmrCdtTrf/CdtTrfTxInf/IntrBkSttlmAmt",
+                        Severity::Error,
+                        "FEDNOW_AMOUNT_FORMAT",
+                        format!("Cannot parse amount as a number: \"{amt_str}\""),
+                    ));
+                }
+            }
+
+            // --- UETR is required and must be UUID v4 -----------------------
+            match &tx.pmt_id.uetr {
+                Some(uetr) if !is_valid_uetr(&uetr.0) => {
+                    errors.push(ValidationError::new(
+                        "/Document/FIToFICstmrCdtTrf/CdtTrfTxInf/PmtId/UETR",
+                        Severity::Error,
+                        "FEDNOW_UETR_FORMAT",
+                        format!("UETR must be a valid UUID v4; got \"{}\"", uetr.0),
+                    ));
+                }
+                None => {
+                    errors.push(ValidationError::new(
+                        "/Document/FIToFICstmrCdtTrf/CdtTrfTxInf/PmtId/UETR",
+                        Severity::Error,
+                        "FEDNOW_UETR_REQUIRED",
+                        "FedNow requires a UETR (UUID v4) in PmtId",
+                    ));
+                }
+                Some(_) => {} // Valid UETR
+            }
+
+            // --- End-to-end ID is required (length covered by XSD) ----------
+            // Max35Text is the type — XSD validation handles the 35-char limit.
+            // We only need to check it's not empty/whitespace for FedNow.
+            if tx.pmt_id.end_to_end_id.0.trim().is_empty() {
+                errors.push(ValidationError::new(
+                    "/Document/FIToFICstmrCdtTrf/CdtTrfTxInf/PmtId/EndToEndId",
+                    Severity::Error,
+                    "FEDNOW_E2E_REQUIRED",
+                    "FedNow requires a non-empty EndToEndId in PmtId",
+                ));
+            }
+
+            // --- Debtor name max 140 chars ----------------------------------
+            if let Some(nm) = &tx.dbtr.nm {
+                if nm.0.len() > 140 {
+                    errors.push(ValidationError::new(
+                        "/Document/FIToFICstmrCdtTrf/CdtTrfTxInf/Dbtr/Nm",
+                        Severity::Error,
+                        "FEDNOW_DBTR_NM_LENGTH",
+                        format!(
+                            "Dbtr/Nm must be at most 140 characters; got {} characters",
+                            nm.0.len()
+                        ),
+                    ));
+                }
+            }
+
+            // --- Creditor name max 140 chars --------------------------------
+            if let Some(nm) = &tx.cdtr.nm {
+                if nm.0.len() > 140 {
+                    errors.push(ValidationError::new(
+                        "/Document/FIToFICstmrCdtTrf/CdtTrfTxInf/Cdtr/Nm",
+                        Severity::Error,
+                        "FEDNOW_CDTR_NM_LENGTH",
+                        format!(
+                            "Cdtr/Nm must be at most 140 characters; got {} characters",
+                            nm.0.len()
+                        ),
+                    ));
+                }
+            }
+
+            // --- RmtInf/Ustrd max 140 chars per element ---------------------
+            if let Some(rmt_inf) = &tx.rmt_inf {
+                for ustrd in &rmt_inf.ustrd {
+                    if ustrd.0.len() > 140 {
+                        errors.push(ValidationError::new(
+                            "/Document/FIToFICstmrCdtTrf/CdtTrfTxInf/RmtInf/Ustrd",
+                            Severity::Error,
+                            "FEDNOW_USTRD_LENGTH",
+                            format!(
+                                "Ustrd element must be at most 140 characters; got {} characters",
+                                ustrd.0.len()
+                            ),
+                        ));
+                    }
+                }
+            }
+        }
+
+        // Note: AppHdr check and message size check require raw XML and are
+        // not covered by the typed path. Those remain in the XML-based
+        // `validate` method.
+
+        ValidationResult::new(errors)
+    }
 }
 
 /// Parse a decimal amount string like `"1000.50"` into integer cents (`100050`).
 ///
-/// Returns `None` if the string does not contain a decimal point or if either
-/// part fails to parse as a `u64`.
+/// # Contract
+///
+/// The input **must** contain exactly one `.` followed by exactly **2** decimal
+/// digits (e.g. `"100.50"`, `"0.01"`). This matches the format enforced by the
+/// XSD `ActiveCurrencyAndAmount` type that all callers validate against before
+/// reaching this function.
+///
+/// Returns `None` for non-conforming input:
+/// - No decimal point (e.g. `"100"`)
+/// - Integer or fractional part fails `u64` parsing (e.g. `"abc.50"`, `"100.ab"`)
+///
+/// A `debug_assert!` fires in test/dev builds if the fractional part is not
+/// exactly 2 digits, catching misuse early without penalising release builds.
 fn parse_amount_cents(s: &str) -> Option<u64> {
     let dot = s.find('.')?;
     let integer: u64 = s[..dot].parse().ok()?;
-    let frac: u64 = s[dot + 1..].parse().ok()?;
+    let frac_str = &s[dot + 1..];
+    debug_assert!(
+        frac_str.len() == 2,
+        "parse_amount_cents expects exactly 2 decimal digits, got {frac_str:?}"
+    );
+    let frac: u64 = frac_str.parse().ok()?;
     Some(integer * 100 + frac)
 }
 
@@ -384,5 +616,35 @@ mod tests {
     fn custom_max_amount() {
         let v = FedNowValidator::with_max_amount(25_000_000.0);
         assert!((v.max_amount - 25_000_000.0).abs() < f64::EPSILON);
+    }
+
+    #[test]
+    fn parse_amount_cents_normal() {
+        assert_eq!(parse_amount_cents("100.50"), Some(10050));
+    }
+
+    #[test]
+    fn parse_amount_cents_minimum() {
+        assert_eq!(parse_amount_cents("0.01"), Some(1));
+    }
+
+    #[test]
+    fn parse_amount_cents_large() {
+        assert_eq!(parse_amount_cents("999999.99"), Some(99999999));
+    }
+
+    #[test]
+    fn parse_amount_cents_no_dot() {
+        assert_eq!(parse_amount_cents("100"), None);
+    }
+
+    #[test]
+    fn parse_amount_cents_bad_integer() {
+        assert_eq!(parse_amount_cents("abc.50"), None);
+    }
+
+    #[test]
+    fn parse_amount_cents_bad_fraction() {
+        assert_eq!(parse_amount_cents("100.ab"), None);
     }
 }

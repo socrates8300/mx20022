@@ -14,6 +14,8 @@
 //! - All BICs should be 11 characters (8-char BICs generate a warning).
 //! - UTF-8 only; no control characters other than LF, CR, TAB.
 
+use std::any::Any;
+
 use super::xml_scan::{extract_all_elements, extract_element, has_element};
 use super::SchemeValidator;
 use crate::error::{Severity, ValidationError, ValidationResult};
@@ -60,11 +62,7 @@ impl SchemeValidator for CbprPlusValidator {
     }
 
     fn validate(&self, xml: &str, message_type: &str) -> ValidationResult {
-        let short_type = message_type
-            .splitn(3, '.')
-            .take(2)
-            .collect::<Vec<_>>()
-            .join(".");
+        let short_type = super::short_message_type(message_type);
 
         if !self.supported_messages().contains(&short_type.as_str()) {
             return ValidationResult::default();
@@ -187,6 +185,202 @@ impl SchemeValidator for CbprPlusValidator {
         }
 
         ValidationResult::new(errors)
+    }
+
+    fn validate_typed(&self, msg: &dyn Any, message_type: &str) -> Option<ValidationResult> {
+        use mx20022_model::generated::pacs::pacs_008_001_13;
+
+        let short_type = super::short_message_type(message_type);
+        if !self.supported_messages().contains(&short_type.as_str()) {
+            return None;
+        }
+
+        if short_type != "pacs.008" {
+            return None;
+        }
+
+        let doc = msg.downcast_ref::<pacs_008_001_13::Document>()?;
+
+        Some(self.validate_pacs008_typed(doc))
+    }
+}
+
+impl CbprPlusValidator {
+    /// Typed validation for pacs.008 messages under CBPR+ rules.
+    #[allow(clippy::unused_self)]
+    fn validate_pacs008_typed(
+        &self,
+        doc: &mx20022_model::generated::pacs::pacs_008_001_13::Document,
+    ) -> ValidationResult {
+        let mut errors: Vec<ValidationError> = Vec::new();
+        let msg = &doc.fi_to_fi_cstmr_cdt_trf;
+
+        // --- Instructing agent BIC required (GrpHdr level) ------------------
+        check_bic_typed(
+            msg.grp_hdr.instg_agt.as_ref(),
+            "InstgAgt",
+            "/Document/FIToFICstmrCdtTrf/GrpHdr/InstgAgt/FinInstnId/BICFI",
+            "CBPR_INSTG_AGT_BIC",
+            &mut errors,
+        );
+
+        // --- Instructed agent BIC required (GrpHdr level) -------------------
+        check_bic_typed(
+            msg.grp_hdr.instd_agt.as_ref(),
+            "InstdAgt",
+            "/Document/FIToFICstmrCdtTrf/GrpHdr/InstdAgt/FinInstnId/BICFI",
+            "CBPR_INSTD_AGT_BIC",
+            &mut errors,
+        );
+
+        // --- BIC padding check for GrpHdr-level agents ---
+        for agent in [
+            msg.grp_hdr.instg_agt.as_ref(),
+            msg.grp_hdr.instd_agt.as_ref(),
+        ]
+        .into_iter()
+        .flatten()
+        {
+            if let Some(bic) = &agent.fin_instn_id.bicfi {
+                if bic.0.len() == 8 {
+                    errors.push(ValidationError::new(
+                        "//BICFI",
+                        Severity::Warning,
+                        "CBPR_BIC_PADDING",
+                        format!(
+                            "CBPR+ recommends 11-character BICs; \"{}\" is 8 characters (pad with XXX)",
+                            bic.0
+                        ),
+                    ));
+                }
+            }
+        }
+
+        for tx in &msg.cdt_trf_tx_inf {
+            // --- Debtor agent BIC required ----------------------------------
+            if tx.dbtr_agt.fin_instn_id.bicfi.is_none() {
+                errors.push(ValidationError::new(
+                    "/Document/FIToFICstmrCdtTrf/CdtTrfTxInf/DbtrAgt/FinInstnId/BICFI",
+                    Severity::Error,
+                    "CBPR_DBTR_AGT_BIC",
+                    "DbtrAgt/FinInstnId/BICFI is required for CBPR+",
+                ));
+            }
+
+            // --- Creditor agent BIC required --------------------------------
+            if tx.cdtr_agt.fin_instn_id.bicfi.is_none() {
+                errors.push(ValidationError::new(
+                    "/Document/FIToFICstmrCdtTrf/CdtTrfTxInf/CdtrAgt/FinInstnId/BICFI",
+                    Severity::Error,
+                    "CBPR_CDTR_AGT_BIC",
+                    "CdtrAgt/FinInstnId/BICFI is required for CBPR+",
+                ));
+            }
+
+            // --- BIC padding check (8-char BICs should be 11) ---------------
+            for bic in [
+                tx.dbtr_agt.fin_instn_id.bicfi.as_ref(),
+                tx.cdtr_agt.fin_instn_id.bicfi.as_ref(),
+            ]
+            .into_iter()
+            .flatten()
+            {
+                if bic.0.len() == 8 {
+                    errors.push(ValidationError::new(
+                        "//BICFI",
+                        Severity::Warning,
+                        "CBPR_BIC_PADDING",
+                        format!(
+                            "CBPR+ recommends 11-character BICs; \"{}\" is 8 characters (pad with XXX)",
+                            bic.0
+                        ),
+                    ));
+                }
+            }
+
+            // --- Debtor name required ---------------------------------------
+            if tx.dbtr.nm.is_none() {
+                errors.push(ValidationError::new(
+                    "/Document/FIToFICstmrCdtTrf/CdtTrfTxInf/Dbtr/Nm",
+                    Severity::Error,
+                    "CBPR_DBTR_NM_REQUIRED",
+                    "Dbtr/Nm is required for CBPR+",
+                ));
+            }
+
+            // --- Creditor name required -------------------------------------
+            if tx.cdtr.nm.is_none() {
+                errors.push(ValidationError::new(
+                    "/Document/FIToFICstmrCdtTrf/CdtTrfTxInf/Cdtr/Nm",
+                    Severity::Error,
+                    "CBPR_CDTR_NM_REQUIRED",
+                    "Cdtr/Nm is required for CBPR+",
+                ));
+            }
+
+            // --- UETR required ----------------------------------------------
+            if tx.pmt_id.uetr.is_none() {
+                errors.push(ValidationError::new(
+                    "/Document/FIToFICstmrCdtTrf/CdtTrfTxInf/PmtId/UETR",
+                    Severity::Error,
+                    "CBPR_UETR_REQUIRED",
+                    "CBPR+ requires a UETR in PmtId",
+                ));
+            }
+
+            // --- End-to-end ID is a required field (always present) ----------
+            // (Max35Text is required on PaymentIdentification13, nothing to
+            // check beyond XSD.)
+
+            // ChrgBr validity is enforced by the ChargeBearerType1Code enum — all
+            // variants (Cred, Debt, Shar, Slev) are valid for CBPR+.
+
+            // --- Interbank settlement date required -------------------------
+            if tx.intr_bk_sttlm_dt.is_none() {
+                errors.push(ValidationError::new(
+                    "/Document/FIToFICstmrCdtTrf/CdtTrfTxInf/IntrBkSttlmDt",
+                    Severity::Error,
+                    "CBPR_STTLM_DT_REQUIRED",
+                    "CBPR+ requires IntrBkSttlmDt",
+                ));
+            }
+        }
+
+        // Note: AppHdr check and UTF-8 control character check require raw
+        // XML context and are not covered by the typed path.
+
+        ValidationResult::new(errors)
+    }
+}
+
+/// Check that a BIC is present in an optional agent struct (typed).
+fn check_bic_typed(
+    agent: Option<
+        &mx20022_model::generated::pacs::pacs_008_001_13::BranchAndFinancialInstitutionIdentification8,
+    >,
+    parent_name: &str,
+    path: &str,
+    rule_id: &str,
+    errors: &mut Vec<ValidationError>,
+) {
+    match agent {
+        None => {
+            errors.push(ValidationError::new(
+                path,
+                Severity::Error,
+                rule_id,
+                format!("{parent_name}/FinInstnId/BICFI is required for CBPR+ but the parent element is missing"),
+            ));
+        }
+        Some(agt) if agt.fin_instn_id.bicfi.is_none() => {
+            errors.push(ValidationError::new(
+                path,
+                Severity::Error,
+                rule_id,
+                format!("{parent_name}/FinInstnId/BICFI is required for CBPR+"),
+            ));
+        }
+        Some(_) => {}
     }
 }
 
