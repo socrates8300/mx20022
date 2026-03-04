@@ -979,10 +979,10 @@ mod tests {
             &[
                 ("GB82WEST12345698765432", true),
                 ("DE89X", true),
-                ("AB12x", true), // minimal: 2 alpha + 2 digit + 1 alnum
-                ("gb82x", false),  // lowercase country
-                ("AB", false),     // too short, no digits
-                ("AB12", false),   // no trailing alnum
+                ("AB12x", true),  // minimal: 2 alpha + 2 digit + 1 alnum
+                ("gb82x", false), // lowercase country
+                ("AB", false),    // too short, no digits
+                ("AB12", false),  // no trailing alnum
                 ("", false),
                 ("12XX1234", false), // digits in country position
             ],
@@ -1010,11 +1010,11 @@ mod tests {
         assert_pattern_semantics(
             "[A-Z0-9]{4,4}[A-Z]{2,2}[A-Z0-9]{2,2}([A-Z0-9]{3,3}){0,1}",
             &[
-                ("AAAAGB2L", true),     // 8-char form
-                ("AAAAGB2LXXX", true),  // 11-char form
+                ("AAAAGB2L", true),    // 8-char form
+                ("AAAAGB2LXXX", true), // 11-char form
                 ("DEUTDEFF500", true),
-                ("AAAAGB2LX", false),   // 9 chars — invalid
-                ("aaaagb2l", false),     // lowercase
+                ("AAAAGB2LX", false), // 9 chars — invalid
+                ("aaaagb2l", false),  // lowercase
                 ("", false),
                 ("AAAAGB2LXXXX", false), // 12 chars — too long
             ],

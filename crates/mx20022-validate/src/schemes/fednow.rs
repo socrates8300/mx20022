@@ -169,7 +169,11 @@ impl SchemeValidator for FedNowValidator {
 
         // --- Amount range ---------------------------------------------------
         if let Some(amt_str) = extract_element(xml, "IntrBkSttlmAmt") {
-            self.validate_amount(&amt_str, "/Document/FIToFICstmrCdtTrf/CdtTrfTxInf/IntrBkSttlmAmt", &mut errors);
+            self.validate_amount(
+                &amt_str,
+                "/Document/FIToFICstmrCdtTrf/CdtTrfTxInf/IntrBkSttlmAmt",
+                &mut errors,
+            );
         }
 
         // --- UETR is required and must be UUID v4 ---------------------------
@@ -377,7 +381,11 @@ impl FedNowValidator {
 
             // --- Amount range -----------------------------------------------
             let amt_str = &tx.intr_bk_sttlm_amt.value.0;
-            self.validate_amount(amt_str, "/Document/FIToFICstmrCdtTrf/CdtTrfTxInf/IntrBkSttlmAmt", &mut errors);
+            self.validate_amount(
+                amt_str,
+                "/Document/FIToFICstmrCdtTrf/CdtTrfTxInf/IntrBkSttlmAmt",
+                &mut errors,
+            );
 
             // --- UETR is required and must be UUID v4 -----------------------
             match &tx.pmt_id.uetr {

@@ -214,16 +214,14 @@ fn uuid_v4_all_variant_bits() {
 #[test]
 fn uuid_v4_wrong_variant_bit() {
     // 'c' is not in [89ab]
-    let err =
-        UUIDv4Identifier::new("00000000-0000-4000-c000-000000000000").unwrap_err();
+    let err = UUIDv4Identifier::new("00000000-0000-4000-c000-000000000000").unwrap_err();
     assert_eq!(err.kind, ConstraintKind::Pattern);
 }
 
 #[test]
 fn uuid_v4_wrong_version() {
     // Version digit must be '4', not '5'
-    let err =
-        UUIDv4Identifier::new("550e8400-e29b-51d3-a456-426614174000").unwrap_err();
+    let err = UUIDv4Identifier::new("550e8400-e29b-51d3-a456-426614174000").unwrap_err();
     assert_eq!(err.kind, ConstraintKind::Pattern);
 }
 
