@@ -212,46 +212,57 @@ fn emit_newtype_validatable(def: &NewtypeDef) -> TokenStream {
     }
 }
 
-fn emit_constraint_check(constraint: &Constraint, inner: RustType) -> Option<TokenStream> {
-    // Skip constraints that need regex or numeric parsing for now.
+/// Parts of a constraint check that can be reused in both `Validatable` impls
+/// and `TryFrom`/`new()` constructors.
+pub(crate) struct ConstraintCheckParts {
+    /// Boolean expression: `true` = violation. Operates on `value: &str`.
+    pub condition: TokenStream,
+    /// Format-string expression for the error message.
+    pub message: TokenStream,
+    /// Token path to the `ConstraintKind` variant.
+    pub kind: TokenStream,
+}
+
+/// Extract a reusable constraint check expression from a constraint.
+///
+/// The `condition` field is a boolean expression over `value: &str` that
+/// evaluates to `true` when the constraint is violated.
+///
+/// Returns `None` for constraints that cannot be checked (e.g. `MinInclusive`
+/// on non-decimal types).
+pub(crate) fn emit_constraint_expr(
+    constraint: &Constraint,
+    inner: RustType,
+) -> Option<ConstraintCheckParts> {
     match constraint {
         Constraint::MinLength(n) => {
-            // XSD constraint values are always small; truncation is not a concern.
             #[allow(clippy::cast_possible_truncation)]
             let n_lit = *n as usize;
             let msg = format!("value is shorter than minimum length {n}");
-            Some(quote! {
-                {
-                    let len = self.0.chars().count();
-                    if len < #n_lit {
-                        violations.push(crate::common::validate::ConstraintViolation {
-                            path: path.to_string(),
-                            message: format!(
-                                "{} (got {})", #msg, len
-                            ),
-                            kind: crate::common::validate::ConstraintKind::MinLength,
-                        });
+            Some(ConstraintCheckParts {
+                condition: quote! {
+                    {
+                        let len = value.chars().count();
+                        len < #n_lit
                     }
-                }
+                },
+                message: quote! { format!("{} (got {})", #msg, value.chars().count()) },
+                kind: quote! { crate::common::validate::ConstraintKind::MinLength },
             })
         }
         Constraint::MaxLength(n) => {
             #[allow(clippy::cast_possible_truncation)]
             let n_lit = *n as usize;
             let msg = format!("value exceeds maximum length {n}");
-            Some(quote! {
-                {
-                    let len = self.0.chars().count();
-                    if len > #n_lit {
-                        violations.push(crate::common::validate::ConstraintViolation {
-                            path: path.to_string(),
-                            message: format!(
-                                "{} (got {})", #msg, len
-                            ),
-                            kind: crate::common::validate::ConstraintKind::MaxLength,
-                        });
+            Some(ConstraintCheckParts {
+                condition: quote! {
+                    {
+                        let len = value.chars().count();
+                        len > #n_lit
                     }
-                }
+                },
+                message: quote! { format!("{} (got {})", #msg, value.chars().count()) },
+                kind: quote! { crate::common::validate::ConstraintKind::MaxLength },
             })
         }
         Constraint::TotalDigits(n) => {
@@ -260,21 +271,19 @@ fn emit_constraint_check(constraint: &Constraint, inner: RustType) -> Option<Tok
             }
             let n_lit = *n as usize;
             let msg = format!("value exceeds maximum total digits {n}");
-            Some(quote! {
-                {
-                    let digit_count = self.0.chars()
-                        .filter(char::is_ascii_digit)
-                        .count();
-                    if digit_count > #n_lit {
-                        violations.push(crate::common::validate::ConstraintViolation {
-                            path: path.to_string(),
-                            message: format!(
-                                "{} (got {})", #msg, digit_count
-                            ),
-                            kind: crate::common::validate::ConstraintKind::TotalDigits,
-                        });
+            Some(ConstraintCheckParts {
+                condition: quote! {
+                    {
+                        let digit_count = value.chars()
+                            .filter(char::is_ascii_digit)
+                            .count();
+                        digit_count > #n_lit
                     }
-                }
+                },
+                message: quote! {
+                    format!("{} (got {})", #msg, value.chars().filter(char::is_ascii_digit).count())
+                },
+                kind: quote! { crate::common::validate::ConstraintKind::TotalDigits },
             })
         }
         Constraint::FractionDigits(n) => {
@@ -283,30 +292,58 @@ fn emit_constraint_check(constraint: &Constraint, inner: RustType) -> Option<Tok
             }
             let n_lit = *n as usize;
             let msg = format!("value exceeds maximum fraction digits {n}");
-            Some(quote! {
-                {
-                    let frac_count = self.0.find('.')
-                        .map_or(0, |dot| {
-                            self.0[dot + 1..].chars()
-                                .filter(char::is_ascii_digit)
-                                .count()
-                        });
-                    if frac_count > #n_lit {
-                        violations.push(crate::common::validate::ConstraintViolation {
-                            path: path.to_string(),
-                            message: format!(
-                                "{} (got {})", #msg, frac_count
-                            ),
-                            kind: crate::common::validate::ConstraintKind::FractionDigits,
-                        });
+            Some(ConstraintCheckParts {
+                condition: quote! {
+                    {
+                        let frac_count = value.find('.')
+                            .map_or(0, |dot| {
+                                value[dot + 1..].chars()
+                                    .filter(char::is_ascii_digit)
+                                    .count()
+                            });
+                        frac_count > #n_lit
                     }
-                }
+                },
+                message: quote! {
+                    format!("{} (got {})", #msg, value.find('.')
+                        .map_or(0, |dot| value[dot + 1..].chars().filter(char::is_ascii_digit).count()))
+                },
+                kind: quote! { crate::common::validate::ConstraintKind::FractionDigits },
             })
         }
-        // Pattern and MinInclusive/MaxInclusive require regex or numeric
-        // parsing — deferred to the RuleRegistry in the validate crate.
-        Constraint::Pattern(_) | Constraint::MinInclusive(_) | Constraint::MaxInclusive(_) => None,
+        Constraint::Pattern(pat) => {
+            let condition = super::pattern_codegen::emit_pattern_check(pat)?;
+            let msg = format!("value does not match pattern {pat}");
+            Some(ConstraintCheckParts {
+                condition,
+                message: quote! { #msg.to_string() },
+                kind: quote! { crate::common::validate::ConstraintKind::Pattern },
+            })
+        }
+        // MinInclusive/MaxInclusive require numeric parsing — deferred.
+        Constraint::MinInclusive(_) | Constraint::MaxInclusive(_) => None,
     }
+}
+
+fn emit_constraint_check(constraint: &Constraint, inner: RustType) -> Option<TokenStream> {
+    let parts = emit_constraint_expr(constraint, inner)?;
+    let condition = parts.condition;
+    let message = parts.message;
+    let kind = parts.kind;
+
+    Some(quote! {
+        {
+            let value: &str = &self.0;
+            let violated = #condition;
+            if violated {
+                violations.push(crate::common::validate::ConstraintViolation {
+                    path: path.to_string(),
+                    message: #message,
+                    kind: #kind,
+                });
+            }
+        }
+    })
 }
 
 // ── ValueWithAttr ────────────────────────────────────────────────────────────
@@ -436,10 +473,9 @@ fn emit_iso_message(type_name: &str, root_xml_name: &str, namespace: &str) -> To
 mod tests {
     use super::*;
     use crate::ir::types::{
-        AttrDef, CodeEnumDef, CodeValue, Constraint, EnumDef, FieldDef, NewtypeDef, OpaqueDef,
-        RootElement, StructDef, TypeGraph, ValueWithAttrDef, VariantDef,
+        AttrDef, Constraint, EnumDef, FieldDef, NewtypeDef, OpaqueDef, RootElement, StructDef,
+        TypeGraph, ValueWithAttrDef, VariantDef,
     };
-    use indexmap::IndexMap;
 
     fn make_graph(types: Vec<(String, TypeDef)>, root_elements: Vec<RootElement>) -> TypeGraph {
         TypeGraph {
@@ -535,7 +571,7 @@ mod tests {
     }
 
     #[test]
-    fn newtype_pattern_only_emits_noop() {
+    fn newtype_pattern_emits_real_check() {
         let def = NewtypeDef {
             name: "ActiveCurrencyCode".to_owned(),
             inner: RustType::String,
@@ -543,10 +579,14 @@ mod tests {
         };
         let ts = emit_newtype_validatable(&def);
         let src = ts.to_string();
-        // Pattern-only should be a no-op (no constraint checks).
+        // Pattern should now emit a real constraint check (not a no-op).
         assert!(
-            src.contains("_path"),
-            "should have unused path param: {src}"
+            src.contains("Pattern"),
+            "should reference ConstraintKind::Pattern: {src}"
+        );
+        assert!(
+            !src.contains("_path"),
+            "should NOT have unused path param (real check uses path): {src}"
         );
         parse_and_check(&ts);
     }

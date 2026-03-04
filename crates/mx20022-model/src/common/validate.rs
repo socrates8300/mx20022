@@ -47,6 +47,26 @@ pub struct ConstraintViolation {
     pub kind: ConstraintKind,
 }
 
+/// Error returned when constructing a constrained newtype with an invalid value.
+///
+/// Produced by `TryFrom<String>` and `new()` on generated newtypes that have
+/// XSD constraints (pattern, length, digits).
+#[derive(Debug, Clone, PartialEq)]
+pub struct ConstraintError {
+    /// Which constraint kind was violated.
+    pub kind: ConstraintKind,
+    /// Human-readable description of the violation.
+    pub message: String,
+}
+
+impl core::fmt::Display for ConstraintError {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        f.write_str(&self.message)
+    }
+}
+
+impl std::error::Error for ConstraintError {}
+
 /// The kind of XSD constraint that was violated.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum ConstraintKind {
@@ -138,5 +158,57 @@ impl Validatable for bool {
 impl<T: Validatable> Validatable for super::ChoiceWrapper<T> {
     fn validate_constraints(&self, path: &str, violations: &mut Vec<ConstraintViolation>) {
         self.inner.validate_constraints(path, violations);
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn constraint_error_display() {
+        let err = ConstraintError {
+            kind: ConstraintKind::Pattern,
+            message: "value does not match pattern [A-Z]{3,3}".to_string(),
+        };
+        assert_eq!(err.to_string(), "value does not match pattern [A-Z]{3,3}");
+    }
+
+    #[test]
+    fn constraint_error_debug() {
+        let err = ConstraintError {
+            kind: ConstraintKind::MaxLength,
+            message: "too long".to_string(),
+        };
+        let debug = format!("{err:?}");
+        assert!(debug.contains("ConstraintError"));
+        assert!(debug.contains("MaxLength"));
+    }
+
+    #[test]
+    fn constraint_error_eq() {
+        let a = ConstraintError {
+            kind: ConstraintKind::MinLength,
+            message: "too short".to_string(),
+        };
+        let b = ConstraintError {
+            kind: ConstraintKind::MinLength,
+            message: "too short".to_string(),
+        };
+        let c = ConstraintError {
+            kind: ConstraintKind::MaxLength,
+            message: "too short".to_string(),
+        };
+        assert_eq!(a, b);
+        assert_ne!(a, c);
+    }
+
+    #[test]
+    fn constraint_error_is_std_error() {
+        let err = ConstraintError {
+            kind: ConstraintKind::Pattern,
+            message: "bad pattern".to_string(),
+        };
+        let _: &dyn std::error::Error = &err;
     }
 }

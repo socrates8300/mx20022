@@ -35,6 +35,7 @@ mod code_enums;
 mod enums;
 mod newtypes;
 mod opaque;
+pub(crate) mod pattern_codegen;
 mod structs;
 mod validate;
 mod value_with_attr;
