@@ -35,7 +35,9 @@ mod code_enums;
 mod enums;
 mod newtypes;
 mod opaque;
+pub(crate) mod pattern_codegen;
 mod structs;
+mod validate;
 mod value_with_attr;
 
 pub(crate) mod util;
@@ -99,6 +101,10 @@ pub fn emit(graph: &TypeGraph) -> String {
         };
         tokens.extend(type_tokens);
     }
+
+    // Emit `impl Validatable` for all types and `impl IsoMessage` for
+    // document types.
+    tokens.extend(validate::emit_validatable_impls(graph, &choice_types));
 
     let file_str = tokens.to_string();
     let parsed = syn::parse_file(&file_str)

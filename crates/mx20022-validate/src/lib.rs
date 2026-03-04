@@ -37,6 +37,7 @@ pub mod error;
 pub mod rules;
 pub mod schema;
 pub mod schemes;
+pub mod typed;
 
 // Convenience re-exports
 pub use error::{Severity, ValidationError, ValidationResult};

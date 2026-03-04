@@ -13,6 +13,8 @@
 //! - IBAN is required for both debtor and creditor accounts.
 //! - SEPA restricted Latin character set on name and address fields.
 
+use std::any::Any;
+
 use super::xml_scan::{extract_all_elements, extract_attribute, extract_element};
 use super::SchemeValidator;
 use crate::error::{Severity, ValidationError, ValidationResult};
@@ -73,11 +75,7 @@ impl SchemeValidator for SepaValidator {
     }
 
     fn validate(&self, xml: &str, message_type: &str) -> ValidationResult {
-        let short_type = message_type
-            .splitn(3, '.')
-            .take(2)
-            .collect::<Vec<_>>()
-            .join(".");
+        let short_type = super::short_message_type(message_type);
 
         if !self.supported_messages().contains(&short_type.as_str()) {
             return ValidationResult::default();
@@ -267,6 +265,285 @@ impl SchemeValidator for SepaValidator {
                         ),
                     ));
                 }
+            }
+        }
+
+        ValidationResult::new(errors)
+    }
+
+    fn validate_typed(&self, msg: &dyn Any, message_type: &str) -> Option<ValidationResult> {
+        use mx20022_model::generated::pacs::pacs_008_001_13;
+
+        let short_type = super::short_message_type(message_type);
+        if !self.supported_messages().contains(&short_type.as_str()) {
+            return None;
+        }
+
+        if short_type != "pacs.008" {
+            return None;
+        }
+
+        let doc = msg.downcast_ref::<pacs_008_001_13::Document>()?;
+
+        Some(self.validate_pacs008_typed(doc))
+    }
+}
+
+impl SepaValidator {
+    /// Typed validation for pacs.008 messages under SEPA SCT rules.
+    #[allow(clippy::unused_self)]
+    fn validate_pacs008_typed(
+        &self,
+        doc: &mx20022_model::generated::pacs::pacs_008_001_13::Document,
+    ) -> ValidationResult {
+        use mx20022_model::generated::pacs::pacs_008_001_13::{
+            AccountIdentification4Choice, ChargeBearerType1Code, SettlementMethod1Code,
+        };
+
+        let mut errors: Vec<ValidationError> = Vec::new();
+        let msg = &doc.fi_to_fi_cstmr_cdt_trf;
+
+        // --- Settlement method must be CLRG ---------------------------------
+        if msg.grp_hdr.sttlm_inf.sttlm_mtd != SettlementMethod1Code::Clrg {
+            errors.push(ValidationError::new(
+                "/Document/FIToFICstmrCdtTrf/GrpHdr/SttlmInf/SttlmMtd",
+                Severity::Error,
+                "SEPA_STTLM_MTD",
+                format!(
+                    "SEPA requires SttlmMtd = \"CLRG\", got {:?}",
+                    msg.grp_hdr.sttlm_inf.sttlm_mtd
+                ),
+            ));
+        }
+
+        // --- NbOfTxs must be "1" -------------------------------------------
+        if msg.grp_hdr.nb_of_txs.0 != "1" {
+            errors.push(ValidationError::new(
+                "/Document/FIToFICstmrCdtTrf/GrpHdr/NbOfTxs",
+                Severity::Error,
+                "SEPA_SINGLE_TX",
+                format!(
+                    "SEPA requires one transaction per group (NbOfTxs = \"1\"), got \"{}\"",
+                    msg.grp_hdr.nb_of_txs.0
+                ),
+            ));
+        }
+
+        for tx in &msg.cdt_trf_tx_inf {
+            // --- Currency must be EUR ---------------------------------------
+            let ccy = &tx.intr_bk_sttlm_amt.ccy.0;
+            if ccy != "EUR" {
+                errors.push(ValidationError::new(
+                    "/Document/FIToFICstmrCdtTrf/CdtTrfTxInf/IntrBkSttlmAmt/@Ccy",
+                    Severity::Error,
+                    "SEPA_CURRENCY",
+                    format!("SEPA only accepts EUR transactions; found currency \"{ccy}\""),
+                ));
+            }
+
+            // --- ChrgBr must be SLEV ----------------------------------------
+            if tx.chrg_br != ChargeBearerType1Code::Slev {
+                errors.push(ValidationError::new(
+                    "/Document/FIToFICstmrCdtTrf/CdtTrfTxInf/ChrgBr",
+                    Severity::Error,
+                    "SEPA_CHRGBR",
+                    format!("SEPA SCT requires ChrgBr = \"SLEV\", got {:?}", tx.chrg_br),
+                ));
+            }
+
+            // --- Debtor name required, max 70 chars -------------------------
+            match &tx.dbtr.nm {
+                None => {
+                    errors.push(ValidationError::new(
+                        "/Document/FIToFICstmrCdtTrf/CdtTrfTxInf/Dbtr/Nm",
+                        Severity::Error,
+                        "SEPA_DBTR_NM",
+                        "Dbtr/Nm is required for SEPA",
+                    ));
+                }
+                Some(nm) if nm.0.len() > 70 => {
+                    errors.push(ValidationError::new(
+                        "/Document/FIToFICstmrCdtTrf/CdtTrfTxInf/Dbtr/Nm",
+                        Severity::Error,
+                        "SEPA_DBTR_NM",
+                        format!(
+                            "Dbtr/Nm must be at most 70 characters; got {} characters",
+                            nm.0.len()
+                        ),
+                    ));
+                }
+                Some(_) => {}
+            }
+
+            // --- Creditor name required, max 70 chars -----------------------
+            match &tx.cdtr.nm {
+                None => {
+                    errors.push(ValidationError::new(
+                        "/Document/FIToFICstmrCdtTrf/CdtTrfTxInf/Cdtr/Nm",
+                        Severity::Error,
+                        "SEPA_CDTR_NM",
+                        "Cdtr/Nm is required for SEPA",
+                    ));
+                }
+                Some(nm) if nm.0.len() > 70 => {
+                    errors.push(ValidationError::new(
+                        "/Document/FIToFICstmrCdtTrf/CdtTrfTxInf/Cdtr/Nm",
+                        Severity::Error,
+                        "SEPA_CDTR_NM",
+                        format!(
+                            "Cdtr/Nm must be at most 70 characters; got {} characters",
+                            nm.0.len()
+                        ),
+                    ));
+                }
+                Some(_) => {}
+            }
+
+            // --- End-to-end ID max 35 chars ---------------------------------
+            // Max35Text enforces 35 via XSD. Typed path trusts XSD validation
+            // for length but checks that it's present (it's a required field).
+
+            // --- Ustrd total length max 140 chars ---------------------------
+            if let Some(rmt_inf) = &tx.rmt_inf {
+                let ustrd_total: usize = rmt_inf.ustrd.iter().map(|u| u.0.len()).sum();
+                if ustrd_total > 140 {
+                    errors.push(ValidationError::new(
+                        "/Document/FIToFICstmrCdtTrf/CdtTrfTxInf/RmtInf/Ustrd",
+                        Severity::Error,
+                        "SEPA_USTRD_LENGTH",
+                        format!(
+                            "RmtInf/Ustrd total length must not exceed 140 characters; got {ustrd_total}"
+                        ),
+                    ));
+                }
+
+                // SEPA character set check on Ustrd.
+                for ustrd in &rmt_inf.ustrd {
+                    if !is_sepa_charset(&ustrd.0) {
+                        let bad: String = ustrd
+                            .0
+                            .chars()
+                            .filter(|&c| !is_sepa_charset(&c.to_string()))
+                            .collect();
+                        errors.push(ValidationError::new(
+                            "//Ustrd",
+                            Severity::Error,
+                            "SEPA_CHARSET",
+                            format!(
+                                "Field <Ustrd> contains characters outside the SEPA restricted \
+                                 Latin character set: {bad:?}"
+                            ),
+                        ));
+                    }
+                }
+            }
+
+            // --- Amount range -----------------------------------------------
+            let amt_str = &tx.intr_bk_sttlm_amt.value.0;
+            match amt_str.parse::<f64>() {
+                Ok(amount) => {
+                    if amount < 0.01 {
+                        errors.push(ValidationError::new(
+                            "/Document/FIToFICstmrCdtTrf/CdtTrfTxInf/IntrBkSttlmAmt",
+                            Severity::Error,
+                            "SEPA_AMOUNT_MIN",
+                            format!("SEPA minimum amount is 0.01 EUR; got {amount:.2}"),
+                        ));
+                    }
+                    if amount > 999_999_999.99 {
+                        errors.push(ValidationError::new(
+                            "/Document/FIToFICstmrCdtTrf/CdtTrfTxInf/IntrBkSttlmAmt",
+                            Severity::Error,
+                            "SEPA_AMOUNT_MAX",
+                            format!("SEPA maximum amount is 999,999,999.99 EUR; got {amount:.2}"),
+                        ));
+                    }
+                    // At most 2 decimal places.
+                    if let Some(dot) = amt_str.find('.') {
+                        let decimals = amt_str.len() - dot - 1;
+                        if decimals > 2 {
+                            errors.push(ValidationError::new(
+                                "/Document/FIToFICstmrCdtTrf/CdtTrfTxInf/IntrBkSttlmAmt",
+                                Severity::Error,
+                                "SEPA_AMOUNT_DECIMALS",
+                                format!(
+                                    "SEPA amounts must have at most 2 decimal places; got \"{amt_str}\""
+                                ),
+                            ));
+                        }
+                    }
+                }
+                Err(_) => {
+                    errors.push(ValidationError::new(
+                        "/Document/FIToFICstmrCdtTrf/CdtTrfTxInf/IntrBkSttlmAmt",
+                        Severity::Error,
+                        "SEPA_AMOUNT_FORMAT",
+                        format!("Cannot parse amount as a number: \"{amt_str}\""),
+                    ));
+                }
+            }
+
+            // --- SEPA character set check on names --------------------------
+            if let Some(nm) = &tx.dbtr.nm {
+                if !is_sepa_charset(&nm.0) {
+                    let bad: String =
+                        nm.0.chars()
+                            .filter(|&c| !is_sepa_charset(&c.to_string()))
+                            .collect();
+                    errors.push(ValidationError::new(
+                        "//Nm",
+                        Severity::Error,
+                        "SEPA_CHARSET",
+                        format!(
+                            "Field <Nm> contains characters outside the SEPA restricted \
+                             Latin character set: {bad:?}"
+                        ),
+                    ));
+                }
+            }
+            if let Some(nm) = &tx.cdtr.nm {
+                if !is_sepa_charset(&nm.0) {
+                    let bad: String =
+                        nm.0.chars()
+                            .filter(|&c| !is_sepa_charset(&c.to_string()))
+                            .collect();
+                    errors.push(ValidationError::new(
+                        "//Nm",
+                        Severity::Error,
+                        "SEPA_CHARSET",
+                        format!(
+                            "Field <Nm> contains characters outside the SEPA restricted \
+                             Latin character set: {bad:?}"
+                        ),
+                    ));
+                }
+            }
+
+            // --- IBAN required for debtor and creditor accounts ---
+            let has_dbtr_iban = tx.dbtr_acct.as_ref().is_some_and(|acct| {
+                acct.id.as_ref().is_some_and(|choice| {
+                    matches!(choice.inner, AccountIdentification4Choice::IBAN(_))
+                })
+            });
+            let has_cdtr_iban = tx.cdtr_acct.as_ref().is_some_and(|acct| {
+                acct.id.as_ref().is_some_and(|choice| {
+                    matches!(choice.inner, AccountIdentification4Choice::IBAN(_))
+                })
+            });
+            if !has_dbtr_iban && !has_cdtr_iban {
+                errors.push(ValidationError::new(
+                    "/Document/FIToFICstmrCdtTrf/CdtTrfTxInf",
+                    Severity::Error,
+                    "SEPA_IBAN_REQUIRED",
+                    "SEPA requires IBAN for both debtor and creditor accounts; none found",
+                ));
+            } else if !has_dbtr_iban || !has_cdtr_iban {
+                errors.push(ValidationError::new(
+                    "/Document/FIToFICstmrCdtTrf/CdtTrfTxInf",
+                    Severity::Warning,
+                    "SEPA_IBAN_BOTH",
+                    "SEPA requires IBAN for both debtor and creditor; only one found",
+                ));
             }
         }
 
