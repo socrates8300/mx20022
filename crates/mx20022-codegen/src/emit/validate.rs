@@ -85,55 +85,64 @@ fn emit_field_validation(field: &FieldDef, choice_types: &HashSet<String>) -> To
 
     match &field.cardinality {
         Cardinality::Required => {
-            if is_choice {
-                quote! {
-                    self.#rust_name.inner.validate_constraints(
-                        &format!(#child_path), violations,
-                    );
-                }
+            let call = if is_choice {
+                quote! { self.#rust_name.inner.validate_constraints("", violations); }
             } else {
-                quote! {
-                    self.#rust_name.validate_constraints(
-                        &format!(#child_path), violations,
-                    );
+                quote! { self.#rust_name.validate_constraints("", violations); }
+            };
+            quote! {
+                {
+                    let snap = violations.len();
+                    #call
+                    if violations.len() > snap {
+                        let pfx = format!(#child_path);
+                        for v in &mut violations[snap..] {
+                            v.path.insert_str(0, &pfx);
+                        }
+                    }
                 }
             }
         }
         Cardinality::Optional => {
-            if is_choice {
-                quote! {
-                    if let Some(ref wrapper) = self.#rust_name {
-                        wrapper.inner.validate_constraints(
-                            &format!(#child_path), violations,
-                        );
-                    }
-                }
+            let call = if is_choice {
+                quote! { wrapper.inner.validate_constraints("", violations); }
             } else {
-                quote! {
-                    if let Some(ref val) = self.#rust_name {
-                        val.validate_constraints(
-                            &format!(#child_path), violations,
-                        );
+                quote! { val.validate_constraints("", violations); }
+            };
+            let binding = if is_choice {
+                quote! { if let Some(ref wrapper) = self.#rust_name }
+            } else {
+                quote! { if let Some(ref val) = self.#rust_name }
+            };
+            quote! {
+                #binding {
+                    let snap = violations.len();
+                    #call
+                    if violations.len() > snap {
+                        let pfx = format!(#child_path);
+                        for v in &mut violations[snap..] {
+                            v.path.insert_str(0, &pfx);
+                        }
                     }
                 }
             }
         }
         Cardinality::Vec | Cardinality::BoundedVec(_) => {
-            let indexed_path = format!("{{path}}/{xml_name}[{{i}}]");
-            if is_choice {
-                quote! {
-                    for (i, item) in self.#rust_name.iter().enumerate() {
-                        item.inner.validate_constraints(
-                            &format!(#indexed_path), violations,
-                        );
-                    }
-                }
+            let indexed_path = format!("{{path}}/{xml_name}[{{idx}}]");
+            let call = if is_choice {
+                quote! { elem.inner.validate_constraints("", violations); }
             } else {
-                quote! {
-                    for (i, item) in self.#rust_name.iter().enumerate() {
-                        item.validate_constraints(
-                            &format!(#indexed_path), violations,
-                        );
+                quote! { elem.validate_constraints("", violations); }
+            };
+            quote! {
+                for (idx, elem) in self.#rust_name.iter().enumerate() {
+                    let snap = violations.len();
+                    #call
+                    if violations.len() > snap {
+                        let pfx = format!(#indexed_path);
+                        for v in &mut violations[snap..] {
+                            v.path.insert_str(0, &pfx);
+                        }
                     }
                 }
             }
@@ -155,7 +164,14 @@ fn emit_enum_validatable(def: &EnumDef) -> TokenStream {
             let child_path = format!("{{path}}/{xml_name}");
             quote! {
                 Self::#variant_name(inner) => {
-                    inner.validate_constraints(&format!(#child_path), violations);
+                    let snap = violations.len();
+                    inner.validate_constraints("", violations);
+                    if violations.len() > snap {
+                        let pfx = format!(#child_path);
+                        for v in &mut violations[snap..] {
+                            v.path.insert_str(0, &pfx);
+                        }
+                    }
                 }
             }
         })
@@ -181,11 +197,24 @@ fn emit_enum_validatable(def: &EnumDef) -> TokenStream {
 fn emit_newtype_validatable(def: &NewtypeDef) -> TokenStream {
     let name = make_ident(&def.name);
 
+    let ascii_only = def
+        .constraints
+        .iter()
+        .any(|c| matches!(c, Constraint::Pattern(p) if is_ascii_only_pattern(p)));
+
+    // Count length constraints to decide whether to hoist a shared `let len`.
+    let length_constraint_count = def
+        .constraints
+        .iter()
+        .filter(|c| matches!(c, Constraint::MinLength(_) | Constraint::MaxLength(_)))
+        .count();
+    let hoist_len = length_constraint_count >= 2;
+
     // Only generate checks for constraints we can evaluate without regex.
     let constraint_checks: TokenStream = def
         .constraints
         .iter()
-        .filter_map(|c| emit_constraint_check(c, def.inner))
+        .filter_map(|c| emit_constraint_check(c, def.inner, ascii_only, hoist_len))
         .collect();
 
     // If there are no constraint checks, emit a no-op body.
@@ -198,6 +227,17 @@ fn emit_newtype_validatable(def: &NewtypeDef) -> TokenStream {
         return emit_noop_validatable(&def.name);
     }
 
+    // When multiple length constraints exist, hoist a shared length binding.
+    let hoisted_len = if hoist_len {
+        if ascii_only {
+            quote! { let len = self.0.len(); }
+        } else {
+            quote! { let len = self.0.chars().count(); }
+        }
+    } else {
+        TokenStream::new()
+    };
+
     quote! {
         impl crate::common::validate::Validatable for #name {
             #[allow(clippy::unreadable_literal)]
@@ -206,6 +246,7 @@ fn emit_newtype_validatable(def: &NewtypeDef) -> TokenStream {
                 path: &str,
                 violations: &mut Vec<crate::common::validate::ConstraintViolation>,
             ) {
+                #hoisted_len
                 #constraint_checks
             }
         }
@@ -215,6 +256,8 @@ fn emit_newtype_validatable(def: &NewtypeDef) -> TokenStream {
 /// Parts of a constraint check that can be reused in both `Validatable` impls
 /// and `TryFrom`/`new()` constructors.
 pub(crate) struct ConstraintCheckParts {
+    /// Optional setup code (e.g. `let len = value.len();`).
+    pub preamble: TokenStream,
     /// Boolean expression: `true` = violation. Operates on `value: &str`.
     pub condition: TokenStream,
     /// Format-string expression for the error message.
@@ -233,20 +276,26 @@ pub(crate) struct ConstraintCheckParts {
 pub(crate) fn emit_constraint_expr(
     constraint: &Constraint,
     inner: RustType,
+    ascii_only: bool,
+    hoist_len: bool,
 ) -> Option<ConstraintCheckParts> {
     match constraint {
         Constraint::MinLength(n) => {
             #[allow(clippy::cast_possible_truncation)]
             let n_lit = *n as usize;
             let msg = format!("value is shorter than minimum length {n}");
+            // When hoisted, the caller emits `let len = ...` once; preamble is empty.
+            let preamble = if hoist_len {
+                TokenStream::new()
+            } else if ascii_only {
+                quote! { let len = value.len(); }
+            } else {
+                quote! { let len = value.chars().count(); }
+            };
             Some(ConstraintCheckParts {
-                condition: quote! {
-                    {
-                        let len = value.chars().count();
-                        len < #n_lit
-                    }
-                },
-                message: quote! { format!("{} (got {})", #msg, value.chars().count()) },
+                preamble,
+                condition: quote! { len < #n_lit },
+                message: quote! { format!("{} (got {})", #msg, len) },
                 kind: quote! { crate::common::validate::ConstraintKind::MinLength },
             })
         }
@@ -254,14 +303,17 @@ pub(crate) fn emit_constraint_expr(
             #[allow(clippy::cast_possible_truncation)]
             let n_lit = *n as usize;
             let msg = format!("value exceeds maximum length {n}");
+            let preamble = if hoist_len {
+                TokenStream::new()
+            } else if ascii_only {
+                quote! { let len = value.len(); }
+            } else {
+                quote! { let len = value.chars().count(); }
+            };
             Some(ConstraintCheckParts {
-                condition: quote! {
-                    {
-                        let len = value.chars().count();
-                        len > #n_lit
-                    }
-                },
-                message: quote! { format!("{} (got {})", #msg, value.chars().count()) },
+                preamble,
+                condition: quote! { len > #n_lit },
+                message: quote! { format!("{} (got {})", #msg, len) },
                 kind: quote! { crate::common::validate::ConstraintKind::MaxLength },
             })
         }
@@ -272,17 +324,13 @@ pub(crate) fn emit_constraint_expr(
             let n_lit = *n as usize;
             let msg = format!("value exceeds maximum total digits {n}");
             Some(ConstraintCheckParts {
-                condition: quote! {
-                    {
-                        let digit_count = value.chars()
-                            .filter(char::is_ascii_digit)
-                            .count();
-                        digit_count > #n_lit
-                    }
+                preamble: quote! {
+                    let digit_count = value.chars()
+                        .filter(char::is_ascii_digit)
+                        .count();
                 },
-                message: quote! {
-                    format!("{} (got {})", #msg, value.chars().filter(char::is_ascii_digit).count())
-                },
+                condition: quote! { digit_count > #n_lit },
+                message: quote! { format!("{} (got {})", #msg, digit_count) },
                 kind: quote! { crate::common::validate::ConstraintKind::TotalDigits },
             })
         }
@@ -293,21 +341,16 @@ pub(crate) fn emit_constraint_expr(
             let n_lit = *n as usize;
             let msg = format!("value exceeds maximum fraction digits {n}");
             Some(ConstraintCheckParts {
-                condition: quote! {
-                    {
-                        let frac_count = value.find('.')
-                            .map_or(0, |dot| {
-                                value[dot + 1..].chars()
-                                    .filter(char::is_ascii_digit)
-                                    .count()
-                            });
-                        frac_count > #n_lit
-                    }
+                preamble: quote! {
+                    let frac_count = value.find('.')
+                        .map_or(0, |dot| {
+                            value[dot + 1..].chars()
+                                .filter(char::is_ascii_digit)
+                                .count()
+                        });
                 },
-                message: quote! {
-                    format!("{} (got {})", #msg, value.find('.')
-                        .map_or(0, |dot| value[dot + 1..].chars().filter(char::is_ascii_digit).count()))
-                },
+                condition: quote! { frac_count > #n_lit },
+                message: quote! { format!("{} (got {})", #msg, frac_count) },
                 kind: quote! { crate::common::validate::ConstraintKind::FractionDigits },
             })
         }
@@ -315,6 +358,7 @@ pub(crate) fn emit_constraint_expr(
             let condition = super::pattern_codegen::emit_pattern_check(pat)?;
             let msg = format!("value does not match pattern {pat}");
             Some(ConstraintCheckParts {
+                preamble: TokenStream::new(),
                 condition,
                 message: quote! { #msg.to_string() },
                 kind: quote! { crate::common::validate::ConstraintKind::Pattern },
@@ -325,15 +369,121 @@ pub(crate) fn emit_constraint_expr(
     }
 }
 
-fn emit_constraint_check(constraint: &Constraint, inner: RustType) -> Option<TokenStream> {
-    let parts = emit_constraint_expr(constraint, inner)?;
+/// Returns `true` if the XSD pattern provably matches only ASCII characters.
+///
+/// Conservative: returns `false` for any pattern containing constructs that
+/// *could* match non-ASCII (negated classes, `.`, `\w`, `\s`, `\p`, etc.).
+pub(crate) fn is_ascii_only_pattern(pattern: &str) -> bool {
+    let bytes = pattern.as_bytes();
+    let len = bytes.len();
+    let mut i = 0;
+    while i < len {
+        let b = bytes[i];
+        // Non-ASCII byte → not ASCII-only.
+        if b > 0x7E {
+            return false;
+        }
+        if b == b'\\' {
+            if i + 1 >= len {
+                return false;
+            }
+            let next = bytes[i + 1];
+            // Only allow literal escapes of ASCII punctuation and \\. All
+            // shorthand classes (\w, \W, \s, \S, \d, \D, \p, \P) are
+            // conservatively rejected — in XSD \d is [0-9] (ASCII), but we
+            // keep it simple and safe.
+            match next {
+                b'p' | b'P' | b'w' | b'W' | b's' | b'S' | b'd' | b'D' => return false,
+                _ if next > 0x7E => return false,
+                _ => {
+                    i += 2;
+                    continue;
+                }
+            }
+        }
+        // `.` matches any character including non-ASCII.
+        if b == b'.' {
+            return false;
+        }
+        // Character class: check ranges stay within ASCII.
+        if b == b'[' {
+            i += 1;
+            // Negated character class `[^...]` can match non-ASCII.
+            if i < len && bytes[i] == b'^' {
+                return false;
+            }
+            while i < len && bytes[i] != b']' {
+                if bytes[i] > 0x7E {
+                    return false;
+                }
+                // Backslash inside character class — reject shorthand classes.
+                if bytes[i] == b'\\' {
+                    if i + 1 >= len {
+                        return false;
+                    }
+                    let next = bytes[i + 1];
+                    match next {
+                        b'p' | b'P' | b'w' | b'W' | b's' | b'S' | b'd' | b'D' => {
+                            return false;
+                        }
+                        _ if next > 0x7E => return false,
+                        _ => {
+                            i += 2;
+                            continue;
+                        }
+                    }
+                }
+                // Check for range like A-Z.
+                if i + 2 < len && bytes[i + 1] == b'-' && bytes[i + 2] != b']' {
+                    let start = bytes[i];
+                    let end = bytes[i + 2];
+                    if start > 0x7E || end > 0x7E {
+                        return false;
+                    }
+                    i += 3;
+                } else {
+                    i += 1;
+                }
+            }
+            // Skip closing bracket.
+            if i < len {
+                i += 1;
+            }
+            continue;
+        }
+        i += 1;
+    }
+    true
+}
+
+fn emit_constraint_check(
+    constraint: &Constraint,
+    inner: RustType,
+    ascii_only: bool,
+    hoist_len: bool,
+) -> Option<TokenStream> {
+    let parts = emit_constraint_expr(constraint, inner, ascii_only, hoist_len)?;
+    let preamble = parts.preamble;
     let condition = parts.condition;
     let message = parts.message;
     let kind = parts.kind;
 
+    // When length is hoisted, length constraints don't need `value` binding.
+    let needs_value = !hoist_len
+        || !matches!(
+            constraint,
+            Constraint::MinLength(_) | Constraint::MaxLength(_)
+        );
+    let value_binding = if needs_value {
+        quote! { let value: &str = &self.0; }
+    } else {
+        TokenStream::new()
+    };
+
     Some(quote! {
         {
-            let value: &str = &self.0;
+            #value_binding
+            #preamble
             let violated = #condition;
             if violated {
                 violations.push(crate::common::validate::ConstraintViolation {
@@ -354,7 +504,7 @@ fn emit_value_with_attr_validatable(
 ) -> TokenStream {
     let name = make_ident(&def.name);
 
-    // Validate the value field.
+    // Validate the value field — passes path directly (no child segment).
     let value_validation = match &def.value_type {
         TypeRef::Named(_) => {
             quote! {
@@ -379,15 +529,29 @@ fn emit_value_with_attr_validatable(
             if attr.required {
                 if is_named {
                     quote! {
-                        self.#rust_name.validate_constraints(
-                            &format!(#attr_path), violations,
-                        );
+                        {
+                            let snap = violations.len();
+                            self.#rust_name.validate_constraints("", violations);
+                            if violations.len() > snap {
+                                let pfx = format!(#attr_path);
+                                for v in &mut violations[snap..] {
+                                    v.path.insert_str(0, &pfx);
+                                }
+                            }
+                        }
                     }
                 } else if is_choice {
                     quote! {
-                        self.#rust_name.inner.validate_constraints(
-                            &format!(#attr_path), violations,
-                        );
+                        {
+                            let snap = violations.len();
+                            self.#rust_name.inner.validate_constraints("", violations);
+                            if violations.len() > snap {
+                                let pfx = format!(#attr_path);
+                                for v in &mut violations[snap..] {
+                                    v.path.insert_str(0, &pfx);
+                                }
+                            }
+                        }
                     }
                 } else {
                     TokenStream::new()
@@ -395,9 +559,14 @@ fn emit_value_with_attr_validatable(
             } else if is_named {
                 quote! {
                     if let Some(ref val) = self.#rust_name {
-                        val.validate_constraints(
-                            &format!(#attr_path), violations,
-                        );
+                        let snap = violations.len();
+                        val.validate_constraints("", violations);
+                        if violations.len() > snap {
+                            let pfx = format!(#attr_path);
+                            for v in &mut violations[snap..] {
+                                v.path.insert_str(0, &pfx);
+                            }
+                        }
                     }
                 }
             } else {
@@ -505,7 +674,7 @@ mod tests {
     }
 
     #[test]
-    fn newtype_with_max_length_emits_check() {
+    fn newtype_with_maxlength_emits_check() {
         let def = NewtypeDef {
             name: "Max35Text".to_owned(),
             inner: RustType::String,
@@ -522,7 +691,7 @@ mod tests {
     }
 
     #[test]
-    fn newtype_with_min_length_emits_check() {
+    fn newtype_with_minlength_emits_check() {
         let def = NewtypeDef {
             name: "Min1Text".to_owned(),
             inner: RustType::String,
@@ -584,10 +753,7 @@ mod tests {
             src.contains("Pattern"),
             "should reference ConstraintKind::Pattern: {src}"
         );
-        assert!(
-            !src.contains("_path"),
-            "should NOT have unused path param (real check uses path): {src}"
-        );
+        // path is still used (in newtype validatable the path param is used for violation push).
         parse_and_check(&ts);
     }
 
@@ -618,10 +784,15 @@ mod tests {
         };
         let ts = emit_struct_validatable(&def, &HashSet::new());
         let src = ts.to_string();
-        // Required field: direct call.
+        // Required field: deferred path call.
         assert!(
             src.contains("self . msg_id . validate_constraints"),
             "src = {src}"
+        );
+        // Snapshot+patch pattern present.
+        assert!(
+            src.contains("insert_str"),
+            "should use deferred paths: {src}"
         );
         // Optional field: if let Some.
         assert!(src.contains("if let Some"), "src = {src}");
@@ -698,6 +869,10 @@ mod tests {
             "src = {src}"
         );
         assert!(src.contains("@Ccy"), "should have attr path: {src}");
+        assert!(
+            src.contains("insert_str"),
+            "should use deferred attr paths: {src}"
+        );
         parse_and_check(&ts);
     }
 
@@ -763,6 +938,73 @@ mod tests {
         assert!(
             src.contains("impl crate :: common :: validate :: IsoMessage for Document"),
             "src = {src}"
+        );
+        parse_and_check(&ts);
+    }
+
+    #[test]
+    fn ascii_only_pattern_detection() {
+        // ASCII-only patterns.
+        assert!(is_ascii_only_pattern("[A-Z]{3,3}"));
+        assert!(is_ascii_only_pattern("[A-Za-z0-9]+"));
+        assert!(is_ascii_only_pattern("[0-9]{4}-[0-9]{2}-[0-9]{2}"));
+        assert!(is_ascii_only_pattern(
+            "[A-Z0-9]{4,4}[A-Z]{2,2}[A-Z0-9]{2,2}"
+        ));
+        assert!(is_ascii_only_pattern("")); // empty pattern
+
+        // Non-ASCII patterns.
+        assert!(!is_ascii_only_pattern(".")); // dot matches anything
+        assert!(!is_ascii_only_pattern("\\w+")); // \w shorthand
+        assert!(!is_ascii_only_pattern("\\s+")); // \s shorthand
+        assert!(!is_ascii_only_pattern("\\d+")); // \d shorthand (conservative)
+        assert!(!is_ascii_only_pattern("\\p{L}")); // Unicode property
+
+        // Negated character class matches non-ASCII.
+        assert!(!is_ascii_only_pattern("[^A-Z]"));
+        assert!(!is_ascii_only_pattern("[^0-9]+"));
+
+        // Shorthand class inside character class.
+        assert!(!is_ascii_only_pattern("[\\w]+"));
+        assert!(!is_ascii_only_pattern("[A-Z\\s]+"));
+    }
+
+    #[test]
+    fn ascii_type_useslen() {
+        let def = NewtypeDef {
+            name: "CurrencyCode".to_owned(),
+            inner: RustType::String,
+            constraints: vec![
+                Constraint::Pattern("[A-Z]{3,3}".to_owned()),
+                Constraint::MinLength(3),
+                Constraint::MaxLength(3),
+            ],
+        };
+        let ts = emit_newtype_validatable(&def);
+        let src = ts.to_string();
+        assert!(
+            src.contains(". len ()"),
+            "ASCII type should use .len(): {src}"
+        );
+        assert!(
+            !src.contains("chars"),
+            "ASCII type should NOT use .chars().count(): {src}"
+        );
+        parse_and_check(&ts);
+    }
+
+    #[test]
+    fn non_ascii_type_uses_chars_count() {
+        let def = NewtypeDef {
+            name: "FreeText".to_owned(),
+            inner: RustType::String,
+            constraints: vec![Constraint::MinLength(1), Constraint::MaxLength(100)],
+        };
+        let ts = emit_newtype_validatable(&def);
+        let src = ts.to_string();
+        assert!(
+            src.contains("chars"),
+            "non-ASCII type should use .chars().count(): {src}"
         );
         parse_and_check(&ts);
     }

@@ -1,0 +1,67 @@
+{
+  "metadata": {
+    "task_short": "arch-review",
+    "agent_abbr": "ar",
+    "datetime_utc": "2026-03-03T00:00:00Z",
+    "filename": "2026-03-03T00-00-00Z__arch-review__ar.json",
+    "supersedes": null,
+    "version": "1.0"
+  },
+  "state": {
+    "objectives": [
+      "Full architectural review of mx20022 workspace (7 crates)",
+      "Evaluate dependency graph, separation of concerns, error design, trait design, IR design, translation architecture, validation layering",
+      "Identify critical issues, recommendations, and suggestions"
+    ],
+    "constraints": [
+      "Review only, no code changes",
+      "Edition 2021, MSRV 1.75.0",
+      "unsafe_code = forbid workspace-wide"
+    ],
+    "important_facts": [
+      "Workspace has ~1.13M lines of Rust, ~270K in generated model files",
+      "Dependency graph is acyclic: model -> parse -> validate/translate, codegen is standalone",
+      "CLI depends on everything including codegen",
+      "Two validation systems: typed (Validatable trait in model) and string-based (RuleRegistry in validate)",
+      "Translation helpers are typed to pacs.008 types, with comment noting other modules 'can adapt'",
+      "ChoiceWrapper<T> is a serde workaround for quick-xml enum serialization",
+      "Scheme validators have dual API: raw XML string scanning and typed Any downcasting"
+    ],
+    "decisions_made": [],
+    "artifacts": [],
+    "dependencies": [],
+    "risks_issues": [
+      "Dual validation systems (Validatable trait vs RuleRegistry) with overlapping responsibilities",
+      "Translation helpers hardcoded to pacs.008 types, preventing reuse for pacs.009/camt.053",
+      "SchemeValidator::validate_typed uses Any downcasting instead of generics",
+      "ConstraintSet uses linear scan for path lookup",
+      "No unified error type across the workspace"
+    ]
+  },
+  "iteration": {
+    "summary": "Completed full architectural review of all 7 crates. The overall design is solid: clean three-phase codegen pipeline (XSD->IR->Rust), proper crate separation with acyclic dependency graph, and good feature-gating on generated model families. Identified critical issues around dual validation systems and translation helper type coupling. Produced comprehensive review with severity-classified findings.",
+    "inputs_consulted": [
+      "All Cargo.toml files",
+      "All lib.rs, mod.rs entry points",
+      "Codegen: xsd/types.rs, ir/types.rs, ir/lower.rs, emit/mod.rs, emit/structs.rs, emit/newtypes.rs, emit/validate.rs, emit/builders.rs",
+      "Model: common/choice.rs, common/builder.rs, common/validate.rs, generated/mod.rs, generated/head/head_001_001_04.rs",
+      "Parse: de.rs, ser.rs, envelope.rs, error.rs",
+      "Validate: error.rs, rules/mod.rs, schema/mod.rs, schema/constraints.rs, schemes/mod.rs, schemes/fednow.rs, typed.rs",
+      "Translate: mappings/mod.rs, mappings/error.rs, mappings/helpers.rs, mappings/mt103_to_pacs008.rs, mt/mod.rs, mt/types.rs, mt/parser.rs, mt/error.rs",
+      "CLI: main.rs",
+      "Umbrella: lib.rs",
+      "Agent context files from prior sessions"
+    ],
+    "outputs_produced": [
+      "Architectural review document (this response)"
+    ],
+    "next_actions": []
+  },
+  "cross_agent_notes": {
+    "mentions": [
+      {"agent_abbr": "rust", "filename": "2026-03-02T00-00-00Z__ir-type-graph__rust.json", "relevance_note": "IR design decisions referenced in review"},
+      {"agent_abbr": "rust", "filename": "2026-03-02T22-00-00Z__mt-mx-translation__rust.json", "relevance_note": "Translation architecture reviewed"},
+      {"agent_abbr": "rust", "filename": "2026-03-02T18-00-00Z__business-rule-validation__rust.json", "relevance_note": "Dual validation concern identified"}
+    ]
+  }
+}

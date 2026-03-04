@@ -50,17 +50,24 @@ pub fn emit_newtype(def: &NewtypeDef) -> TokenStream {
 fn emit_try_from(def: &NewtypeDef) -> TokenStream {
     let name = make_ident(&def.name);
 
+    let ascii_only = def
+        .constraints
+        .iter()
+        .any(|c| matches!(c, Constraint::Pattern(p) if super::validate::is_ascii_only_pattern(p)));
+
     // Collect constraint checks. Each produces a guard block.
     let guard_blocks: Vec<TokenStream> = def
         .constraints
         .iter()
         .filter_map(|c| {
-            let parts = super::validate::emit_constraint_expr(c, def.inner)?;
+            let parts = super::validate::emit_constraint_expr(c, def.inner, ascii_only, false)?;
+            let preamble = parts.preamble;
             let condition = parts.condition;
             let message = parts.message;
             let kind = parts.kind;
             Some(quote! {
                 {
+                    #preamble
                     let violated = #condition;
                     if violated {
                         return Err(crate::common::validate::ConstraintError {

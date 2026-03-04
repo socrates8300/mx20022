@@ -1,0 +1,106 @@
+{
+  "metadata": {
+    "task_short": "test-coverage-audit",
+    "agent_abbr": "ta",
+    "datetime_utc": "2026-03-03T00:00:00Z",
+    "filename": "2026-03-03T00-00-00Z__test-coverage-audit__ta.json",
+    "supersedes": null,
+    "version": "1.0"
+  },
+  "state": {
+    "objectives": [
+      "Assess test coverage and quality for the mx20022 Rust ISO 20022 library",
+      "Identify critical gaps in unit, integration, property-based, and E2E tests",
+      "Evaluate test fixture quality in testdata/",
+      "Check roundtrip (MT->MX->MT) test coverage",
+      "Assess scheme-specific validation tests (FedNow, SEPA, CBPR+)"
+    ],
+    "constraints": [
+      "Read-only assessment — no code changes",
+      "Covers all 7 crates: codegen, model, parse, validate, translate, cli, mx20022 umbrella"
+    ],
+    "important_facts": [
+      "Total passing tests: 621 (0 failures, 4 ignored doc-tests)",
+      "Test distribution: codegen=169, validate=190, translate=132, parse=52, model=18, cli=9",
+      "No property-based testing (proptest/quickcheck) anywhere in the codebase",
+      "Coverage CI job is commented out in .github/workflows/ci.yml",
+      "Translation testdata fixtures (testdata/translation/) have only input.txt, no expected.xml output files",
+      "parse/tests/fixtures/ and codegen/tests/fixtures/xsd/multi_file/ contain only .gitkeep placeholder files",
+      "Codegen snapshot testing covers only head.001.001.04 — 8 other XSD schemas have no snapshots",
+      "pacs.002 has no roundtrip or fixture-based tests despite being generated (3 versions)",
+      "Older pacs.008 versions (001.008, 001.010) have no tests; only 001.013 is tested",
+      "head.001.001.02 has no tests at all",
+      "Scheme validators (FedNow, SEPA, CBPR+) only test pacs.008.001.13 — not pacs.002, pacs.004, pacs.028",
+      "MT940->camt.053 roundtrip is string-contains only, not a field-level structural comparison",
+      "Newtype TryFrom/new() construction validation exists but has no dedicated tests in model crate",
+      "XML malformed input: only 2 unit tests covering basic parse error in parse/src/de.rs",
+      "SWIFT MT malformed: well-covered with 6+ error-path tests in translate/tests/mt_parser.rs",
+      "No tests for: XML namespace collisions, large/huge messages, concurrent validation, locale edge cases",
+      "Benchmarks exist (parse, validate, translate) but are compile-only in CI (--no-run), never executed",
+      "doc-tests are used extensively in validate crate (30 doc-tests) — a good pattern",
+      "3 doc-tests in generated model mod.rs files are ignored (compilation issues in doc examples)"
+    ],
+    "decisions_made": [],
+    "artifacts": [
+      "crates/mx20022-codegen/tests/snapshots.rs",
+      "crates/mx20022-model/tests/builder_test.rs",
+      "crates/mx20022-parse/tests/roundtrip.rs",
+      "crates/mx20022-parse/tests/roundtrip_all.rs",
+      "crates/mx20022-validate/tests/integration.rs",
+      "crates/mx20022-validate/tests/schemes.rs",
+      "crates/mx20022-translate/tests/mt_parser.rs",
+      "crates/mx20022-translate/tests/translation.rs",
+      "crates/mx20022-cli/tests/cli_integration.rs",
+      "testdata/ (fixtures)",
+      ".github/workflows/ci.yml"
+    ],
+    "dependencies": ["iteration 17 (real-world-test-corpus) — planned but not started"],
+    "risks_issues": [
+      "No coverage measurement in CI — gaps are invisible without instrumentation",
+      "Translation testdata fixtures incomplete (no expected.* output files for diff-based testing)",
+      "Codegen snapshot regression testing limited to one schema",
+      "Property-based testing absent — parser robustness for adversarial inputs unknown",
+      "pacs.002 message type untested end-to-end despite being a widely-used payment status type"
+    ]
+  },
+  "iteration": {
+    "summary": "Performed a complete read-only audit of test coverage across all 7 crates. Found 621 passing tests with good baseline coverage in core areas (validate rules, MT parser, scheme validators, roundtrips). Critical gaps include: no property-based testing anywhere, coverage CI job commented out, translation testdata fixtures lacking expected output files, codegen snapshots covering only 1 of 9 XSD schemas, and pacs.002 having no end-to-end test despite being generated and used by all 3 scheme validators. The test pyramid has an inverted shape in the validate crate (more integration than unit) but this is appropriate given the domain.",
+    "inputs_consulted": [
+      "crates/*/tests/*.rs (all integration test files)",
+      "crates/*/src/**/*.rs (inline #[cfg(test)] modules)",
+      "testdata/ directory structure and fixture files",
+      ".github/workflows/ci.yml",
+      "crates/*/Cargo.toml (dev-dependencies)",
+      "docs/agent_context.db (knowledge/testing category)",
+      "docs/agents/*.json (prior agent context files)"
+    ],
+    "outputs_produced": [
+      "This context file",
+      "Comprehensive test coverage report (in conversation)"
+    ],
+    "next_actions": [
+      "Add proptest to validate/parse/translate dev-dependencies and implement property-based fuzzing",
+      "Create expected.xml output files in testdata/translation/ for golden-file testing",
+      "Add codegen snapshots for pacs.008.001.13 and camt.053.001.11 (the highest-value schemas)",
+      "Add pacs.002 roundtrip and scheme validation tests",
+      "Uncomment and configure coverage job in ci.yml using cargo-llvm-cov",
+      "Add tests for newtype TryFrom construction validation in mx20022-model",
+      "Add malformed XML edge case tests (truncated, bombed, namespace collision)",
+      "Fix or remove ignored doc-tests in generated camt/pacs/pain mod.rs files"
+    ]
+  },
+  "cross_agent_notes": {
+    "mentions": [
+      {
+        "agent_abbr": "rust",
+        "filename": "2026-03-02T23-45-48Z__mx20022-parse__rust.json",
+        "relevance_note": "Parse crate context — roundtrip tests were added in this iteration"
+      },
+      {
+        "agent_abbr": "rust",
+        "filename": "2026-03-02T22-00-00Z__mt-mx-translation__rust.json",
+        "relevance_note": "Translation tests context — confirms testdata/translation/ fixtures were created during this work"
+      }
+    ]
+  }
+}

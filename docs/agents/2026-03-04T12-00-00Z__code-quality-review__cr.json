@@ -1,0 +1,118 @@
+{
+  "metadata": {
+    "task_short": "code-quality-review",
+    "agent_abbr": "cr",
+    "datetime_utc": "2026-03-04T12:00:00Z",
+    "filename": "2026-03-04T12-00-00Z__code-quality-review__cr.json",
+    "supersedes": "2026-03-04T00-10-33Z__code-quality-review__cr.json",
+    "version": "1.0"
+  },
+  "state": {
+    "objectives": [
+      "Review hand-written Rust code across 7 crates for quality, maintainability, and correctness",
+      "Check clean code principles, SOLID, DRY, naming, error handling, documentation, and Rust idioms",
+      "Cover new code added since last review: pattern_codegen, typed.rs, emit/validate.rs"
+    ],
+    "constraints": [
+      "Exclude generated/ directories from review scope",
+      "Focus on mx20022-validate, mx20022-translate, mx20022-parse, mx20022-model/common, mx20022-codegen, mx20022-cli"
+    ],
+    "important_facts": [
+      "Prior review from 2026-03-04T00:10 remains fully valid -- no prior issues were fixed",
+      "New since last review: pattern_codegen.rs (XSD->Rust inline pattern compiler), typed.rs (constraint bridge), emit/validate.rs (Validatable codegen)",
+      "mod97 duplicated verbatim in iban.rs:111-118 and lei.rs:111-118 -- confirmed still present",
+      "extract_element/extract_all_elements duplicated between cli/validate.rs:73-98 and schemes/xml_scan.rs -- confirmed still present; cli version also has a third helper extract_all_attributes that is NOT in xml_scan",
+      "parse_year in datetime.rs:128 allocates Vec<u8> via to_vec() unnecessarily -- confirmed still present",
+      "ValidateError::Parse used as exit-code signal in cli/validate.rs:265 -- confirmed still present",
+      "ValidationResult.errors field is pub Vec<ValidationError> -- confirmed still public",
+      "FedNow amount validation logic duplicated between xml path (validate:171-220) and typed path (validate_pacs008_typed:379-427) -- confirmed; decimal_ok check + parse_amount_cents block is identical 40-line block",
+      "helpers.rs typed to pacs008 types only with explicit note at line 1-7; pacs009/camt053 mappings must copy-paste",
+      "RuleRegistry::validate_all uses HashMap iteration (non-deterministic order in error output)",
+      "pattern_codegen.rs: parse_char_class has duplicated range-parsing arms (escaped vs unescaped, lines 122-175); 30 lines of structurally identical code",
+      "pattern_codegen.rs: Quantifier::Range(0, usize::MAX) used to represent '*' (star) but usize::MAX is semantically odd; a dedicated ZeroOrMore variant would be cleaner",
+      "pattern_codegen.rs: debug_assert_eq! used in parse_char_class/parse_group to verify invariants (good), but if caller passes a non-[ byte the assert fires in debug; callers are internal so this is safe",
+      "pattern_codegen.rs: emit_variable_length emits an IIFE closure for the validator body -- this is correct but unusual; worth a comment explaining why (avoids early-return from outer fn)",
+      "typed.rs: validate_message free fn on IsoMessage trait already covers the same case as validate_message free fn in typed.rs -- names collide conceptually but are different types, acceptable",
+      "FedNowValidator.max_amount stored as f64; max_cents computed via (f64 * 100) as u64 -- has explicit allow(cast_possible_truncation) and a code comment justifying it; still a latent footgun for non-round-dollar custom limits"
+    ],
+    "decisions_made": [
+      "No code changes made - review only",
+      "Severity classification for new issues: High=2, Suggestions=4 (cumulative across both reviews: High=6, Suggestions=12)",
+      "pattern_codegen range-arm duplication is HIGH priority (new finding)",
+      "validate_all nondeterminism was flagged in prior review; still present"
+    ],
+    "artifacts": [
+      "crates/mx20022-codegen/src/emit/pattern_codegen.rs",
+      "crates/mx20022-validate/src/typed.rs",
+      "crates/mx20022-validate/src/rules/iban.rs",
+      "crates/mx20022-validate/src/rules/lei.rs",
+      "crates/mx20022-validate/src/rules/datetime.rs",
+      "crates/mx20022-validate/src/schemes/fednow.rs",
+      "crates/mx20022-validate/src/schemes/xml_scan.rs",
+      "crates/mx20022-cli/src/commands/validate.rs",
+      "crates/mx20022-translate/src/mappings/helpers.rs",
+      "crates/mx20022-validate/src/rules/mod.rs",
+      "crates/mx20022-validate/src/error.rs"
+    ],
+    "dependencies": [],
+    "risks_issues": [
+      "DRY: mod97 duplicated in iban.rs and lei.rs -- low risk but maintenance burden",
+      "DRY: XML scan helpers duplicated in cli/validate.rs and schemes/xml_scan.rs",
+      "DRY: FedNow amount validation logic duplicated between xml and typed paths",
+      "DRY: pattern_codegen.rs parse_char_class range-parsing arm duplicated (escaped vs unescaped)",
+      "API: ValidateError::Parse used as exit-code signal -- misleading semantics",
+      "API: ValidationResult.errors is pub Vec -- external mutation possible",
+      "Bug risk: parse_year allocates Vec<u8> unnecessarily",
+      "Bug risk: helpers.rs only covers pacs008 types -- pacs009/camt053 must copy-paste",
+      "Behavioral: validate_all has non-deterministic error ordering (HashMap)",
+      "Design: Quantifier::Range(0, usize::MAX) encodes star quantifier -- magic value"
+    ]
+  },
+  "iteration": {
+    "summary": "Second full pass over the codebase after three new commits (newtype construction validation, XSD pattern compiler, post-audit hardening). The new pattern_codegen.rs module is well-structured but has a 30-line duplicated range-parsing arm inside parse_char_class (escaped vs unescaped paths are structurally identical). typed.rs is clean and small with no issues. All previously flagged DRY violations and the ValidateError::Parse API problem remain unfixed. No new critical issues introduced.",
+    "inputs_consulted": [
+      "crates/mx20022-codegen/src/emit/pattern_codegen.rs",
+      "crates/mx20022-validate/src/typed.rs",
+      "crates/mx20022-validate/src/rules/iban.rs",
+      "crates/mx20022-validate/src/rules/lei.rs",
+      "crates/mx20022-validate/src/rules/datetime.rs",
+      "crates/mx20022-validate/src/schemes/fednow.rs",
+      "crates/mx20022-validate/src/schemes/xml_scan.rs",
+      "crates/mx20022-cli/src/commands/validate.rs",
+      "crates/mx20022-translate/src/mappings/helpers.rs",
+      "crates/mx20022-validate/src/rules/mod.rs",
+      "crates/mx20022-validate/src/error.rs",
+      "crates/mx20022-codegen/src/emit/mod.rs",
+      "crates/mx20022-codegen/src/ir/lower.rs",
+      "crates/mx20022-translate/src/mappings/pacs008_to_mt103.rs"
+    ],
+    "outputs_produced": [
+      "Full code review report (in assistant response)",
+      "Updated context file superseding prior review"
+    ],
+    "next_actions": [
+      "Extract mod97 into crates/mx20022-validate/src/rules/checkdigit.rs (or similar) and import from both iban.rs and lei.rs",
+      "Remove duplicate extract_element/extract_all_elements from cli/validate.rs; add extract_all_attributes to xml_scan.rs and re-export",
+      "Extract FedNow amount block into a shared fn validate_amount_range called from both xml and typed paths",
+      "Deduplicate parse_char_class range arm by extracting a parse_one_char_or_escape helper",
+      "Replace Quantifier::Range(0, usize::MAX) with a ZeroOrMore variant",
+      "Fix parse_year to operate directly on the byte slice without Vec allocation",
+      "Add a ValidationFailure variant to ValidateError replacing the Parse misuse",
+      "Consider making ValidationResult::errors private with a fn findings(&self) -> &[ValidationError] accessor"
+    ]
+  },
+  "cross_agent_notes": {
+    "mentions": [
+      {
+        "agent_abbr": "sec",
+        "filename": "2026-03-03T00-00-00Z__security-audit__sec.json",
+        "relevance_note": "Security audit may overlap with pattern_codegen correctness (XSD patterns used for BICFI/IBAN newtype validation in production)"
+      },
+      {
+        "agent_abbr": "ta",
+        "filename": "2026-03-03T00-00-00Z__test-coverage-audit__ta.json",
+        "relevance_note": "Test coverage audit should verify parse_char_class is tested for escaped vs unescaped range paths independently"
+      }
+    ]
+  }
+}

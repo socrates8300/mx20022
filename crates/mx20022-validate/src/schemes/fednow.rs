@@ -169,55 +169,11 @@ impl SchemeValidator for FedNowValidator {
 
         // --- Amount range ---------------------------------------------------
         if let Some(amt_str) = extract_element(xml, "IntrBkSttlmAmt") {
-            // Must have exactly 2 decimal places.
-            let decimal_ok = amt_str
-                .find('.')
-                .is_some_and(|dot| amt_str.len() - dot - 1 == 2);
-            if !decimal_ok {
-                errors.push(ValidationError::new(
-                    "/Document/FIToFICstmrCdtTrf/CdtTrfTxInf/IntrBkSttlmAmt",
-                    Severity::Error,
-                    "FEDNOW_AMOUNT_DECIMALS",
-                    format!("FedNow amounts must have exactly 2 decimal places; got \"{amt_str}\""),
-                ));
-            }
-
-            // Use integer-cent arithmetic to avoid f64 comparison issues.
-            match parse_amount_cents(&amt_str) {
-                Some(cents) => {
-                    if cents < 1 {
-                        errors.push(ValidationError::new(
-                            "/Document/FIToFICstmrCdtTrf/CdtTrfTxInf/IntrBkSttlmAmt",
-                            Severity::Error,
-                            "FEDNOW_AMOUNT_MIN",
-                            format!("FedNow minimum amount is 0.01 USD; got \"{amt_str}\""),
-                        ));
-                    }
-                    // max_amount is a whole-dollar f64 (e.g. 500_000.0); ×100 is exact for
-                    // all realistic FedNow limits.
-                    #[allow(clippy::cast_possible_truncation, clippy::cast_sign_loss)]
-                    let max_cents = (self.max_amount * 100.0) as u64;
-                    if cents > max_cents {
-                        errors.push(ValidationError::new(
-                            "/Document/FIToFICstmrCdtTrf/CdtTrfTxInf/IntrBkSttlmAmt",
-                            Severity::Error,
-                            "FEDNOW_AMOUNT_LIMIT",
-                            format!(
-                                "FedNow maximum amount is {:.2} USD; got \"{amt_str}\"",
-                                self.max_amount
-                            ),
-                        ));
-                    }
-                }
-                None => {
-                    errors.push(ValidationError::new(
-                        "/Document/FIToFICstmrCdtTrf/CdtTrfTxInf/IntrBkSttlmAmt",
-                        Severity::Error,
-                        "FEDNOW_AMOUNT_FORMAT",
-                        format!("Cannot parse amount as a number: \"{amt_str}\""),
-                    ));
-                }
-            }
+            self.validate_amount(
+                &amt_str,
+                "/Document/FIToFICstmrCdtTrf/CdtTrfTxInf/IntrBkSttlmAmt",
+                &mut errors,
+            );
         }
 
         // --- UETR is required and must be UUID v4 ---------------------------
@@ -315,6 +271,53 @@ impl SchemeValidator for FedNowValidator {
 }
 
 impl FedNowValidator {
+    fn validate_amount(&self, amt_str: &str, path: &str, errors: &mut Vec<ValidationError>) {
+        let decimal_ok = amt_str
+            .find('.')
+            .is_some_and(|dot| amt_str.len() - dot - 1 == 2);
+        if !decimal_ok {
+            errors.push(ValidationError::new(
+                path,
+                Severity::Error,
+                "FEDNOW_AMOUNT_DECIMALS",
+                format!("FedNow amounts must have exactly 2 decimal places; got \"{amt_str}\""),
+            ));
+        }
+        match parse_amount_cents(amt_str) {
+            Some(cents) => {
+                if cents < 1 {
+                    errors.push(ValidationError::new(
+                        path,
+                        Severity::Error,
+                        "FEDNOW_AMOUNT_MIN",
+                        format!("FedNow minimum amount is 0.01 USD; got \"{amt_str}\""),
+                    ));
+                }
+                #[allow(clippy::cast_possible_truncation, clippy::cast_sign_loss)]
+                let max_cents = (self.max_amount * 100.0) as u64;
+                if cents > max_cents {
+                    errors.push(ValidationError::new(
+                        path,
+                        Severity::Error,
+                        "FEDNOW_AMOUNT_LIMIT",
+                        format!(
+                            "FedNow maximum amount is {:.2} USD; got \"{amt_str}\"",
+                            self.max_amount
+                        ),
+                    ));
+                }
+            }
+            None => {
+                errors.push(ValidationError::new(
+                    path,
+                    Severity::Error,
+                    "FEDNOW_AMOUNT_FORMAT",
+                    format!("Cannot parse amount as a number: \"{amt_str}\""),
+                ));
+            }
+        }
+    }
+
     /// Typed validation for pacs.008 messages.
     fn validate_pacs008_typed(
         &self,
@@ -378,53 +381,11 @@ impl FedNowValidator {
 
             // --- Amount range -----------------------------------------------
             let amt_str = &tx.intr_bk_sttlm_amt.value.0;
-
-            // Must have exactly 2 decimal places.
-            let decimal_ok = amt_str
-                .find('.')
-                .is_some_and(|dot| amt_str.len() - dot - 1 == 2);
-            if !decimal_ok {
-                errors.push(ValidationError::new(
-                    "/Document/FIToFICstmrCdtTrf/CdtTrfTxInf/IntrBkSttlmAmt",
-                    Severity::Error,
-                    "FEDNOW_AMOUNT_DECIMALS",
-                    format!("FedNow amounts must have exactly 2 decimal places; got \"{amt_str}\""),
-                ));
-            }
-
-            match parse_amount_cents(amt_str) {
-                Some(cents) => {
-                    if cents < 1 {
-                        errors.push(ValidationError::new(
-                            "/Document/FIToFICstmrCdtTrf/CdtTrfTxInf/IntrBkSttlmAmt",
-                            Severity::Error,
-                            "FEDNOW_AMOUNT_MIN",
-                            format!("FedNow minimum amount is 0.01 USD; got \"{amt_str}\""),
-                        ));
-                    }
-                    #[allow(clippy::cast_possible_truncation, clippy::cast_sign_loss)]
-                    let max_cents = (self.max_amount * 100.0) as u64;
-                    if cents > max_cents {
-                        errors.push(ValidationError::new(
-                            "/Document/FIToFICstmrCdtTrf/CdtTrfTxInf/IntrBkSttlmAmt",
-                            Severity::Error,
-                            "FEDNOW_AMOUNT_LIMIT",
-                            format!(
-                                "FedNow maximum amount is {:.2} USD; got \"{amt_str}\"",
-                                self.max_amount
-                            ),
-                        ));
-                    }
-                }
-                None => {
-                    errors.push(ValidationError::new(
-                        "/Document/FIToFICstmrCdtTrf/CdtTrfTxInf/IntrBkSttlmAmt",
-                        Severity::Error,
-                        "FEDNOW_AMOUNT_FORMAT",
-                        format!("Cannot parse amount as a number: \"{amt_str}\""),
-                    ));
-                }
-            }
+            self.validate_amount(
+                amt_str,
+                "/Document/FIToFICstmrCdtTrf/CdtTrfTxInf/IntrBkSttlmAmt",
+                &mut errors,
+            );
 
             // --- UETR is required and must be UUID v4 -----------------------
             match &tx.pmt_id.uetr {
@@ -530,7 +491,7 @@ impl FedNowValidator {
 ///
 /// A `debug_assert!` fires in test/dev builds if the fractional part is not
 /// exactly 2 digits, catching misuse early without penalising release builds.
-fn parse_amount_cents(s: &str) -> Option<u64> {
+pub(crate) fn parse_amount_cents(s: &str) -> Option<u64> {
     let dot = s.find('.')?;
     let integer: u64 = s[..dot].parse().ok()?;
     let frac_str = &s[dot + 1..];
@@ -540,6 +501,30 @@ fn parse_amount_cents(s: &str) -> Option<u64> {
     );
     let frac: u64 = frac_str.parse().ok()?;
     Some(integer * 100 + frac)
+}
+
+/// Like [`parse_amount_cents`], but accepts 0–2 decimal digits.
+///
+/// - `"1000"` → `Some(100_000)`
+/// - `"1000.5"` → `Some(100_050)`
+/// - `"1000.50"` → `Some(100_050)`
+/// - `"1000.500"` → `None` (>2 decimal digits)
+/// - `"abc"` → `None`
+pub(crate) fn parse_amount_cents_lenient(s: &str) -> Option<u64> {
+    if let Some(dot) = s.find('.') {
+        let integer: u64 = s[..dot].parse().ok()?;
+        let frac_str = &s[dot + 1..];
+        let frac: u64 = match frac_str.len() {
+            0 => 0,
+            1 => frac_str.parse::<u64>().ok()? * 10,
+            2 => frac_str.parse().ok()?,
+            _ => return None,
+        };
+        Some(integer * 100 + frac)
+    } else {
+        let integer: u64 = s.parse().ok()?;
+        Some(integer * 100)
+    }
 }
 
 /// Check that the `<Nm>` child inside `<parent_tag>` does not exceed 140 chars.

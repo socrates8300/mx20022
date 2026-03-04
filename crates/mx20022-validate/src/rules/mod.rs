@@ -25,6 +25,7 @@
 
 pub mod amount;
 pub mod bic;
+pub(crate) mod checkdigit;
 pub mod country;
 pub mod currency;
 pub mod datetime;
@@ -34,7 +35,7 @@ pub mod length;
 pub mod pattern;
 
 use crate::error::ValidationError;
-use std::collections::HashMap;
+use std::collections::BTreeMap;
 
 /// A validation rule that can be applied to a string value at a given path.
 ///
@@ -83,14 +84,14 @@ pub trait Rule: Send + Sync {
 /// assert!(errors.is_empty());
 /// ```
 pub struct RuleRegistry {
-    rules: HashMap<String, Box<dyn Rule>>,
+    rules: BTreeMap<String, Box<dyn Rule>>,
 }
 
 impl RuleRegistry {
     /// Create an empty registry.
     pub fn new() -> Self {
         Self {
-            rules: HashMap::new(),
+            rules: BTreeMap::new(),
         }
     }
 

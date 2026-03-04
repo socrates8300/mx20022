@@ -881,4 +881,143 @@ mod tests {
         // Should have cursor-based validation (variable length: 8 or 11)
         assert!(src.contains("pos"), "BIC pattern should use cursor: {src}");
     }
+
+    // ── Semantic correctness tests ────────────────────────────────────────────
+    //
+    // These compile the emitted TokenStream into a real binary and run it
+    // against test vectors, verifying the pattern checker accepts/rejects
+    // values correctly at runtime.
+
+    /// Compile and execute a pattern check against test vectors.
+    ///
+    /// `emit_pattern_check` returns `true` when a value **violates** the
+    /// pattern. So `should_accept = true` means check() should return `false`.
+    fn assert_pattern_semantics(pattern: &str, cases: &[(&str, bool)]) {
+        let ts = emit_pattern_check(pattern)
+            .unwrap_or_else(|| panic!("emit_pattern_check returned None for: {pattern}"));
+
+        let check_fn = quote! {
+            fn check(value: &str) -> bool {
+                #ts
+            }
+        };
+
+        let mut main_body = String::new();
+        // Escape braces in pattern so assert! doesn't interpret them as
+        // format placeholders.
+        let pat_escaped = pattern.replace('{', "{{").replace('}', "}}");
+        for (i, (input, should_accept)) in cases.iter().enumerate() {
+            let escaped = input.replace('\\', "\\\\").replace('"', "\\\"");
+            if *should_accept {
+                // should_accept=true → check() must return false (no violation)
+                main_body.push_str(&format!(
+                    "    assert!(!check(\"{escaped}\"), \"case {i}: '{escaped}' should be accepted by pattern '{pat_escaped}' but was rejected\");\n"
+                ));
+            } else {
+                // should_accept=false → check() must return true (violation)
+                main_body.push_str(&format!(
+                    "    assert!(check(\"{escaped}\"), \"case {i}: '{escaped}' should be rejected by pattern '{pat_escaped}' but was accepted\");\n"
+                ));
+            }
+        }
+
+        let program = format!("{}\nfn main() {{\n{main_body}}}\n", check_fn);
+
+        let dir = std::env::temp_dir().join(format!(
+            "pattern_semantic_test_{}_{}",
+            std::process::id(),
+            pattern.len()
+        ));
+        std::fs::create_dir_all(&dir).unwrap();
+        let src_path = dir.join("test.rs");
+        let bin_path = dir.join("test_bin");
+        std::fs::write(&src_path, &program).unwrap();
+
+        let compile = std::process::Command::new("rustc")
+            .args(["--edition", "2021", "-o"])
+            .arg(&bin_path)
+            .arg(&src_path)
+            .output()
+            .expect("rustc not found");
+        assert!(
+            compile.status.success(),
+            "compilation failed for pattern '{pattern}':\n--- source ---\n{program}\n--- stderr ---\n{}",
+            String::from_utf8_lossy(&compile.stderr)
+        );
+
+        let run = std::process::Command::new(&bin_path).output().unwrap();
+        assert!(
+            run.status.success(),
+            "runtime assertion failed for pattern '{pattern}':\n{}",
+            String::from_utf8_lossy(&run.stderr)
+        );
+
+        let _ = std::fs::remove_dir_all(&dir);
+    }
+
+    #[test]
+    fn semantic_three_uppercase() {
+        assert_pattern_semantics(
+            "[A-Z]{3}",
+            &[
+                ("USD", true),
+                ("EUR", true),
+                ("ABC", true),
+                ("US", false),
+                ("USDD", false),
+                ("us1", false),
+                ("123", false),
+                ("", false),
+            ],
+        );
+    }
+
+    #[test]
+    fn semantic_iban_pattern() {
+        assert_pattern_semantics(
+            "[A-Z]{2,2}[0-9]{2,2}[a-zA-Z0-9]{1,30}",
+            &[
+                ("GB82WEST12345698765432", true),
+                ("DE89X", true),
+                ("AB12x", true),  // minimal: 2 alpha + 2 digit + 1 alnum
+                ("gb82x", false), // lowercase country
+                ("AB", false),    // too short, no digits
+                ("AB12", false),  // no trailing alnum
+                ("", false),
+                ("12XX1234", false), // digits in country position
+            ],
+        );
+    }
+
+    #[test]
+    fn semantic_date_with_dashes() {
+        assert_pattern_semantics(
+            "[0-9]{4}-[0-9]{2}-[0-9]{2}",
+            &[
+                ("2026-03-04", true),
+                ("0000-00-00", true),
+                ("9999-12-31", true),
+                ("26-3-4", false),
+                ("2026/03/04", false),
+                ("YYYY-MM-DD", false),
+                ("", false),
+            ],
+        );
+    }
+
+    #[test]
+    fn semantic_bic_with_optional_suffix() {
+        assert_pattern_semantics(
+            "[A-Z0-9]{4,4}[A-Z]{2,2}[A-Z0-9]{2,2}([A-Z0-9]{3,3}){0,1}",
+            &[
+                ("AAAAGB2L", true),    // 8-char form
+                ("AAAAGB2LXXX", true), // 11-char form
+                ("DEUTDEFF500", true),
+                ("AAAAGB2LX", false), // 9 chars — invalid
+                ("aaaagb2l", false),  // lowercase
+                ("", false),
+                ("AAAAGB2LXXXX", false), // 12 chars — too long
+            ],
+        );
+    }
 }

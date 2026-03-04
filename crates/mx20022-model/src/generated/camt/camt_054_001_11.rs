@@ -13,41 +13,32 @@ impl TryFrom<String> for ActiveCurrencyAndAmountSimpleType {
         {
             let value: &str = &value;
             {
-                let violated = {
-                    let frac_count = value.find('.').map_or(0, |dot| {
-                        value[dot + 1..]
-                            .chars()
-                            .filter(char::is_ascii_digit)
-                            .count()
-                    });
-                    frac_count > 5usize
-                };
+                let frac_count = value.find('.').map_or(0, |dot| {
+                    value[dot + 1..]
+                        .chars()
+                        .filter(char::is_ascii_digit)
+                        .count()
+                });
+                let violated = frac_count > 5usize;
                 if violated {
                     return Err(crate::common::validate::ConstraintError {
                         kind: crate::common::validate::ConstraintKind::FractionDigits,
                         message: format!(
                             "{} (got {})",
-                            "value exceeds maximum fraction digits 5",
-                            value.find('.').map_or(0, |dot| value[dot + 1..]
-                                .chars()
-                                .filter(char::is_ascii_digit)
-                                .count())
+                            "value exceeds maximum fraction digits 5", frac_count
                         ),
                     });
                 }
             }
             {
-                let violated = {
-                    let digit_count = value.chars().filter(char::is_ascii_digit).count();
-                    digit_count > 18usize
-                };
+                let digit_count = value.chars().filter(char::is_ascii_digit).count();
+                let violated = digit_count > 18usize;
                 if violated {
                     return Err(crate::common::validate::ConstraintError {
                         kind: crate::common::validate::ConstraintKind::TotalDigits,
                         message: format!(
                             "{} (got {})",
-                            "value exceeds maximum total digits 18",
-                            value.chars().filter(char::is_ascii_digit).count()
+                            "value exceeds maximum total digits 18", digit_count
                         ),
                     });
                 }
@@ -131,41 +122,32 @@ impl TryFrom<String> for ActiveOrHistoricCurrencyAnd13DecimalAmountSimpleType {
         {
             let value: &str = &value;
             {
-                let violated = {
-                    let frac_count = value.find('.').map_or(0, |dot| {
-                        value[dot + 1..]
-                            .chars()
-                            .filter(char::is_ascii_digit)
-                            .count()
-                    });
-                    frac_count > 13usize
-                };
+                let frac_count = value.find('.').map_or(0, |dot| {
+                    value[dot + 1..]
+                        .chars()
+                        .filter(char::is_ascii_digit)
+                        .count()
+                });
+                let violated = frac_count > 13usize;
                 if violated {
                     return Err(crate::common::validate::ConstraintError {
                         kind: crate::common::validate::ConstraintKind::FractionDigits,
                         message: format!(
                             "{} (got {})",
-                            "value exceeds maximum fraction digits 13",
-                            value.find('.').map_or(0, |dot| value[dot + 1..]
-                                .chars()
-                                .filter(char::is_ascii_digit)
-                                .count())
+                            "value exceeds maximum fraction digits 13", frac_count
                         ),
                     });
                 }
             }
             {
-                let violated = {
-                    let digit_count = value.chars().filter(char::is_ascii_digit).count();
-                    digit_count > 18usize
-                };
+                let digit_count = value.chars().filter(char::is_ascii_digit).count();
+                let violated = digit_count > 18usize;
                 if violated {
                     return Err(crate::common::validate::ConstraintError {
                         kind: crate::common::validate::ConstraintKind::TotalDigits,
                         message: format!(
                             "{} (got {})",
-                            "value exceeds maximum total digits 18",
-                            value.chars().filter(char::is_ascii_digit).count()
+                            "value exceeds maximum total digits 18", digit_count
                         ),
                     });
                 }
@@ -199,41 +181,32 @@ impl TryFrom<String> for ActiveOrHistoricCurrencyAndAmountSimpleType {
         {
             let value: &str = &value;
             {
-                let violated = {
-                    let frac_count = value.find('.').map_or(0, |dot| {
-                        value[dot + 1..]
-                            .chars()
-                            .filter(char::is_ascii_digit)
-                            .count()
-                    });
-                    frac_count > 5usize
-                };
+                let frac_count = value.find('.').map_or(0, |dot| {
+                    value[dot + 1..]
+                        .chars()
+                        .filter(char::is_ascii_digit)
+                        .count()
+                });
+                let violated = frac_count > 5usize;
                 if violated {
                     return Err(crate::common::validate::ConstraintError {
                         kind: crate::common::validate::ConstraintKind::FractionDigits,
                         message: format!(
                             "{} (got {})",
-                            "value exceeds maximum fraction digits 5",
-                            value.find('.').map_or(0, |dot| value[dot + 1..]
-                                .chars()
-                                .filter(char::is_ascii_digit)
-                                .count())
+                            "value exceeds maximum fraction digits 5", frac_count
                         ),
                     });
                 }
             }
             {
-                let violated = {
-                    let digit_count = value.chars().filter(char::is_ascii_digit).count();
-                    digit_count > 18usize
-                };
+                let digit_count = value.chars().filter(char::is_ascii_digit).count();
+                let violated = digit_count > 18usize;
                 if violated {
                     return Err(crate::common::validate::ConstraintError {
                         kind: crate::common::validate::ConstraintKind::TotalDigits,
                         message: format!(
                             "{} (got {})",
-                            "value exceeds maximum total digits 18",
-                            value.chars().filter(char::is_ascii_digit).count()
+                            "value exceeds maximum total digits 18", digit_count
                         ),
                     });
                 }
@@ -592,41 +565,32 @@ impl TryFrom<String> for BaseOneRate {
         {
             let value: &str = &value;
             {
-                let violated = {
-                    let frac_count = value.find('.').map_or(0, |dot| {
-                        value[dot + 1..]
-                            .chars()
-                            .filter(char::is_ascii_digit)
-                            .count()
-                    });
-                    frac_count > 10usize
-                };
+                let frac_count = value.find('.').map_or(0, |dot| {
+                    value[dot + 1..]
+                        .chars()
+                        .filter(char::is_ascii_digit)
+                        .count()
+                });
+                let violated = frac_count > 10usize;
                 if violated {
                     return Err(crate::common::validate::ConstraintError {
                         kind: crate::common::validate::ConstraintKind::FractionDigits,
                         message: format!(
                             "{} (got {})",
-                            "value exceeds maximum fraction digits 10",
-                            value.find('.').map_or(0, |dot| value[dot + 1..]
-                                .chars()
-                                .filter(char::is_ascii_digit)
-                                .count())
+                            "value exceeds maximum fraction digits 10", frac_count
                         ),
                     });
                 }
             }
             {
-                let violated = {
-                    let digit_count = value.chars().filter(char::is_ascii_digit).count();
-                    digit_count > 11usize
-                };
+                let digit_count = value.chars().filter(char::is_ascii_digit).count();
+                let violated = digit_count > 11usize;
                 if violated {
                     return Err(crate::common::validate::ConstraintError {
                         kind: crate::common::validate::ConstraintKind::TotalDigits,
                         message: format!(
                             "{} (got {})",
-                            "value exceeds maximum total digits 11",
-                            value.chars().filter(char::is_ascii_digit).count()
+                            "value exceeds maximum total digits 11", digit_count
                         ),
                     });
                 }
@@ -828,41 +792,32 @@ impl TryFrom<String> for DecimalNumber {
         {
             let value: &str = &value;
             {
-                let violated = {
-                    let frac_count = value.find('.').map_or(0, |dot| {
-                        value[dot + 1..]
-                            .chars()
-                            .filter(char::is_ascii_digit)
-                            .count()
-                    });
-                    frac_count > 17usize
-                };
+                let frac_count = value.find('.').map_or(0, |dot| {
+                    value[dot + 1..]
+                        .chars()
+                        .filter(char::is_ascii_digit)
+                        .count()
+                });
+                let violated = frac_count > 17usize;
                 if violated {
                     return Err(crate::common::validate::ConstraintError {
                         kind: crate::common::validate::ConstraintKind::FractionDigits,
                         message: format!(
                             "{} (got {})",
-                            "value exceeds maximum fraction digits 17",
-                            value.find('.').map_or(0, |dot| value[dot + 1..]
-                                .chars()
-                                .filter(char::is_ascii_digit)
-                                .count())
+                            "value exceeds maximum fraction digits 17", frac_count
                         ),
                     });
                 }
             }
             {
-                let violated = {
-                    let digit_count = value.chars().filter(char::is_ascii_digit).count();
-                    digit_count > 18usize
-                };
+                let digit_count = value.chars().filter(char::is_ascii_digit).count();
+                let violated = digit_count > 18usize;
                 if violated {
                     return Err(crate::common::validate::ConstraintError {
                         kind: crate::common::validate::ConstraintKind::TotalDigits,
                         message: format!(
                             "{} (got {})",
-                            "value exceeds maximum total digits 18",
-                            value.chars().filter(char::is_ascii_digit).count()
+                            "value exceeds maximum total digits 18", digit_count
                         ),
                     });
                 }
@@ -1099,34 +1054,25 @@ impl TryFrom<String> for ExternalAccountIdentification1Code {
         {
             let value: &str = &value;
             {
-                let violated = {
-                    let len = value.chars().count();
-                    len < 1usize
-                };
+                let len = value.chars().count();
+                let violated = len < 1usize;
                 if violated {
                     return Err(crate::common::validate::ConstraintError {
                         kind: crate::common::validate::ConstraintKind::MinLength,
                         message: format!(
                             "{} (got {})",
-                            "value is shorter than minimum length 1",
-                            value.chars().count()
+                            "value is shorter than minimum length 1", len
                         ),
                     });
                 }
             }
             {
-                let violated = {
-                    let len = value.chars().count();
-                    len > 4usize
-                };
+                let len = value.chars().count();
+                let violated = len > 4usize;
                 if violated {
                     return Err(crate::common::validate::ConstraintError {
                         kind: crate::common::validate::ConstraintKind::MaxLength,
-                        message: format!(
-                            "{} (got {})",
-                            "value exceeds maximum length 4",
-                            value.chars().count()
-                        ),
+                        message: format!("{} (got {})", "value exceeds maximum length 4", len),
                     });
                 }
             }
@@ -1158,34 +1104,25 @@ impl TryFrom<String> for ExternalBankTransactionDomain1Code {
         {
             let value: &str = &value;
             {
-                let violated = {
-                    let len = value.chars().count();
-                    len < 1usize
-                };
+                let len = value.chars().count();
+                let violated = len < 1usize;
                 if violated {
                     return Err(crate::common::validate::ConstraintError {
                         kind: crate::common::validate::ConstraintKind::MinLength,
                         message: format!(
                             "{} (got {})",
-                            "value is shorter than minimum length 1",
-                            value.chars().count()
+                            "value is shorter than minimum length 1", len
                         ),
                     });
                 }
             }
             {
-                let violated = {
-                    let len = value.chars().count();
-                    len > 4usize
-                };
+                let len = value.chars().count();
+                let violated = len > 4usize;
                 if violated {
                     return Err(crate::common::validate::ConstraintError {
                         kind: crate::common::validate::ConstraintKind::MaxLength,
-                        message: format!(
-                            "{} (got {})",
-                            "value exceeds maximum length 4",
-                            value.chars().count()
-                        ),
+                        message: format!("{} (got {})", "value exceeds maximum length 4", len),
                     });
                 }
             }
@@ -1217,34 +1154,25 @@ impl TryFrom<String> for ExternalBankTransactionFamily1Code {
         {
             let value: &str = &value;
             {
-                let violated = {
-                    let len = value.chars().count();
-                    len < 1usize
-                };
+                let len = value.chars().count();
+                let violated = len < 1usize;
                 if violated {
                     return Err(crate::common::validate::ConstraintError {
                         kind: crate::common::validate::ConstraintKind::MinLength,
                         message: format!(
                             "{} (got {})",
-                            "value is shorter than minimum length 1",
-                            value.chars().count()
+                            "value is shorter than minimum length 1", len
                         ),
                     });
                 }
             }
             {
-                let violated = {
-                    let len = value.chars().count();
-                    len > 4usize
-                };
+                let len = value.chars().count();
+                let violated = len > 4usize;
                 if violated {
                     return Err(crate::common::validate::ConstraintError {
                         kind: crate::common::validate::ConstraintKind::MaxLength,
-                        message: format!(
-                            "{} (got {})",
-                            "value exceeds maximum length 4",
-                            value.chars().count()
-                        ),
+                        message: format!("{} (got {})", "value exceeds maximum length 4", len),
                     });
                 }
             }
@@ -1276,34 +1204,25 @@ impl TryFrom<String> for ExternalBankTransactionSubFamily1Code {
         {
             let value: &str = &value;
             {
-                let violated = {
-                    let len = value.chars().count();
-                    len < 1usize
-                };
+                let len = value.chars().count();
+                let violated = len < 1usize;
                 if violated {
                     return Err(crate::common::validate::ConstraintError {
                         kind: crate::common::validate::ConstraintKind::MinLength,
                         message: format!(
                             "{} (got {})",
-                            "value is shorter than minimum length 1",
-                            value.chars().count()
+                            "value is shorter than minimum length 1", len
                         ),
                     });
                 }
             }
             {
-                let violated = {
-                    let len = value.chars().count();
-                    len > 4usize
-                };
+                let len = value.chars().count();
+                let violated = len > 4usize;
                 if violated {
                     return Err(crate::common::validate::ConstraintError {
                         kind: crate::common::validate::ConstraintKind::MaxLength,
-                        message: format!(
-                            "{} (got {})",
-                            "value exceeds maximum length 4",
-                            value.chars().count()
-                        ),
+                        message: format!("{} (got {})", "value exceeds maximum length 4", len),
                     });
                 }
             }
@@ -1335,34 +1254,25 @@ impl TryFrom<String> for ExternalCardTransactionCategory1Code {
         {
             let value: &str = &value;
             {
-                let violated = {
-                    let len = value.chars().count();
-                    len < 1usize
-                };
+                let len = value.chars().count();
+                let violated = len < 1usize;
                 if violated {
                     return Err(crate::common::validate::ConstraintError {
                         kind: crate::common::validate::ConstraintKind::MinLength,
                         message: format!(
                             "{} (got {})",
-                            "value is shorter than minimum length 1",
-                            value.chars().count()
+                            "value is shorter than minimum length 1", len
                         ),
                     });
                 }
             }
             {
-                let violated = {
-                    let len = value.chars().count();
-                    len > 4usize
-                };
+                let len = value.chars().count();
+                let violated = len > 4usize;
                 if violated {
                     return Err(crate::common::validate::ConstraintError {
                         kind: crate::common::validate::ConstraintKind::MaxLength,
-                        message: format!(
-                            "{} (got {})",
-                            "value exceeds maximum length 4",
-                            value.chars().count()
-                        ),
+                        message: format!("{} (got {})", "value exceeds maximum length 4", len),
                     });
                 }
             }
@@ -1394,34 +1304,25 @@ impl TryFrom<String> for ExternalCashAccountType1Code {
         {
             let value: &str = &value;
             {
-                let violated = {
-                    let len = value.chars().count();
-                    len < 1usize
-                };
+                let len = value.chars().count();
+                let violated = len < 1usize;
                 if violated {
                     return Err(crate::common::validate::ConstraintError {
                         kind: crate::common::validate::ConstraintKind::MinLength,
                         message: format!(
                             "{} (got {})",
-                            "value is shorter than minimum length 1",
-                            value.chars().count()
+                            "value is shorter than minimum length 1", len
                         ),
                     });
                 }
             }
             {
-                let violated = {
-                    let len = value.chars().count();
-                    len > 4usize
-                };
+                let len = value.chars().count();
+                let violated = len > 4usize;
                 if violated {
                     return Err(crate::common::validate::ConstraintError {
                         kind: crate::common::validate::ConstraintKind::MaxLength,
-                        message: format!(
-                            "{} (got {})",
-                            "value exceeds maximum length 4",
-                            value.chars().count()
-                        ),
+                        message: format!("{} (got {})", "value exceeds maximum length 4", len),
                     });
                 }
             }
@@ -1453,34 +1354,25 @@ impl TryFrom<String> for ExternalCategoryPurpose1Code {
         {
             let value: &str = &value;
             {
-                let violated = {
-                    let len = value.chars().count();
-                    len < 1usize
-                };
+                let len = value.chars().count();
+                let violated = len < 1usize;
                 if violated {
                     return Err(crate::common::validate::ConstraintError {
                         kind: crate::common::validate::ConstraintKind::MinLength,
                         message: format!(
                             "{} (got {})",
-                            "value is shorter than minimum length 1",
-                            value.chars().count()
+                            "value is shorter than minimum length 1", len
                         ),
                     });
                 }
             }
             {
-                let violated = {
-                    let len = value.chars().count();
-                    len > 4usize
-                };
+                let len = value.chars().count();
+                let violated = len > 4usize;
                 if violated {
                     return Err(crate::common::validate::ConstraintError {
                         kind: crate::common::validate::ConstraintKind::MaxLength,
-                        message: format!(
-                            "{} (got {})",
-                            "value exceeds maximum length 4",
-                            value.chars().count()
-                        ),
+                        message: format!("{} (got {})", "value exceeds maximum length 4", len),
                     });
                 }
             }
@@ -1512,34 +1404,25 @@ impl TryFrom<String> for ExternalChargeType1Code {
         {
             let value: &str = &value;
             {
-                let violated = {
-                    let len = value.chars().count();
-                    len < 1usize
-                };
+                let len = value.chars().count();
+                let violated = len < 1usize;
                 if violated {
                     return Err(crate::common::validate::ConstraintError {
                         kind: crate::common::validate::ConstraintKind::MinLength,
                         message: format!(
                             "{} (got {})",
-                            "value is shorter than minimum length 1",
-                            value.chars().count()
+                            "value is shorter than minimum length 1", len
                         ),
                     });
                 }
             }
             {
-                let violated = {
-                    let len = value.chars().count();
-                    len > 4usize
-                };
+                let len = value.chars().count();
+                let violated = len > 4usize;
                 if violated {
                     return Err(crate::common::validate::ConstraintError {
                         kind: crate::common::validate::ConstraintKind::MaxLength,
-                        message: format!(
-                            "{} (got {})",
-                            "value exceeds maximum length 4",
-                            value.chars().count()
-                        ),
+                        message: format!("{} (got {})", "value exceeds maximum length 4", len),
                     });
                 }
             }
@@ -1571,34 +1454,25 @@ impl TryFrom<String> for ExternalClearingSystemIdentification1Code {
         {
             let value: &str = &value;
             {
-                let violated = {
-                    let len = value.chars().count();
-                    len < 1usize
-                };
+                let len = value.chars().count();
+                let violated = len < 1usize;
                 if violated {
                     return Err(crate::common::validate::ConstraintError {
                         kind: crate::common::validate::ConstraintKind::MinLength,
                         message: format!(
                             "{} (got {})",
-                            "value is shorter than minimum length 1",
-                            value.chars().count()
+                            "value is shorter than minimum length 1", len
                         ),
                     });
                 }
             }
             {
-                let violated = {
-                    let len = value.chars().count();
-                    len > 5usize
-                };
+                let len = value.chars().count();
+                let violated = len > 5usize;
                 if violated {
                     return Err(crate::common::validate::ConstraintError {
                         kind: crate::common::validate::ConstraintKind::MaxLength,
-                        message: format!(
-                            "{} (got {})",
-                            "value exceeds maximum length 5",
-                            value.chars().count()
-                        ),
+                        message: format!("{} (got {})", "value exceeds maximum length 5", len),
                     });
                 }
             }
@@ -1630,34 +1504,25 @@ impl TryFrom<String> for ExternalDiscountAmountType1Code {
         {
             let value: &str = &value;
             {
-                let violated = {
-                    let len = value.chars().count();
-                    len < 1usize
-                };
+                let len = value.chars().count();
+                let violated = len < 1usize;
                 if violated {
                     return Err(crate::common::validate::ConstraintError {
                         kind: crate::common::validate::ConstraintKind::MinLength,
                         message: format!(
                             "{} (got {})",
-                            "value is shorter than minimum length 1",
-                            value.chars().count()
+                            "value is shorter than minimum length 1", len
                         ),
                     });
                 }
             }
             {
-                let violated = {
-                    let len = value.chars().count();
-                    len > 4usize
-                };
+                let len = value.chars().count();
+                let violated = len > 4usize;
                 if violated {
                     return Err(crate::common::validate::ConstraintError {
                         kind: crate::common::validate::ConstraintKind::MaxLength,
-                        message: format!(
-                            "{} (got {})",
-                            "value exceeds maximum length 4",
-                            value.chars().count()
-                        ),
+                        message: format!("{} (got {})", "value exceeds maximum length 4", len),
                     });
                 }
             }
@@ -1689,34 +1554,25 @@ impl TryFrom<String> for ExternalDocumentLineType1Code {
         {
             let value: &str = &value;
             {
-                let violated = {
-                    let len = value.chars().count();
-                    len < 1usize
-                };
+                let len = value.chars().count();
+                let violated = len < 1usize;
                 if violated {
                     return Err(crate::common::validate::ConstraintError {
                         kind: crate::common::validate::ConstraintKind::MinLength,
                         message: format!(
                             "{} (got {})",
-                            "value is shorter than minimum length 1",
-                            value.chars().count()
+                            "value is shorter than minimum length 1", len
                         ),
                     });
                 }
             }
             {
-                let violated = {
-                    let len = value.chars().count();
-                    len > 4usize
-                };
+                let len = value.chars().count();
+                let violated = len > 4usize;
                 if violated {
                     return Err(crate::common::validate::ConstraintError {
                         kind: crate::common::validate::ConstraintKind::MaxLength,
-                        message: format!(
-                            "{} (got {})",
-                            "value exceeds maximum length 4",
-                            value.chars().count()
-                        ),
+                        message: format!("{} (got {})", "value exceeds maximum length 4", len),
                     });
                 }
             }
@@ -1748,34 +1604,25 @@ impl TryFrom<String> for ExternalEntryStatus1Code {
         {
             let value: &str = &value;
             {
-                let violated = {
-                    let len = value.chars().count();
-                    len < 1usize
-                };
+                let len = value.chars().count();
+                let violated = len < 1usize;
                 if violated {
                     return Err(crate::common::validate::ConstraintError {
                         kind: crate::common::validate::ConstraintKind::MinLength,
                         message: format!(
                             "{} (got {})",
-                            "value is shorter than minimum length 1",
-                            value.chars().count()
+                            "value is shorter than minimum length 1", len
                         ),
                     });
                 }
             }
             {
-                let violated = {
-                    let len = value.chars().count();
-                    len > 4usize
-                };
+                let len = value.chars().count();
+                let violated = len > 4usize;
                 if violated {
                     return Err(crate::common::validate::ConstraintError {
                         kind: crate::common::validate::ConstraintKind::MaxLength,
-                        message: format!(
-                            "{} (got {})",
-                            "value exceeds maximum length 4",
-                            value.chars().count()
-                        ),
+                        message: format!("{} (got {})", "value exceeds maximum length 4", len),
                     });
                 }
             }
@@ -1807,34 +1654,25 @@ impl TryFrom<String> for ExternalFinancialInstitutionIdentification1Code {
         {
             let value: &str = &value;
             {
-                let violated = {
-                    let len = value.chars().count();
-                    len < 1usize
-                };
+                let len = value.chars().count();
+                let violated = len < 1usize;
                 if violated {
                     return Err(crate::common::validate::ConstraintError {
                         kind: crate::common::validate::ConstraintKind::MinLength,
                         message: format!(
                             "{} (got {})",
-                            "value is shorter than minimum length 1",
-                            value.chars().count()
+                            "value is shorter than minimum length 1", len
                         ),
                     });
                 }
             }
             {
-                let violated = {
-                    let len = value.chars().count();
-                    len > 4usize
-                };
+                let len = value.chars().count();
+                let violated = len > 4usize;
                 if violated {
                     return Err(crate::common::validate::ConstraintError {
                         kind: crate::common::validate::ConstraintKind::MaxLength,
-                        message: format!(
-                            "{} (got {})",
-                            "value exceeds maximum length 4",
-                            value.chars().count()
-                        ),
+                        message: format!("{} (got {})", "value exceeds maximum length 4", len),
                     });
                 }
             }
@@ -1866,34 +1704,25 @@ impl TryFrom<String> for ExternalFinancialInstrumentIdentificationType1Code {
         {
             let value: &str = &value;
             {
-                let violated = {
-                    let len = value.chars().count();
-                    len < 1usize
-                };
+                let len = value.chars().count();
+                let violated = len < 1usize;
                 if violated {
                     return Err(crate::common::validate::ConstraintError {
                         kind: crate::common::validate::ConstraintKind::MinLength,
                         message: format!(
                             "{} (got {})",
-                            "value is shorter than minimum length 1",
-                            value.chars().count()
+                            "value is shorter than minimum length 1", len
                         ),
                     });
                 }
             }
             {
-                let violated = {
-                    let len = value.chars().count();
-                    len > 4usize
-                };
+                let len = value.chars().count();
+                let violated = len > 4usize;
                 if violated {
                     return Err(crate::common::validate::ConstraintError {
                         kind: crate::common::validate::ConstraintKind::MaxLength,
-                        message: format!(
-                            "{} (got {})",
-                            "value exceeds maximum length 4",
-                            value.chars().count()
-                        ),
+                        message: format!("{} (got {})", "value exceeds maximum length 4", len),
                     });
                 }
             }
@@ -1925,34 +1754,25 @@ impl TryFrom<String> for ExternalGarnishmentType1Code {
         {
             let value: &str = &value;
             {
-                let violated = {
-                    let len = value.chars().count();
-                    len < 1usize
-                };
+                let len = value.chars().count();
+                let violated = len < 1usize;
                 if violated {
                     return Err(crate::common::validate::ConstraintError {
                         kind: crate::common::validate::ConstraintKind::MinLength,
                         message: format!(
                             "{} (got {})",
-                            "value is shorter than minimum length 1",
-                            value.chars().count()
+                            "value is shorter than minimum length 1", len
                         ),
                     });
                 }
             }
             {
-                let violated = {
-                    let len = value.chars().count();
-                    len > 4usize
-                };
+                let len = value.chars().count();
+                let violated = len > 4usize;
                 if violated {
                     return Err(crate::common::validate::ConstraintError {
                         kind: crate::common::validate::ConstraintKind::MaxLength,
-                        message: format!(
-                            "{} (got {})",
-                            "value exceeds maximum length 4",
-                            value.chars().count()
-                        ),
+                        message: format!("{} (got {})", "value exceeds maximum length 4", len),
                     });
                 }
             }
@@ -1984,34 +1804,25 @@ impl TryFrom<String> for ExternalLocalInstrument1Code {
         {
             let value: &str = &value;
             {
-                let violated = {
-                    let len = value.chars().count();
-                    len < 1usize
-                };
+                let len = value.chars().count();
+                let violated = len < 1usize;
                 if violated {
                     return Err(crate::common::validate::ConstraintError {
                         kind: crate::common::validate::ConstraintKind::MinLength,
                         message: format!(
                             "{} (got {})",
-                            "value is shorter than minimum length 1",
-                            value.chars().count()
+                            "value is shorter than minimum length 1", len
                         ),
                     });
                 }
             }
             {
-                let violated = {
-                    let len = value.chars().count();
-                    len > 35usize
-                };
+                let len = value.chars().count();
+                let violated = len > 35usize;
                 if violated {
                     return Err(crate::common::validate::ConstraintError {
                         kind: crate::common::validate::ConstraintKind::MaxLength,
-                        message: format!(
-                            "{} (got {})",
-                            "value exceeds maximum length 35",
-                            value.chars().count()
-                        ),
+                        message: format!("{} (got {})", "value exceeds maximum length 35", len),
                     });
                 }
             }
@@ -2043,34 +1854,25 @@ impl TryFrom<String> for ExternalOrganisationIdentification1Code {
         {
             let value: &str = &value;
             {
-                let violated = {
-                    let len = value.chars().count();
-                    len < 1usize
-                };
+                let len = value.chars().count();
+                let violated = len < 1usize;
                 if violated {
                     return Err(crate::common::validate::ConstraintError {
                         kind: crate::common::validate::ConstraintKind::MinLength,
                         message: format!(
                             "{} (got {})",
-                            "value is shorter than minimum length 1",
-                            value.chars().count()
+                            "value is shorter than minimum length 1", len
                         ),
                     });
                 }
             }
             {
-                let violated = {
-                    let len = value.chars().count();
-                    len > 4usize
-                };
+                let len = value.chars().count();
+                let violated = len > 4usize;
                 if violated {
                     return Err(crate::common::validate::ConstraintError {
                         kind: crate::common::validate::ConstraintKind::MaxLength,
-                        message: format!(
-                            "{} (got {})",
-                            "value exceeds maximum length 4",
-                            value.chars().count()
-                        ),
+                        message: format!("{} (got {})", "value exceeds maximum length 4", len),
                     });
                 }
             }
@@ -2102,34 +1904,25 @@ impl TryFrom<String> for ExternalPersonIdentification1Code {
         {
             let value: &str = &value;
             {
-                let violated = {
-                    let len = value.chars().count();
-                    len < 1usize
-                };
+                let len = value.chars().count();
+                let violated = len < 1usize;
                 if violated {
                     return Err(crate::common::validate::ConstraintError {
                         kind: crate::common::validate::ConstraintKind::MinLength,
                         message: format!(
                             "{} (got {})",
-                            "value is shorter than minimum length 1",
-                            value.chars().count()
+                            "value is shorter than minimum length 1", len
                         ),
                     });
                 }
             }
             {
-                let violated = {
-                    let len = value.chars().count();
-                    len > 4usize
-                };
+                let len = value.chars().count();
+                let violated = len > 4usize;
                 if violated {
                     return Err(crate::common::validate::ConstraintError {
                         kind: crate::common::validate::ConstraintKind::MaxLength,
-                        message: format!(
-                            "{} (got {})",
-                            "value exceeds maximum length 4",
-                            value.chars().count()
-                        ),
+                        message: format!("{} (got {})", "value exceeds maximum length 4", len),
                     });
                 }
             }
@@ -2161,34 +1954,25 @@ impl TryFrom<String> for ExternalProxyAccountType1Code {
         {
             let value: &str = &value;
             {
-                let violated = {
-                    let len = value.chars().count();
-                    len < 1usize
-                };
+                let len = value.chars().count();
+                let violated = len < 1usize;
                 if violated {
                     return Err(crate::common::validate::ConstraintError {
                         kind: crate::common::validate::ConstraintKind::MinLength,
                         message: format!(
                             "{} (got {})",
-                            "value is shorter than minimum length 1",
-                            value.chars().count()
+                            "value is shorter than minimum length 1", len
                         ),
                     });
                 }
             }
             {
-                let violated = {
-                    let len = value.chars().count();
-                    len > 4usize
-                };
+                let len = value.chars().count();
+                let violated = len > 4usize;
                 if violated {
                     return Err(crate::common::validate::ConstraintError {
                         kind: crate::common::validate::ConstraintKind::MaxLength,
-                        message: format!(
-                            "{} (got {})",
-                            "value exceeds maximum length 4",
-                            value.chars().count()
-                        ),
+                        message: format!("{} (got {})", "value exceeds maximum length 4", len),
                     });
                 }
             }
@@ -2220,34 +2004,25 @@ impl TryFrom<String> for ExternalPurpose1Code {
         {
             let value: &str = &value;
             {
-                let violated = {
-                    let len = value.chars().count();
-                    len < 1usize
-                };
+                let len = value.chars().count();
+                let violated = len < 1usize;
                 if violated {
                     return Err(crate::common::validate::ConstraintError {
                         kind: crate::common::validate::ConstraintKind::MinLength,
                         message: format!(
                             "{} (got {})",
-                            "value is shorter than minimum length 1",
-                            value.chars().count()
+                            "value is shorter than minimum length 1", len
                         ),
                     });
                 }
             }
             {
-                let violated = {
-                    let len = value.chars().count();
-                    len > 4usize
-                };
+                let len = value.chars().count();
+                let violated = len > 4usize;
                 if violated {
                     return Err(crate::common::validate::ConstraintError {
                         kind: crate::common::validate::ConstraintKind::MaxLength,
-                        message: format!(
-                            "{} (got {})",
-                            "value exceeds maximum length 4",
-                            value.chars().count()
-                        ),
+                        message: format!("{} (got {})", "value exceeds maximum length 4", len),
                     });
                 }
             }
@@ -2279,34 +2054,25 @@ impl TryFrom<String> for ExternalRePresentmentReason1Code {
         {
             let value: &str = &value;
             {
-                let violated = {
-                    let len = value.chars().count();
-                    len < 1usize
-                };
+                let len = value.chars().count();
+                let violated = len < 1usize;
                 if violated {
                     return Err(crate::common::validate::ConstraintError {
                         kind: crate::common::validate::ConstraintKind::MinLength,
                         message: format!(
                             "{} (got {})",
-                            "value is shorter than minimum length 1",
-                            value.chars().count()
+                            "value is shorter than minimum length 1", len
                         ),
                     });
                 }
             }
             {
-                let violated = {
-                    let len = value.chars().count();
-                    len > 4usize
-                };
+                let len = value.chars().count();
+                let violated = len > 4usize;
                 if violated {
                     return Err(crate::common::validate::ConstraintError {
                         kind: crate::common::validate::ConstraintKind::MaxLength,
-                        message: format!(
-                            "{} (got {})",
-                            "value exceeds maximum length 4",
-                            value.chars().count()
-                        ),
+                        message: format!("{} (got {})", "value exceeds maximum length 4", len),
                     });
                 }
             }
@@ -2338,34 +2104,25 @@ impl TryFrom<String> for ExternalReportingSource1Code {
         {
             let value: &str = &value;
             {
-                let violated = {
-                    let len = value.chars().count();
-                    len < 1usize
-                };
+                let len = value.chars().count();
+                let violated = len < 1usize;
                 if violated {
                     return Err(crate::common::validate::ConstraintError {
                         kind: crate::common::validate::ConstraintKind::MinLength,
                         message: format!(
                             "{} (got {})",
-                            "value is shorter than minimum length 1",
-                            value.chars().count()
+                            "value is shorter than minimum length 1", len
                         ),
                     });
                 }
             }
             {
-                let violated = {
-                    let len = value.chars().count();
-                    len > 4usize
-                };
+                let len = value.chars().count();
+                let violated = len > 4usize;
                 if violated {
                     return Err(crate::common::validate::ConstraintError {
                         kind: crate::common::validate::ConstraintKind::MaxLength,
-                        message: format!(
-                            "{} (got {})",
-                            "value exceeds maximum length 4",
-                            value.chars().count()
-                        ),
+                        message: format!("{} (got {})", "value exceeds maximum length 4", len),
                     });
                 }
             }
@@ -2397,34 +2154,25 @@ impl TryFrom<String> for ExternalReturnReason1Code {
         {
             let value: &str = &value;
             {
-                let violated = {
-                    let len = value.chars().count();
-                    len < 1usize
-                };
+                let len = value.chars().count();
+                let violated = len < 1usize;
                 if violated {
                     return Err(crate::common::validate::ConstraintError {
                         kind: crate::common::validate::ConstraintKind::MinLength,
                         message: format!(
                             "{} (got {})",
-                            "value is shorter than minimum length 1",
-                            value.chars().count()
+                            "value is shorter than minimum length 1", len
                         ),
                     });
                 }
             }
             {
-                let violated = {
-                    let len = value.chars().count();
-                    len > 4usize
-                };
+                let len = value.chars().count();
+                let violated = len > 4usize;
                 if violated {
                     return Err(crate::common::validate::ConstraintError {
                         kind: crate::common::validate::ConstraintKind::MaxLength,
-                        message: format!(
-                            "{} (got {})",
-                            "value exceeds maximum length 4",
-                            value.chars().count()
-                        ),
+                        message: format!("{} (got {})", "value exceeds maximum length 4", len),
                     });
                 }
             }
@@ -2456,34 +2204,25 @@ impl TryFrom<String> for ExternalServiceLevel1Code {
         {
             let value: &str = &value;
             {
-                let violated = {
-                    let len = value.chars().count();
-                    len < 1usize
-                };
+                let len = value.chars().count();
+                let violated = len < 1usize;
                 if violated {
                     return Err(crate::common::validate::ConstraintError {
                         kind: crate::common::validate::ConstraintKind::MinLength,
                         message: format!(
                             "{} (got {})",
-                            "value is shorter than minimum length 1",
-                            value.chars().count()
+                            "value is shorter than minimum length 1", len
                         ),
                     });
                 }
             }
             {
-                let violated = {
-                    let len = value.chars().count();
-                    len > 4usize
-                };
+                let len = value.chars().count();
+                let violated = len > 4usize;
                 if violated {
                     return Err(crate::common::validate::ConstraintError {
                         kind: crate::common::validate::ConstraintKind::MaxLength,
-                        message: format!(
-                            "{} (got {})",
-                            "value exceeds maximum length 4",
-                            value.chars().count()
-                        ),
+                        message: format!("{} (got {})", "value exceeds maximum length 4", len),
                     });
                 }
             }
@@ -2515,34 +2254,25 @@ impl TryFrom<String> for ExternalTaxAmountType1Code {
         {
             let value: &str = &value;
             {
-                let violated = {
-                    let len = value.chars().count();
-                    len < 1usize
-                };
+                let len = value.chars().count();
+                let violated = len < 1usize;
                 if violated {
                     return Err(crate::common::validate::ConstraintError {
                         kind: crate::common::validate::ConstraintKind::MinLength,
                         message: format!(
                             "{} (got {})",
-                            "value is shorter than minimum length 1",
-                            value.chars().count()
+                            "value is shorter than minimum length 1", len
                         ),
                     });
                 }
             }
             {
-                let violated = {
-                    let len = value.chars().count();
-                    len > 4usize
-                };
+                let len = value.chars().count();
+                let violated = len > 4usize;
                 if violated {
                     return Err(crate::common::validate::ConstraintError {
                         kind: crate::common::validate::ConstraintKind::MaxLength,
-                        message: format!(
-                            "{} (got {})",
-                            "value exceeds maximum length 4",
-                            value.chars().count()
-                        ),
+                        message: format!("{} (got {})", "value exceeds maximum length 4", len),
                     });
                 }
             }
@@ -2574,34 +2304,25 @@ impl TryFrom<String> for ExternalTechnicalInputChannel1Code {
         {
             let value: &str = &value;
             {
-                let violated = {
-                    let len = value.chars().count();
-                    len < 1usize
-                };
+                let len = value.chars().count();
+                let violated = len < 1usize;
                 if violated {
                     return Err(crate::common::validate::ConstraintError {
                         kind: crate::common::validate::ConstraintKind::MinLength,
                         message: format!(
                             "{} (got {})",
-                            "value is shorter than minimum length 1",
-                            value.chars().count()
+                            "value is shorter than minimum length 1", len
                         ),
                     });
                 }
             }
             {
-                let violated = {
-                    let len = value.chars().count();
-                    len > 4usize
-                };
+                let len = value.chars().count();
+                let violated = len > 4usize;
                 if violated {
                     return Err(crate::common::validate::ConstraintError {
                         kind: crate::common::validate::ConstraintKind::MaxLength,
-                        message: format!(
-                            "{} (got {})",
-                            "value exceeds maximum length 4",
-                            value.chars().count()
-                        ),
+                        message: format!("{} (got {})", "value exceeds maximum length 4", len),
                     });
                 }
             }
@@ -2876,41 +2597,32 @@ impl TryFrom<String> for ImpliedCurrencyAndAmount {
         {
             let value: &str = &value;
             {
-                let violated = {
-                    let frac_count = value.find('.').map_or(0, |dot| {
-                        value[dot + 1..]
-                            .chars()
-                            .filter(char::is_ascii_digit)
-                            .count()
-                    });
-                    frac_count > 5usize
-                };
+                let frac_count = value.find('.').map_or(0, |dot| {
+                    value[dot + 1..]
+                        .chars()
+                        .filter(char::is_ascii_digit)
+                        .count()
+                });
+                let violated = frac_count > 5usize;
                 if violated {
                     return Err(crate::common::validate::ConstraintError {
                         kind: crate::common::validate::ConstraintKind::FractionDigits,
                         message: format!(
                             "{} (got {})",
-                            "value exceeds maximum fraction digits 5",
-                            value.find('.').map_or(0, |dot| value[dot + 1..]
-                                .chars()
-                                .filter(char::is_ascii_digit)
-                                .count())
+                            "value exceeds maximum fraction digits 5", frac_count
                         ),
                     });
                 }
             }
             {
-                let violated = {
-                    let digit_count = value.chars().filter(char::is_ascii_digit).count();
-                    digit_count > 18usize
-                };
+                let digit_count = value.chars().filter(char::is_ascii_digit).count();
+                let violated = digit_count > 18usize;
                 if violated {
                     return Err(crate::common::validate::ConstraintError {
                         kind: crate::common::validate::ConstraintKind::TotalDigits,
                         message: format!(
                             "{} (got {})",
-                            "value exceeds maximum total digits 18",
-                            value.chars().filter(char::is_ascii_digit).count()
+                            "value exceeds maximum total digits 18", digit_count
                         ),
                     });
                 }
@@ -3069,34 +2781,25 @@ impl TryFrom<String> for Max1025Text {
         {
             let value: &str = &value;
             {
-                let violated = {
-                    let len = value.chars().count();
-                    len < 1usize
-                };
+                let len = value.chars().count();
+                let violated = len < 1usize;
                 if violated {
                     return Err(crate::common::validate::ConstraintError {
                         kind: crate::common::validate::ConstraintKind::MinLength,
                         message: format!(
                             "{} (got {})",
-                            "value is shorter than minimum length 1",
-                            value.chars().count()
+                            "value is shorter than minimum length 1", len
                         ),
                     });
                 }
             }
             {
-                let violated = {
-                    let len = value.chars().count();
-                    len > 1025usize
-                };
+                let len = value.chars().count();
+                let violated = len > 1025usize;
                 if violated {
                     return Err(crate::common::validate::ConstraintError {
                         kind: crate::common::validate::ConstraintKind::MaxLength,
-                        message: format!(
-                            "{} (got {})",
-                            "value exceeds maximum length 1025",
-                            value.chars().count()
-                        ),
+                        message: format!("{} (got {})", "value exceeds maximum length 1025", len),
                     });
                 }
             }
@@ -3128,34 +2831,25 @@ impl TryFrom<String> for Max105Text {
         {
             let value: &str = &value;
             {
-                let violated = {
-                    let len = value.chars().count();
-                    len < 1usize
-                };
+                let len = value.chars().count();
+                let violated = len < 1usize;
                 if violated {
                     return Err(crate::common::validate::ConstraintError {
                         kind: crate::common::validate::ConstraintKind::MinLength,
                         message: format!(
                             "{} (got {})",
-                            "value is shorter than minimum length 1",
-                            value.chars().count()
+                            "value is shorter than minimum length 1", len
                         ),
                     });
                 }
             }
             {
-                let violated = {
-                    let len = value.chars().count();
-                    len > 105usize
-                };
+                let len = value.chars().count();
+                let violated = len > 105usize;
                 if violated {
                     return Err(crate::common::validate::ConstraintError {
                         kind: crate::common::validate::ConstraintKind::MaxLength,
-                        message: format!(
-                            "{} (got {})",
-                            "value exceeds maximum length 105",
-                            value.chars().count()
-                        ),
+                        message: format!("{} (got {})", "value exceeds maximum length 105", len),
                     });
                 }
             }
@@ -3187,34 +2881,25 @@ impl TryFrom<String> for Max128Text {
         {
             let value: &str = &value;
             {
-                let violated = {
-                    let len = value.chars().count();
-                    len < 1usize
-                };
+                let len = value.chars().count();
+                let violated = len < 1usize;
                 if violated {
                     return Err(crate::common::validate::ConstraintError {
                         kind: crate::common::validate::ConstraintKind::MinLength,
                         message: format!(
                             "{} (got {})",
-                            "value is shorter than minimum length 1",
-                            value.chars().count()
+                            "value is shorter than minimum length 1", len
                         ),
                     });
                 }
             }
             {
-                let violated = {
-                    let len = value.chars().count();
-                    len > 128usize
-                };
+                let len = value.chars().count();
+                let violated = len > 128usize;
                 if violated {
                     return Err(crate::common::validate::ConstraintError {
                         kind: crate::common::validate::ConstraintKind::MaxLength,
-                        message: format!(
-                            "{} (got {})",
-                            "value exceeds maximum length 128",
-                            value.chars().count()
-                        ),
+                        message: format!("{} (got {})", "value exceeds maximum length 128", len),
                     });
                 }
             }
@@ -3246,34 +2931,25 @@ impl TryFrom<String> for Max140Text {
         {
             let value: &str = &value;
             {
-                let violated = {
-                    let len = value.chars().count();
-                    len < 1usize
-                };
+                let len = value.chars().count();
+                let violated = len < 1usize;
                 if violated {
                     return Err(crate::common::validate::ConstraintError {
                         kind: crate::common::validate::ConstraintKind::MinLength,
                         message: format!(
                             "{} (got {})",
-                            "value is shorter than minimum length 1",
-                            value.chars().count()
+                            "value is shorter than minimum length 1", len
                         ),
                     });
                 }
             }
             {
-                let violated = {
-                    let len = value.chars().count();
-                    len > 140usize
-                };
+                let len = value.chars().count();
+                let violated = len > 140usize;
                 if violated {
                     return Err(crate::common::validate::ConstraintError {
                         kind: crate::common::validate::ConstraintKind::MaxLength,
-                        message: format!(
-                            "{} (got {})",
-                            "value exceeds maximum length 140",
-                            value.chars().count()
-                        ),
+                        message: format!("{} (got {})", "value exceeds maximum length 140", len),
                     });
                 }
             }
@@ -3455,34 +3131,25 @@ impl TryFrom<String> for Max16Text {
         {
             let value: &str = &value;
             {
-                let violated = {
-                    let len = value.chars().count();
-                    len < 1usize
-                };
+                let len = value.chars().count();
+                let violated = len < 1usize;
                 if violated {
                     return Err(crate::common::validate::ConstraintError {
                         kind: crate::common::validate::ConstraintKind::MinLength,
                         message: format!(
                             "{} (got {})",
-                            "value is shorter than minimum length 1",
-                            value.chars().count()
+                            "value is shorter than minimum length 1", len
                         ),
                     });
                 }
             }
             {
-                let violated = {
-                    let len = value.chars().count();
-                    len > 16usize
-                };
+                let len = value.chars().count();
+                let violated = len > 16usize;
                 if violated {
                     return Err(crate::common::validate::ConstraintError {
                         kind: crate::common::validate::ConstraintKind::MaxLength,
-                        message: format!(
-                            "{} (got {})",
-                            "value exceeds maximum length 16",
-                            value.chars().count()
-                        ),
+                        message: format!("{} (got {})", "value exceeds maximum length 16", len),
                     });
                 }
             }
@@ -3514,34 +3181,25 @@ impl TryFrom<String> for Max2048Text {
         {
             let value: &str = &value;
             {
-                let violated = {
-                    let len = value.chars().count();
-                    len < 1usize
-                };
+                let len = value.chars().count();
+                let violated = len < 1usize;
                 if violated {
                     return Err(crate::common::validate::ConstraintError {
                         kind: crate::common::validate::ConstraintKind::MinLength,
                         message: format!(
                             "{} (got {})",
-                            "value is shorter than minimum length 1",
-                            value.chars().count()
+                            "value is shorter than minimum length 1", len
                         ),
                     });
                 }
             }
             {
-                let violated = {
-                    let len = value.chars().count();
-                    len > 2048usize
-                };
+                let len = value.chars().count();
+                let violated = len > 2048usize;
                 if violated {
                     return Err(crate::common::validate::ConstraintError {
                         kind: crate::common::validate::ConstraintKind::MaxLength,
-                        message: format!(
-                            "{} (got {})",
-                            "value exceeds maximum length 2048",
-                            value.chars().count()
-                        ),
+                        message: format!("{} (got {})", "value exceeds maximum length 2048", len),
                     });
                 }
             }
@@ -3573,34 +3231,25 @@ impl TryFrom<String> for Max34Text {
         {
             let value: &str = &value;
             {
-                let violated = {
-                    let len = value.chars().count();
-                    len < 1usize
-                };
+                let len = value.chars().count();
+                let violated = len < 1usize;
                 if violated {
                     return Err(crate::common::validate::ConstraintError {
                         kind: crate::common::validate::ConstraintKind::MinLength,
                         message: format!(
                             "{} (got {})",
-                            "value is shorter than minimum length 1",
-                            value.chars().count()
+                            "value is shorter than minimum length 1", len
                         ),
                     });
                 }
             }
             {
-                let violated = {
-                    let len = value.chars().count();
-                    len > 34usize
-                };
+                let len = value.chars().count();
+                let violated = len > 34usize;
                 if violated {
                     return Err(crate::common::validate::ConstraintError {
                         kind: crate::common::validate::ConstraintKind::MaxLength,
-                        message: format!(
-                            "{} (got {})",
-                            "value exceeds maximum length 34",
-                            value.chars().count()
-                        ),
+                        message: format!("{} (got {})", "value exceeds maximum length 34", len),
                     });
                 }
             }
@@ -3632,34 +3281,25 @@ impl TryFrom<String> for Max350Text {
         {
             let value: &str = &value;
             {
-                let violated = {
-                    let len = value.chars().count();
-                    len < 1usize
-                };
+                let len = value.chars().count();
+                let violated = len < 1usize;
                 if violated {
                     return Err(crate::common::validate::ConstraintError {
                         kind: crate::common::validate::ConstraintKind::MinLength,
                         message: format!(
                             "{} (got {})",
-                            "value is shorter than minimum length 1",
-                            value.chars().count()
+                            "value is shorter than minimum length 1", len
                         ),
                     });
                 }
             }
             {
-                let violated = {
-                    let len = value.chars().count();
-                    len > 350usize
-                };
+                let len = value.chars().count();
+                let violated = len > 350usize;
                 if violated {
                     return Err(crate::common::validate::ConstraintError {
                         kind: crate::common::validate::ConstraintKind::MaxLength,
-                        message: format!(
-                            "{} (got {})",
-                            "value exceeds maximum length 350",
-                            value.chars().count()
-                        ),
+                        message: format!("{} (got {})", "value exceeds maximum length 350", len),
                     });
                 }
             }
@@ -3691,34 +3331,25 @@ impl TryFrom<String> for Max35Text {
         {
             let value: &str = &value;
             {
-                let violated = {
-                    let len = value.chars().count();
-                    len < 1usize
-                };
+                let len = value.chars().count();
+                let violated = len < 1usize;
                 if violated {
                     return Err(crate::common::validate::ConstraintError {
                         kind: crate::common::validate::ConstraintKind::MinLength,
                         message: format!(
                             "{} (got {})",
-                            "value is shorter than minimum length 1",
-                            value.chars().count()
+                            "value is shorter than minimum length 1", len
                         ),
                     });
                 }
             }
             {
-                let violated = {
-                    let len = value.chars().count();
-                    len > 35usize
-                };
+                let len = value.chars().count();
+                let violated = len > 35usize;
                 if violated {
                     return Err(crate::common::validate::ConstraintError {
                         kind: crate::common::validate::ConstraintKind::MaxLength,
-                        message: format!(
-                            "{} (got {})",
-                            "value exceeds maximum length 35",
-                            value.chars().count()
-                        ),
+                        message: format!("{} (got {})", "value exceeds maximum length 35", len),
                     });
                 }
             }
@@ -3818,34 +3449,25 @@ impl TryFrom<String> for Max4Text {
         {
             let value: &str = &value;
             {
-                let violated = {
-                    let len = value.chars().count();
-                    len < 1usize
-                };
+                let len = value.chars().count();
+                let violated = len < 1usize;
                 if violated {
                     return Err(crate::common::validate::ConstraintError {
                         kind: crate::common::validate::ConstraintKind::MinLength,
                         message: format!(
                             "{} (got {})",
-                            "value is shorter than minimum length 1",
-                            value.chars().count()
+                            "value is shorter than minimum length 1", len
                         ),
                     });
                 }
             }
             {
-                let violated = {
-                    let len = value.chars().count();
-                    len > 4usize
-                };
+                let len = value.chars().count();
+                let violated = len > 4usize;
                 if violated {
                     return Err(crate::common::validate::ConstraintError {
                         kind: crate::common::validate::ConstraintKind::MaxLength,
-                        message: format!(
-                            "{} (got {})",
-                            "value exceeds maximum length 4",
-                            value.chars().count()
-                        ),
+                        message: format!("{} (got {})", "value exceeds maximum length 4", len),
                     });
                 }
             }
@@ -3877,34 +3499,25 @@ impl TryFrom<String> for Max500Text {
         {
             let value: &str = &value;
             {
-                let violated = {
-                    let len = value.chars().count();
-                    len < 1usize
-                };
+                let len = value.chars().count();
+                let violated = len < 1usize;
                 if violated {
                     return Err(crate::common::validate::ConstraintError {
                         kind: crate::common::validate::ConstraintKind::MinLength,
                         message: format!(
                             "{} (got {})",
-                            "value is shorter than minimum length 1",
-                            value.chars().count()
+                            "value is shorter than minimum length 1", len
                         ),
                     });
                 }
             }
             {
-                let violated = {
-                    let len = value.chars().count();
-                    len > 500usize
-                };
+                let len = value.chars().count();
+                let violated = len > 500usize;
                 if violated {
                     return Err(crate::common::validate::ConstraintError {
                         kind: crate::common::validate::ConstraintKind::MaxLength,
-                        message: format!(
-                            "{} (got {})",
-                            "value exceeds maximum length 500",
-                            value.chars().count()
-                        ),
+                        message: format!("{} (got {})", "value exceeds maximum length 500", len),
                     });
                 }
             }
@@ -4004,34 +3617,25 @@ impl TryFrom<String> for Max70Text {
         {
             let value: &str = &value;
             {
-                let violated = {
-                    let len = value.chars().count();
-                    len < 1usize
-                };
+                let len = value.chars().count();
+                let violated = len < 1usize;
                 if violated {
                     return Err(crate::common::validate::ConstraintError {
                         kind: crate::common::validate::ConstraintKind::MinLength,
                         message: format!(
                             "{} (got {})",
-                            "value is shorter than minimum length 1",
-                            value.chars().count()
+                            "value is shorter than minimum length 1", len
                         ),
                     });
                 }
             }
             {
-                let violated = {
-                    let len = value.chars().count();
-                    len > 70usize
-                };
+                let len = value.chars().count();
+                let violated = len > 70usize;
                 if violated {
                     return Err(crate::common::validate::ConstraintError {
                         kind: crate::common::validate::ConstraintKind::MaxLength,
-                        message: format!(
-                            "{} (got {})",
-                            "value exceeds maximum length 70",
-                            value.chars().count()
-                        ),
+                        message: format!("{} (got {})", "value exceeds maximum length 70", len),
                     });
                 }
             }
@@ -4281,41 +3885,32 @@ impl TryFrom<String> for NonNegativeDecimalNumber {
         {
             let value: &str = &value;
             {
-                let violated = {
-                    let frac_count = value.find('.').map_or(0, |dot| {
-                        value[dot + 1..]
-                            .chars()
-                            .filter(char::is_ascii_digit)
-                            .count()
-                    });
-                    frac_count > 17usize
-                };
+                let frac_count = value.find('.').map_or(0, |dot| {
+                    value[dot + 1..]
+                        .chars()
+                        .filter(char::is_ascii_digit)
+                        .count()
+                });
+                let violated = frac_count > 17usize;
                 if violated {
                     return Err(crate::common::validate::ConstraintError {
                         kind: crate::common::validate::ConstraintKind::FractionDigits,
                         message: format!(
                             "{} (got {})",
-                            "value exceeds maximum fraction digits 17",
-                            value.find('.').map_or(0, |dot| value[dot + 1..]
-                                .chars()
-                                .filter(char::is_ascii_digit)
-                                .count())
+                            "value exceeds maximum fraction digits 17", frac_count
                         ),
                     });
                 }
             }
             {
-                let violated = {
-                    let digit_count = value.chars().filter(char::is_ascii_digit).count();
-                    digit_count > 18usize
-                };
+                let digit_count = value.chars().filter(char::is_ascii_digit).count();
+                let violated = digit_count > 18usize;
                 if violated {
                     return Err(crate::common::validate::ConstraintError {
                         kind: crate::common::validate::ConstraintKind::TotalDigits,
                         message: format!(
                             "{} (got {})",
-                            "value exceeds maximum total digits 18",
-                            value.chars().filter(char::is_ascii_digit).count()
+                            "value exceeds maximum total digits 18", digit_count
                         ),
                     });
                 }
@@ -4348,41 +3943,32 @@ impl TryFrom<String> for Number {
         {
             let value: &str = &value;
             {
-                let violated = {
-                    let frac_count = value.find('.').map_or(0, |dot| {
-                        value[dot + 1..]
-                            .chars()
-                            .filter(char::is_ascii_digit)
-                            .count()
-                    });
-                    frac_count > 0usize
-                };
+                let frac_count = value.find('.').map_or(0, |dot| {
+                    value[dot + 1..]
+                        .chars()
+                        .filter(char::is_ascii_digit)
+                        .count()
+                });
+                let violated = frac_count > 0usize;
                 if violated {
                     return Err(crate::common::validate::ConstraintError {
                         kind: crate::common::validate::ConstraintKind::FractionDigits,
                         message: format!(
                             "{} (got {})",
-                            "value exceeds maximum fraction digits 0",
-                            value.find('.').map_or(0, |dot| value[dot + 1..]
-                                .chars()
-                                .filter(char::is_ascii_digit)
-                                .count())
+                            "value exceeds maximum fraction digits 0", frac_count
                         ),
                     });
                 }
             }
             {
-                let violated = {
-                    let digit_count = value.chars().filter(char::is_ascii_digit).count();
-                    digit_count > 18usize
-                };
+                let digit_count = value.chars().filter(char::is_ascii_digit).count();
+                let violated = digit_count > 18usize;
                 if violated {
                     return Err(crate::common::validate::ConstraintError {
                         kind: crate::common::validate::ConstraintKind::TotalDigits,
                         message: format!(
                             "{} (got {})",
-                            "value exceeds maximum total digits 18",
-                            value.chars().filter(char::is_ascii_digit).count()
+                            "value exceeds maximum total digits 18", digit_count
                         ),
                     });
                 }
@@ -4473,41 +4059,32 @@ impl TryFrom<String> for PercentageRate {
         {
             let value: &str = &value;
             {
-                let violated = {
-                    let frac_count = value.find('.').map_or(0, |dot| {
-                        value[dot + 1..]
-                            .chars()
-                            .filter(char::is_ascii_digit)
-                            .count()
-                    });
-                    frac_count > 10usize
-                };
+                let frac_count = value.find('.').map_or(0, |dot| {
+                    value[dot + 1..]
+                        .chars()
+                        .filter(char::is_ascii_digit)
+                        .count()
+                });
+                let violated = frac_count > 10usize;
                 if violated {
                     return Err(crate::common::validate::ConstraintError {
                         kind: crate::common::validate::ConstraintKind::FractionDigits,
                         message: format!(
                             "{} (got {})",
-                            "value exceeds maximum fraction digits 10",
-                            value.find('.').map_or(0, |dot| value[dot + 1..]
-                                .chars()
-                                .filter(char::is_ascii_digit)
-                                .count())
+                            "value exceeds maximum fraction digits 10", frac_count
                         ),
                     });
                 }
             }
             {
-                let violated = {
-                    let digit_count = value.chars().filter(char::is_ascii_digit).count();
-                    digit_count > 11usize
-                };
+                let digit_count = value.chars().filter(char::is_ascii_digit).count();
+                let violated = digit_count > 11usize;
                 if violated {
                     return Err(crate::common::validate::ConstraintError {
                         kind: crate::common::validate::ConstraintKind::TotalDigits,
                         message: format!(
                             "{} (got {})",
-                            "value exceeds maximum total digits 11",
-                            value.chars().filter(char::is_ascii_digit).count()
+                            "value exceeds maximum total digits 11", digit_count
                         ),
                     });
                 }
@@ -4642,41 +4219,32 @@ impl TryFrom<String> for PositiveNumber {
         {
             let value: &str = &value;
             {
-                let violated = {
-                    let frac_count = value.find('.').map_or(0, |dot| {
-                        value[dot + 1..]
-                            .chars()
-                            .filter(char::is_ascii_digit)
-                            .count()
-                    });
-                    frac_count > 0usize
-                };
+                let frac_count = value.find('.').map_or(0, |dot| {
+                    value[dot + 1..]
+                        .chars()
+                        .filter(char::is_ascii_digit)
+                        .count()
+                });
+                let violated = frac_count > 0usize;
                 if violated {
                     return Err(crate::common::validate::ConstraintError {
                         kind: crate::common::validate::ConstraintKind::FractionDigits,
                         message: format!(
                             "{} (got {})",
-                            "value exceeds maximum fraction digits 0",
-                            value.find('.').map_or(0, |dot| value[dot + 1..]
-                                .chars()
-                                .filter(char::is_ascii_digit)
-                                .count())
+                            "value exceeds maximum fraction digits 0", frac_count
                         ),
                     });
                 }
             }
             {
-                let violated = {
-                    let digit_count = value.chars().filter(char::is_ascii_digit).count();
-                    digit_count > 18usize
-                };
+                let digit_count = value.chars().filter(char::is_ascii_digit).count();
+                let violated = digit_count > 18usize;
                 if violated {
                     return Err(crate::common::validate::ConstraintError {
                         kind: crate::common::validate::ConstraintKind::TotalDigits,
                         message: format!(
                             "{} (got {})",
-                            "value exceeds maximum total digits 18",
-                            value.chars().filter(char::is_ascii_digit).count()
+                            "value exceeds maximum total digits 18", digit_count
                         ),
                     });
                 }
@@ -17260,25 +16828,19 @@ impl crate::common::validate::Validatable for ActiveCurrencyAndAmountSimpleType 
     ) {
         {
             let value: &str = &self.0;
-            let violated = {
-                let frac_count = value.find('.').map_or(0, |dot| {
-                    value[dot + 1..]
-                        .chars()
-                        .filter(char::is_ascii_digit)
-                        .count()
-                });
-                frac_count > 5usize
-            };
+            let frac_count = value.find('.').map_or(0, |dot| {
+                value[dot + 1..]
+                    .chars()
+                    .filter(char::is_ascii_digit)
+                    .count()
+            });
+            let violated = frac_count > 5usize;
             if violated {
                 violations.push(crate::common::validate::ConstraintViolation {
                     path: path.to_string(),
                     message: format!(
                         "{} (got {})",
-                        "value exceeds maximum fraction digits 5",
-                        value.find('.').map_or(0, |dot| value[dot + 1..]
-                            .chars()
-                            .filter(char::is_ascii_digit)
-                            .count())
+                        "value exceeds maximum fraction digits 5", frac_count
                     ),
                     kind: crate::common::validate::ConstraintKind::FractionDigits,
                 });
@@ -17286,17 +16848,14 @@ impl crate::common::validate::Validatable for ActiveCurrencyAndAmountSimpleType 
         }
         {
             let value: &str = &self.0;
-            let violated = {
-                let digit_count = value.chars().filter(char::is_ascii_digit).count();
-                digit_count > 18usize
-            };
+            let digit_count = value.chars().filter(char::is_ascii_digit).count();
+            let violated = digit_count > 18usize;
             if violated {
                 violations.push(crate::common::validate::ConstraintViolation {
                     path: path.to_string(),
                     message: format!(
                         "{} (got {})",
-                        "value exceeds maximum total digits 18",
-                        value.chars().filter(char::is_ascii_digit).count()
+                        "value exceeds maximum total digits 18", digit_count
                     ),
                     kind: crate::common::validate::ConstraintKind::TotalDigits,
                 });
@@ -17348,25 +16907,19 @@ impl crate::common::validate::Validatable for ActiveOrHistoricCurrencyAnd13Decim
     ) {
         {
             let value: &str = &self.0;
-            let violated = {
-                let frac_count = value.find('.').map_or(0, |dot| {
-                    value[dot + 1..]
-                        .chars()
-                        .filter(char::is_ascii_digit)
-                        .count()
-                });
-                frac_count > 13usize
-            };
+            let frac_count = value.find('.').map_or(0, |dot| {
+                value[dot + 1..]
+                    .chars()
+                    .filter(char::is_ascii_digit)
+                    .count()
+            });
+            let violated = frac_count > 13usize;
             if violated {
                 violations.push(crate::common::validate::ConstraintViolation {
                     path: path.to_string(),
                     message: format!(
                         "{} (got {})",
-                        "value exceeds maximum fraction digits 13",
-                        value.find('.').map_or(0, |dot| value[dot + 1..]
-                            .chars()
-                            .filter(char::is_ascii_digit)
-                            .count())
+                        "value exceeds maximum fraction digits 13", frac_count
                     ),
                     kind: crate::common::validate::ConstraintKind::FractionDigits,
                 });
@@ -17374,17 +16927,14 @@ impl crate::common::validate::Validatable for ActiveOrHistoricCurrencyAnd13Decim
         }
         {
             let value: &str = &self.0;
-            let violated = {
-                let digit_count = value.chars().filter(char::is_ascii_digit).count();
-                digit_count > 18usize
-            };
+            let digit_count = value.chars().filter(char::is_ascii_digit).count();
+            let violated = digit_count > 18usize;
             if violated {
                 violations.push(crate::common::validate::ConstraintViolation {
                     path: path.to_string(),
                     message: format!(
                         "{} (got {})",
-                        "value exceeds maximum total digits 18",
-                        value.chars().filter(char::is_ascii_digit).count()
+                        "value exceeds maximum total digits 18", digit_count
                     ),
                     kind: crate::common::validate::ConstraintKind::TotalDigits,
                 });
@@ -17401,25 +16951,19 @@ impl crate::common::validate::Validatable for ActiveOrHistoricCurrencyAndAmountS
     ) {
         {
             let value: &str = &self.0;
-            let violated = {
-                let frac_count = value.find('.').map_or(0, |dot| {
-                    value[dot + 1..]
-                        .chars()
-                        .filter(char::is_ascii_digit)
-                        .count()
-                });
-                frac_count > 5usize
-            };
+            let frac_count = value.find('.').map_or(0, |dot| {
+                value[dot + 1..]
+                    .chars()
+                    .filter(char::is_ascii_digit)
+                    .count()
+            });
+            let violated = frac_count > 5usize;
             if violated {
                 violations.push(crate::common::validate::ConstraintViolation {
                     path: path.to_string(),
                     message: format!(
                         "{} (got {})",
-                        "value exceeds maximum fraction digits 5",
-                        value.find('.').map_or(0, |dot| value[dot + 1..]
-                            .chars()
-                            .filter(char::is_ascii_digit)
-                            .count())
+                        "value exceeds maximum fraction digits 5", frac_count
                     ),
                     kind: crate::common::validate::ConstraintKind::FractionDigits,
                 });
@@ -17427,17 +16971,14 @@ impl crate::common::validate::Validatable for ActiveOrHistoricCurrencyAndAmountS
         }
         {
             let value: &str = &self.0;
-            let violated = {
-                let digit_count = value.chars().filter(char::is_ascii_digit).count();
-                digit_count > 18usize
-            };
+            let digit_count = value.chars().filter(char::is_ascii_digit).count();
+            let violated = digit_count > 18usize;
             if violated {
                 violations.push(crate::common::validate::ConstraintViolation {
                     path: path.to_string(),
                     message: format!(
                         "{} (got {})",
-                        "value exceeds maximum total digits 18",
-                        value.chars().filter(char::is_ascii_digit).count()
+                        "value exceeds maximum total digits 18", digit_count
                     ),
                     kind: crate::common::validate::ConstraintKind::TotalDigits,
                 });
@@ -17707,25 +17248,19 @@ impl crate::common::validate::Validatable for BaseOneRate {
     ) {
         {
             let value: &str = &self.0;
-            let violated = {
-                let frac_count = value.find('.').map_or(0, |dot| {
-                    value[dot + 1..]
-                        .chars()
-                        .filter(char::is_ascii_digit)
-                        .count()
-                });
-                frac_count > 10usize
-            };
+            let frac_count = value.find('.').map_or(0, |dot| {
+                value[dot + 1..]
+                    .chars()
+                    .filter(char::is_ascii_digit)
+                    .count()
+            });
+            let violated = frac_count > 10usize;
             if violated {
                 violations.push(crate::common::validate::ConstraintViolation {
                     path: path.to_string(),
                     message: format!(
                         "{} (got {})",
-                        "value exceeds maximum fraction digits 10",
-                        value.find('.').map_or(0, |dot| value[dot + 1..]
-                            .chars()
-                            .filter(char::is_ascii_digit)
-                            .count())
+                        "value exceeds maximum fraction digits 10", frac_count
                     ),
                     kind: crate::common::validate::ConstraintKind::FractionDigits,
                 });
@@ -17733,17 +17268,14 @@ impl crate::common::validate::Validatable for BaseOneRate {
         }
         {
             let value: &str = &self.0;
-            let violated = {
-                let digit_count = value.chars().filter(char::is_ascii_digit).count();
-                digit_count > 11usize
-            };
+            let digit_count = value.chars().filter(char::is_ascii_digit).count();
+            let violated = digit_count > 11usize;
             if violated {
                 violations.push(crate::common::validate::ConstraintViolation {
                     path: path.to_string(),
                     message: format!(
                         "{} (got {})",
-                        "value exceeds maximum total digits 11",
-                        value.chars().filter(char::is_ascii_digit).count()
+                        "value exceeds maximum total digits 11", digit_count
                     ),
                     kind: crate::common::validate::ConstraintKind::TotalDigits,
                 });
@@ -17863,25 +17395,19 @@ impl crate::common::validate::Validatable for DecimalNumber {
     ) {
         {
             let value: &str = &self.0;
-            let violated = {
-                let frac_count = value.find('.').map_or(0, |dot| {
-                    value[dot + 1..]
-                        .chars()
-                        .filter(char::is_ascii_digit)
-                        .count()
-                });
-                frac_count > 17usize
-            };
+            let frac_count = value.find('.').map_or(0, |dot| {
+                value[dot + 1..]
+                    .chars()
+                    .filter(char::is_ascii_digit)
+                    .count()
+            });
+            let violated = frac_count > 17usize;
             if violated {
                 violations.push(crate::common::validate::ConstraintViolation {
                     path: path.to_string(),
                     message: format!(
                         "{} (got {})",
-                        "value exceeds maximum fraction digits 17",
-                        value.find('.').map_or(0, |dot| value[dot + 1..]
-                            .chars()
-                            .filter(char::is_ascii_digit)
-                            .count())
+                        "value exceeds maximum fraction digits 17", frac_count
                     ),
                     kind: crate::common::validate::ConstraintKind::FractionDigits,
                 });
@@ -17889,17 +17415,14 @@ impl crate::common::validate::Validatable for DecimalNumber {
         }
         {
             let value: &str = &self.0;
-            let violated = {
-                let digit_count = value.chars().filter(char::is_ascii_digit).count();
-                digit_count > 18usize
-            };
+            let digit_count = value.chars().filter(char::is_ascii_digit).count();
+            let violated = digit_count > 18usize;
             if violated {
                 violations.push(crate::common::validate::ConstraintViolation {
                     path: path.to_string(),
                     message: format!(
                         "{} (got {})",
-                        "value exceeds maximum total digits 18",
-                        value.chars().filter(char::is_ascii_digit).count()
+                        "value exceeds maximum total digits 18", digit_count
                     ),
                     kind: crate::common::validate::ConstraintKind::TotalDigits,
                 });
@@ -18039,38 +17562,23 @@ impl crate::common::validate::Validatable for ExternalAccountIdentification1Code
         path: &str,
         violations: &mut Vec<crate::common::validate::ConstraintViolation>,
     ) {
+        let len = self.0.chars().count();
         {
-            let value: &str = &self.0;
-            let violated = {
-                let len = value.chars().count();
-                len < 1usize
-            };
+            let violated = len < 1usize;
             if violated {
                 violations.push(crate::common::validate::ConstraintViolation {
                     path: path.to_string(),
-                    message: format!(
-                        "{} (got {})",
-                        "value is shorter than minimum length 1",
-                        value.chars().count()
-                    ),
+                    message: format!("{} (got {})", "value is shorter than minimum length 1", len),
                     kind: crate::common::validate::ConstraintKind::MinLength,
                 });
             }
         }
         {
-            let value: &str = &self.0;
-            let violated = {
-                let len = value.chars().count();
-                len > 4usize
-            };
+            let violated = len > 4usize;
             if violated {
                 violations.push(crate::common::validate::ConstraintViolation {
                     path: path.to_string(),
-                    message: format!(
-                        "{} (got {})",
-                        "value exceeds maximum length 4",
-                        value.chars().count()
-                    ),
+                    message: format!("{} (got {})", "value exceeds maximum length 4", len),
                     kind: crate::common::validate::ConstraintKind::MaxLength,
                 });
             }
@@ -18084,38 +17592,23 @@ impl crate::common::validate::Validatable for ExternalBankTransactionDomain1Code
         path: &str,
         violations: &mut Vec<crate::common::validate::ConstraintViolation>,
     ) {
+        let len = self.0.chars().count();
         {
-            let value: &str = &self.0;
-            let violated = {
-                let len = value.chars().count();
-                len < 1usize
-            };
+            let violated = len < 1usize;
             if violated {
                 violations.push(crate::common::validate::ConstraintViolation {
                     path: path.to_string(),
-                    message: format!(
-                        "{} (got {})",
-                        "value is shorter than minimum length 1",
-                        value.chars().count()
-                    ),
+                    message: format!("{} (got {})", "value is shorter than minimum length 1", len),
                     kind: crate::common::validate::ConstraintKind::MinLength,
                 });
             }
         }
         {
-            let value: &str = &self.0;
-            let violated = {
-                let len = value.chars().count();
-                len > 4usize
-            };
+            let violated = len > 4usize;
             if violated {
                 violations.push(crate::common::validate::ConstraintViolation {
                     path: path.to_string(),
-                    message: format!(
-                        "{} (got {})",
-                        "value exceeds maximum length 4",
-                        value.chars().count()
-                    ),
+                    message: format!("{} (got {})", "value exceeds maximum length 4", len),
                     kind: crate::common::validate::ConstraintKind::MaxLength,
                 });
             }
@@ -18129,38 +17622,23 @@ impl crate::common::validate::Validatable for ExternalBankTransactionFamily1Code
         path: &str,
         violations: &mut Vec<crate::common::validate::ConstraintViolation>,
     ) {
+        let len = self.0.chars().count();
         {
-            let value: &str = &self.0;
-            let violated = {
-                let len = value.chars().count();
-                len < 1usize
-            };
+            let violated = len < 1usize;
             if violated {
                 violations.push(crate::common::validate::ConstraintViolation {
                     path: path.to_string(),
-                    message: format!(
-                        "{} (got {})",
-                        "value is shorter than minimum length 1",
-                        value.chars().count()
-                    ),
+                    message: format!("{} (got {})", "value is shorter than minimum length 1", len),
                     kind: crate::common::validate::ConstraintKind::MinLength,
                 });
             }
         }
         {
-            let value: &str = &self.0;
-            let violated = {
-                let len = value.chars().count();
-                len > 4usize
-            };
+            let violated = len > 4usize;
             if violated {
                 violations.push(crate::common::validate::ConstraintViolation {
                     path: path.to_string(),
-                    message: format!(
-                        "{} (got {})",
-                        "value exceeds maximum length 4",
-                        value.chars().count()
-                    ),
+                    message: format!("{} (got {})", "value exceeds maximum length 4", len),
                     kind: crate::common::validate::ConstraintKind::MaxLength,
                 });
             }
@@ -18174,38 +17652,23 @@ impl crate::common::validate::Validatable for ExternalBankTransactionSubFamily1C
         path: &str,
         violations: &mut Vec<crate::common::validate::ConstraintViolation>,
     ) {
+        let len = self.0.chars().count();
         {
-            let value: &str = &self.0;
-            let violated = {
-                let len = value.chars().count();
-                len < 1usize
-            };
+            let violated = len < 1usize;
             if violated {
                 violations.push(crate::common::validate::ConstraintViolation {
                     path: path.to_string(),
-                    message: format!(
-                        "{} (got {})",
-                        "value is shorter than minimum length 1",
-                        value.chars().count()
-                    ),
+                    message: format!("{} (got {})", "value is shorter than minimum length 1", len),
                     kind: crate::common::validate::ConstraintKind::MinLength,
                 });
             }
         }
         {
-            let value: &str = &self.0;
-            let violated = {
-                let len = value.chars().count();
-                len > 4usize
-            };
+            let violated = len > 4usize;
             if violated {
                 violations.push(crate::common::validate::ConstraintViolation {
                     path: path.to_string(),
-                    message: format!(
-                        "{} (got {})",
-                        "value exceeds maximum length 4",
-                        value.chars().count()
-                    ),
+                    message: format!("{} (got {})", "value exceeds maximum length 4", len),
                     kind: crate::common::validate::ConstraintKind::MaxLength,
                 });
             }
@@ -18219,38 +17682,23 @@ impl crate::common::validate::Validatable for ExternalCardTransactionCategory1Co
         path: &str,
         violations: &mut Vec<crate::common::validate::ConstraintViolation>,
     ) {
+        let len = self.0.chars().count();
         {
-            let value: &str = &self.0;
-            let violated = {
-                let len = value.chars().count();
-                len < 1usize
-            };
+            let violated = len < 1usize;
             if violated {
                 violations.push(crate::common::validate::ConstraintViolation {
                     path: path.to_string(),
-                    message: format!(
-                        "{} (got {})",
-                        "value is shorter than minimum length 1",
-                        value.chars().count()
-                    ),
+                    message: format!("{} (got {})", "value is shorter than minimum length 1", len),
                     kind: crate::common::validate::ConstraintKind::MinLength,
                 });
             }
         }
         {
-            let value: &str = &self.0;
-            let violated = {
-                let len = value.chars().count();
-                len > 4usize
-            };
+            let violated = len > 4usize;
             if violated {
                 violations.push(crate::common::validate::ConstraintViolation {
                     path: path.to_string(),
-                    message: format!(
-                        "{} (got {})",
-                        "value exceeds maximum length 4",
-                        value.chars().count()
-                    ),
+                    message: format!("{} (got {})", "value exceeds maximum length 4", len),
                     kind: crate::common::validate::ConstraintKind::MaxLength,
                 });
             }
@@ -18264,38 +17712,23 @@ impl crate::common::validate::Validatable for ExternalCashAccountType1Code {
         path: &str,
         violations: &mut Vec<crate::common::validate::ConstraintViolation>,
     ) {
+        let len = self.0.chars().count();
         {
-            let value: &str = &self.0;
-            let violated = {
-                let len = value.chars().count();
-                len < 1usize
-            };
+            let violated = len < 1usize;
             if violated {
                 violations.push(crate::common::validate::ConstraintViolation {
                     path: path.to_string(),
-                    message: format!(
-                        "{} (got {})",
-                        "value is shorter than minimum length 1",
-                        value.chars().count()
-                    ),
+                    message: format!("{} (got {})", "value is shorter than minimum length 1", len),
                     kind: crate::common::validate::ConstraintKind::MinLength,
                 });
             }
         }
         {
-            let value: &str = &self.0;
-            let violated = {
-                let len = value.chars().count();
-                len > 4usize
-            };
+            let violated = len > 4usize;
             if violated {
                 violations.push(crate::common::validate::ConstraintViolation {
                     path: path.to_string(),
-                    message: format!(
-                        "{} (got {})",
-                        "value exceeds maximum length 4",
-                        value.chars().count()
-                    ),
+                    message: format!("{} (got {})", "value exceeds maximum length 4", len),
                     kind: crate::common::validate::ConstraintKind::MaxLength,
                 });
             }
@@ -18309,38 +17742,23 @@ impl crate::common::validate::Validatable for ExternalCategoryPurpose1Code {
         path: &str,
         violations: &mut Vec<crate::common::validate::ConstraintViolation>,
     ) {
+        let len = self.0.chars().count();
         {
-            let value: &str = &self.0;
-            let violated = {
-                let len = value.chars().count();
-                len < 1usize
-            };
+            let violated = len < 1usize;
             if violated {
                 violations.push(crate::common::validate::ConstraintViolation {
                     path: path.to_string(),
-                    message: format!(
-                        "{} (got {})",
-                        "value is shorter than minimum length 1",
-                        value.chars().count()
-                    ),
+                    message: format!("{} (got {})", "value is shorter than minimum length 1", len),
                     kind: crate::common::validate::ConstraintKind::MinLength,
                 });
             }
         }
         {
-            let value: &str = &self.0;
-            let violated = {
-                let len = value.chars().count();
-                len > 4usize
-            };
+            let violated = len > 4usize;
             if violated {
                 violations.push(crate::common::validate::ConstraintViolation {
                     path: path.to_string(),
-                    message: format!(
-                        "{} (got {})",
-                        "value exceeds maximum length 4",
-                        value.chars().count()
-                    ),
+                    message: format!("{} (got {})", "value exceeds maximum length 4", len),
                     kind: crate::common::validate::ConstraintKind::MaxLength,
                 });
             }
@@ -18354,38 +17772,23 @@ impl crate::common::validate::Validatable for ExternalChargeType1Code {
         path: &str,
         violations: &mut Vec<crate::common::validate::ConstraintViolation>,
     ) {
+        let len = self.0.chars().count();
         {
-            let value: &str = &self.0;
-            let violated = {
-                let len = value.chars().count();
-                len < 1usize
-            };
+            let violated = len < 1usize;
             if violated {
                 violations.push(crate::common::validate::ConstraintViolation {
                     path: path.to_string(),
-                    message: format!(
-                        "{} (got {})",
-                        "value is shorter than minimum length 1",
-                        value.chars().count()
-                    ),
+                    message: format!("{} (got {})", "value is shorter than minimum length 1", len),
                     kind: crate::common::validate::ConstraintKind::MinLength,
                 });
             }
         }
         {
-            let value: &str = &self.0;
-            let violated = {
-                let len = value.chars().count();
-                len > 4usize
-            };
+            let violated = len > 4usize;
             if violated {
                 violations.push(crate::common::validate::ConstraintViolation {
                     path: path.to_string(),
-                    message: format!(
-                        "{} (got {})",
-                        "value exceeds maximum length 4",
-                        value.chars().count()
-                    ),
+                    message: format!("{} (got {})", "value exceeds maximum length 4", len),
                     kind: crate::common::validate::ConstraintKind::MaxLength,
                 });
             }
@@ -18399,38 +17802,23 @@ impl crate::common::validate::Validatable for ExternalClearingSystemIdentificati
         path: &str,
         violations: &mut Vec<crate::common::validate::ConstraintViolation>,
     ) {
+        let len = self.0.chars().count();
         {
-            let value: &str = &self.0;
-            let violated = {
-                let len = value.chars().count();
-                len < 1usize
-            };
+            let violated = len < 1usize;
             if violated {
                 violations.push(crate::common::validate::ConstraintViolation {
                     path: path.to_string(),
-                    message: format!(
-                        "{} (got {})",
-                        "value is shorter than minimum length 1",
-                        value.chars().count()
-                    ),
+                    message: format!("{} (got {})", "value is shorter than minimum length 1", len),
                     kind: crate::common::validate::ConstraintKind::MinLength,
                 });
             }
         }
         {
-            let value: &str = &self.0;
-            let violated = {
-                let len = value.chars().count();
-                len > 5usize
-            };
+            let violated = len > 5usize;
             if violated {
                 violations.push(crate::common::validate::ConstraintViolation {
                     path: path.to_string(),
-                    message: format!(
-                        "{} (got {})",
-                        "value exceeds maximum length 5",
-                        value.chars().count()
-                    ),
+                    message: format!("{} (got {})", "value exceeds maximum length 5", len),
                     kind: crate::common::validate::ConstraintKind::MaxLength,
                 });
             }
@@ -18444,38 +17832,23 @@ impl crate::common::validate::Validatable for ExternalDiscountAmountType1Code {
         path: &str,
         violations: &mut Vec<crate::common::validate::ConstraintViolation>,
     ) {
+        let len = self.0.chars().count();
         {
-            let value: &str = &self.0;
-            let violated = {
-                let len = value.chars().count();
-                len < 1usize
-            };
+            let violated = len < 1usize;
             if violated {
                 violations.push(crate::common::validate::ConstraintViolation {
                     path: path.to_string(),
-                    message: format!(
-                        "{} (got {})",
-                        "value is shorter than minimum length 1",
-                        value.chars().count()
-                    ),
+                    message: format!("{} (got {})", "value is shorter than minimum length 1", len),
                     kind: crate::common::validate::ConstraintKind::MinLength,
                 });
             }
         }
         {
-            let value: &str = &self.0;
-            let violated = {
-                let len = value.chars().count();
-                len > 4usize
-            };
+            let violated = len > 4usize;
             if violated {
                 violations.push(crate::common::validate::ConstraintViolation {
                     path: path.to_string(),
-                    message: format!(
-                        "{} (got {})",
-                        "value exceeds maximum length 4",
-                        value.chars().count()
-                    ),
+                    message: format!("{} (got {})", "value exceeds maximum length 4", len),
                     kind: crate::common::validate::ConstraintKind::MaxLength,
                 });
             }
@@ -18489,38 +17862,23 @@ impl crate::common::validate::Validatable for ExternalDocumentLineType1Code {
         path: &str,
         violations: &mut Vec<crate::common::validate::ConstraintViolation>,
     ) {
+        let len = self.0.chars().count();
         {
-            let value: &str = &self.0;
-            let violated = {
-                let len = value.chars().count();
-                len < 1usize
-            };
+            let violated = len < 1usize;
             if violated {
                 violations.push(crate::common::validate::ConstraintViolation {
                     path: path.to_string(),
-                    message: format!(
-                        "{} (got {})",
-                        "value is shorter than minimum length 1",
-                        value.chars().count()
-                    ),
+                    message: format!("{} (got {})", "value is shorter than minimum length 1", len),
                     kind: crate::common::validate::ConstraintKind::MinLength,
                 });
             }
         }
         {
-            let value: &str = &self.0;
-            let violated = {
-                let len = value.chars().count();
-                len > 4usize
-            };
+            let violated = len > 4usize;
             if violated {
                 violations.push(crate::common::validate::ConstraintViolation {
                     path: path.to_string(),
-                    message: format!(
-                        "{} (got {})",
-                        "value exceeds maximum length 4",
-                        value.chars().count()
-                    ),
+                    message: format!("{} (got {})", "value exceeds maximum length 4", len),
                     kind: crate::common::validate::ConstraintKind::MaxLength,
                 });
             }
@@ -18534,38 +17892,23 @@ impl crate::common::validate::Validatable for ExternalEntryStatus1Code {
         path: &str,
         violations: &mut Vec<crate::common::validate::ConstraintViolation>,
     ) {
+        let len = self.0.chars().count();
         {
-            let value: &str = &self.0;
-            let violated = {
-                let len = value.chars().count();
-                len < 1usize
-            };
+            let violated = len < 1usize;
             if violated {
                 violations.push(crate::common::validate::ConstraintViolation {
                     path: path.to_string(),
-                    message: format!(
-                        "{} (got {})",
-                        "value is shorter than minimum length 1",
-                        value.chars().count()
-                    ),
+                    message: format!("{} (got {})", "value is shorter than minimum length 1", len),
                     kind: crate::common::validate::ConstraintKind::MinLength,
                 });
             }
         }
         {
-            let value: &str = &self.0;
-            let violated = {
-                let len = value.chars().count();
-                len > 4usize
-            };
+            let violated = len > 4usize;
             if violated {
                 violations.push(crate::common::validate::ConstraintViolation {
                     path: path.to_string(),
-                    message: format!(
-                        "{} (got {})",
-                        "value exceeds maximum length 4",
-                        value.chars().count()
-                    ),
+                    message: format!("{} (got {})", "value exceeds maximum length 4", len),
                     kind: crate::common::validate::ConstraintKind::MaxLength,
                 });
             }
@@ -18579,38 +17922,23 @@ impl crate::common::validate::Validatable for ExternalFinancialInstitutionIdenti
         path: &str,
         violations: &mut Vec<crate::common::validate::ConstraintViolation>,
     ) {
+        let len = self.0.chars().count();
         {
-            let value: &str = &self.0;
-            let violated = {
-                let len = value.chars().count();
-                len < 1usize
-            };
+            let violated = len < 1usize;
             if violated {
                 violations.push(crate::common::validate::ConstraintViolation {
                     path: path.to_string(),
-                    message: format!(
-                        "{} (got {})",
-                        "value is shorter than minimum length 1",
-                        value.chars().count()
-                    ),
+                    message: format!("{} (got {})", "value is shorter than minimum length 1", len),
                     kind: crate::common::validate::ConstraintKind::MinLength,
                 });
             }
         }
         {
-            let value: &str = &self.0;
-            let violated = {
-                let len = value.chars().count();
-                len > 4usize
-            };
+            let violated = len > 4usize;
             if violated {
                 violations.push(crate::common::validate::ConstraintViolation {
                     path: path.to_string(),
-                    message: format!(
-                        "{} (got {})",
-                        "value exceeds maximum length 4",
-                        value.chars().count()
-                    ),
+                    message: format!("{} (got {})", "value exceeds maximum length 4", len),
                     kind: crate::common::validate::ConstraintKind::MaxLength,
                 });
             }
@@ -18624,38 +17952,23 @@ impl crate::common::validate::Validatable for ExternalFinancialInstrumentIdentif
         path: &str,
         violations: &mut Vec<crate::common::validate::ConstraintViolation>,
     ) {
+        let len = self.0.chars().count();
         {
-            let value: &str = &self.0;
-            let violated = {
-                let len = value.chars().count();
-                len < 1usize
-            };
+            let violated = len < 1usize;
             if violated {
                 violations.push(crate::common::validate::ConstraintViolation {
                     path: path.to_string(),
-                    message: format!(
-                        "{} (got {})",
-                        "value is shorter than minimum length 1",
-                        value.chars().count()
-                    ),
+                    message: format!("{} (got {})", "value is shorter than minimum length 1", len),
                     kind: crate::common::validate::ConstraintKind::MinLength,
                 });
             }
         }
         {
-            let value: &str = &self.0;
-            let violated = {
-                let len = value.chars().count();
-                len > 4usize
-            };
+            let violated = len > 4usize;
             if violated {
                 violations.push(crate::common::validate::ConstraintViolation {
                     path: path.to_string(),
-                    message: format!(
-                        "{} (got {})",
-                        "value exceeds maximum length 4",
-                        value.chars().count()
-                    ),
+                    message: format!("{} (got {})", "value exceeds maximum length 4", len),
                     kind: crate::common::validate::ConstraintKind::MaxLength,
                 });
             }
@@ -18669,38 +17982,23 @@ impl crate::common::validate::Validatable for ExternalGarnishmentType1Code {
         path: &str,
         violations: &mut Vec<crate::common::validate::ConstraintViolation>,
     ) {
+        let len = self.0.chars().count();
         {
-            let value: &str = &self.0;
-            let violated = {
-                let len = value.chars().count();
-                len < 1usize
-            };
+            let violated = len < 1usize;
             if violated {
                 violations.push(crate::common::validate::ConstraintViolation {
                     path: path.to_string(),
-                    message: format!(
-                        "{} (got {})",
-                        "value is shorter than minimum length 1",
-                        value.chars().count()
-                    ),
+                    message: format!("{} (got {})", "value is shorter than minimum length 1", len),
                     kind: crate::common::validate::ConstraintKind::MinLength,
                 });
             }
         }
         {
-            let value: &str = &self.0;
-            let violated = {
-                let len = value.chars().count();
-                len > 4usize
-            };
+            let violated = len > 4usize;
             if violated {
                 violations.push(crate::common::validate::ConstraintViolation {
                     path: path.to_string(),
-                    message: format!(
-                        "{} (got {})",
-                        "value exceeds maximum length 4",
-                        value.chars().count()
-                    ),
+                    message: format!("{} (got {})", "value exceeds maximum length 4", len),
                     kind: crate::common::validate::ConstraintKind::MaxLength,
                 });
             }
@@ -18714,38 +18012,23 @@ impl crate::common::validate::Validatable for ExternalLocalInstrument1Code {
         path: &str,
         violations: &mut Vec<crate::common::validate::ConstraintViolation>,
     ) {
+        let len = self.0.chars().count();
         {
-            let value: &str = &self.0;
-            let violated = {
-                let len = value.chars().count();
-                len < 1usize
-            };
+            let violated = len < 1usize;
             if violated {
                 violations.push(crate::common::validate::ConstraintViolation {
                     path: path.to_string(),
-                    message: format!(
-                        "{} (got {})",
-                        "value is shorter than minimum length 1",
-                        value.chars().count()
-                    ),
+                    message: format!("{} (got {})", "value is shorter than minimum length 1", len),
                     kind: crate::common::validate::ConstraintKind::MinLength,
                 });
             }
         }
         {
-            let value: &str = &self.0;
-            let violated = {
-                let len = value.chars().count();
-                len > 35usize
-            };
+            let violated = len > 35usize;
             if violated {
                 violations.push(crate::common::validate::ConstraintViolation {
                     path: path.to_string(),
-                    message: format!(
-                        "{} (got {})",
-                        "value exceeds maximum length 35",
-                        value.chars().count()
-                    ),
+                    message: format!("{} (got {})", "value exceeds maximum length 35", len),
                     kind: crate::common::validate::ConstraintKind::MaxLength,
                 });
             }
@@ -18759,38 +18042,23 @@ impl crate::common::validate::Validatable for ExternalOrganisationIdentification
         path: &str,
         violations: &mut Vec<crate::common::validate::ConstraintViolation>,
     ) {
+        let len = self.0.chars().count();
         {
-            let value: &str = &self.0;
-            let violated = {
-                let len = value.chars().count();
-                len < 1usize
-            };
+            let violated = len < 1usize;
             if violated {
                 violations.push(crate::common::validate::ConstraintViolation {
                     path: path.to_string(),
-                    message: format!(
-                        "{} (got {})",
-                        "value is shorter than minimum length 1",
-                        value.chars().count()
-                    ),
+                    message: format!("{} (got {})", "value is shorter than minimum length 1", len),
                     kind: crate::common::validate::ConstraintKind::MinLength,
                 });
             }
         }
         {
-            let value: &str = &self.0;
-            let violated = {
-                let len = value.chars().count();
-                len > 4usize
-            };
+            let violated = len > 4usize;
             if violated {
                 violations.push(crate::common::validate::ConstraintViolation {
                     path: path.to_string(),
-                    message: format!(
-                        "{} (got {})",
-                        "value exceeds maximum length 4",
-                        value.chars().count()
-                    ),
+                    message: format!("{} (got {})", "value exceeds maximum length 4", len),
                     kind: crate::common::validate::ConstraintKind::MaxLength,
                 });
             }
@@ -18804,38 +18072,23 @@ impl crate::common::validate::Validatable for ExternalPersonIdentification1Code 
         path: &str,
         violations: &mut Vec<crate::common::validate::ConstraintViolation>,
     ) {
+        let len = self.0.chars().count();
         {
-            let value: &str = &self.0;
-            let violated = {
-                let len = value.chars().count();
-                len < 1usize
-            };
+            let violated = len < 1usize;
             if violated {
                 violations.push(crate::common::validate::ConstraintViolation {
                     path: path.to_string(),
-                    message: format!(
-                        "{} (got {})",
-                        "value is shorter than minimum length 1",
-                        value.chars().count()
-                    ),
+                    message: format!("{} (got {})", "value is shorter than minimum length 1", len),
                     kind: crate::common::validate::ConstraintKind::MinLength,
                 });
             }
         }
         {
-            let value: &str = &self.0;
-            let violated = {
-                let len = value.chars().count();
-                len > 4usize
-            };
+            let violated = len > 4usize;
             if violated {
                 violations.push(crate::common::validate::ConstraintViolation {
                     path: path.to_string(),
-                    message: format!(
-                        "{} (got {})",
-                        "value exceeds maximum length 4",
-                        value.chars().count()
-                    ),
+                    message: format!("{} (got {})", "value exceeds maximum length 4", len),
                     kind: crate::common::validate::ConstraintKind::MaxLength,
                 });
             }
@@ -18849,38 +18102,23 @@ impl crate::common::validate::Validatable for ExternalProxyAccountType1Code {
         path: &str,
         violations: &mut Vec<crate::common::validate::ConstraintViolation>,
     ) {
+        let len = self.0.chars().count();
         {
-            let value: &str = &self.0;
-            let violated = {
-                let len = value.chars().count();
-                len < 1usize
-            };
+            let violated = len < 1usize;
             if violated {
                 violations.push(crate::common::validate::ConstraintViolation {
                     path: path.to_string(),
-                    message: format!(
-                        "{} (got {})",
-                        "value is shorter than minimum length 1",
-                        value.chars().count()
-                    ),
+                    message: format!("{} (got {})", "value is shorter than minimum length 1", len),
                     kind: crate::common::validate::ConstraintKind::MinLength,
                 });
             }
         }
         {
-            let value: &str = &self.0;
-            let violated = {
-                let len = value.chars().count();
-                len > 4usize
-            };
+            let violated = len > 4usize;
             if violated {
                 violations.push(crate::common::validate::ConstraintViolation {
                     path: path.to_string(),
-                    message: format!(
-                        "{} (got {})",
-                        "value exceeds maximum length 4",
-                        value.chars().count()
-                    ),
+                    message: format!("{} (got {})", "value exceeds maximum length 4", len),
                     kind: crate::common::validate::ConstraintKind::MaxLength,
                 });
             }
@@ -18894,38 +18132,23 @@ impl crate::common::validate::Validatable for ExternalPurpose1Code {
         path: &str,
         violations: &mut Vec<crate::common::validate::ConstraintViolation>,
     ) {
+        let len = self.0.chars().count();
         {
-            let value: &str = &self.0;
-            let violated = {
-                let len = value.chars().count();
-                len < 1usize
-            };
+            let violated = len < 1usize;
             if violated {
                 violations.push(crate::common::validate::ConstraintViolation {
                     path: path.to_string(),
-                    message: format!(
-                        "{} (got {})",
-                        "value is shorter than minimum length 1",
-                        value.chars().count()
-                    ),
+                    message: format!("{} (got {})", "value is shorter than minimum length 1", len),
                     kind: crate::common::validate::ConstraintKind::MinLength,
                 });
             }
         }
         {
-            let value: &str = &self.0;
-            let violated = {
-                let len = value.chars().count();
-                len > 4usize
-            };
+            let violated = len > 4usize;
             if violated {
                 violations.push(crate::common::validate::ConstraintViolation {
                     path: path.to_string(),
-                    message: format!(
-                        "{} (got {})",
-                        "value exceeds maximum length 4",
-                        value.chars().count()
-                    ),
+                    message: format!("{} (got {})", "value exceeds maximum length 4", len),
                     kind: crate::common::validate::ConstraintKind::MaxLength,
                 });
             }
@@ -18939,38 +18162,23 @@ impl crate::common::validate::Validatable for ExternalRePresentmentReason1Code {
         path: &str,
         violations: &mut Vec<crate::common::validate::ConstraintViolation>,
     ) {
+        let len = self.0.chars().count();
         {
-            let value: &str = &self.0;
-            let violated = {
-                let len = value.chars().count();
-                len < 1usize
-            };
+            let violated = len < 1usize;
             if violated {
                 violations.push(crate::common::validate::ConstraintViolation {
                     path: path.to_string(),
-                    message: format!(
-                        "{} (got {})",
-                        "value is shorter than minimum length 1",
-                        value.chars().count()
-                    ),
+                    message: format!("{} (got {})", "value is shorter than minimum length 1", len),
                     kind: crate::common::validate::ConstraintKind::MinLength,
                 });
             }
         }
         {
-            let value: &str = &self.0;
-            let violated = {
-                let len = value.chars().count();
-                len > 4usize
-            };
+            let violated = len > 4usize;
             if violated {
                 violations.push(crate::common::validate::ConstraintViolation {
                     path: path.to_string(),
-                    message: format!(
-                        "{} (got {})",
-                        "value exceeds maximum length 4",
-                        value.chars().count()
-                    ),
+                    message: format!("{} (got {})", "value exceeds maximum length 4", len),
                     kind: crate::common::validate::ConstraintKind::MaxLength,
                 });
             }
@@ -18984,38 +18192,23 @@ impl crate::common::validate::Validatable for ExternalReportingSource1Code {
         path: &str,
         violations: &mut Vec<crate::common::validate::ConstraintViolation>,
     ) {
+        let len = self.0.chars().count();
         {
-            let value: &str = &self.0;
-            let violated = {
-                let len = value.chars().count();
-                len < 1usize
-            };
+            let violated = len < 1usize;
             if violated {
                 violations.push(crate::common::validate::ConstraintViolation {
                     path: path.to_string(),
-                    message: format!(
-                        "{} (got {})",
-                        "value is shorter than minimum length 1",
-                        value.chars().count()
-                    ),
+                    message: format!("{} (got {})", "value is shorter than minimum length 1", len),
                     kind: crate::common::validate::ConstraintKind::MinLength,
                 });
             }
         }
         {
-            let value: &str = &self.0;
-            let violated = {
-                let len = value.chars().count();
-                len > 4usize
-            };
+            let violated = len > 4usize;
             if violated {
                 violations.push(crate::common::validate::ConstraintViolation {
                     path: path.to_string(),
-                    message: format!(
-                        "{} (got {})",
-                        "value exceeds maximum length 4",
-                        value.chars().count()
-                    ),
+                    message: format!("{} (got {})", "value exceeds maximum length 4", len),
                     kind: crate::common::validate::ConstraintKind::MaxLength,
                 });
             }
@@ -19029,38 +18222,23 @@ impl crate::common::validate::Validatable for ExternalReturnReason1Code {
         path: &str,
         violations: &mut Vec<crate::common::validate::ConstraintViolation>,
     ) {
+        let len = self.0.chars().count();
         {
-            let value: &str = &self.0;
-            let violated = {
-                let len = value.chars().count();
-                len < 1usize
-            };
+            let violated = len < 1usize;
             if violated {
                 violations.push(crate::common::validate::ConstraintViolation {
                     path: path.to_string(),
-                    message: format!(
-                        "{} (got {})",
-                        "value is shorter than minimum length 1",
-                        value.chars().count()
-                    ),
+                    message: format!("{} (got {})", "value is shorter than minimum length 1", len),
                     kind: crate::common::validate::ConstraintKind::MinLength,
                 });
             }
         }
         {
-            let value: &str = &self.0;
-            let violated = {
-                let len = value.chars().count();
-                len > 4usize
-            };
+            let violated = len > 4usize;
             if violated {
                 violations.push(crate::common::validate::ConstraintViolation {
                     path: path.to_string(),
-                    message: format!(
-                        "{} (got {})",
-                        "value exceeds maximum length 4",
-                        value.chars().count()
-                    ),
+                    message: format!("{} (got {})", "value exceeds maximum length 4", len),
                     kind: crate::common::validate::ConstraintKind::MaxLength,
                 });
             }
@@ -19074,38 +18252,23 @@ impl crate::common::validate::Validatable for ExternalServiceLevel1Code {
         path: &str,
         violations: &mut Vec<crate::common::validate::ConstraintViolation>,
     ) {
+        let len = self.0.chars().count();
         {
-            let value: &str = &self.0;
-            let violated = {
-                let len = value.chars().count();
-                len < 1usize
-            };
+            let violated = len < 1usize;
             if violated {
                 violations.push(crate::common::validate::ConstraintViolation {
                     path: path.to_string(),
-                    message: format!(
-                        "{} (got {})",
-                        "value is shorter than minimum length 1",
-                        value.chars().count()
-                    ),
+                    message: format!("{} (got {})", "value is shorter than minimum length 1", len),
                     kind: crate::common::validate::ConstraintKind::MinLength,
                 });
             }
         }
         {
-            let value: &str = &self.0;
-            let violated = {
-                let len = value.chars().count();
-                len > 4usize
-            };
+            let violated = len > 4usize;
             if violated {
                 violations.push(crate::common::validate::ConstraintViolation {
                     path: path.to_string(),
-                    message: format!(
-                        "{} (got {})",
-                        "value exceeds maximum length 4",
-                        value.chars().count()
-                    ),
+                    message: format!("{} (got {})", "value exceeds maximum length 4", len),
                     kind: crate::common::validate::ConstraintKind::MaxLength,
                 });
             }
@@ -19119,38 +18282,23 @@ impl crate::common::validate::Validatable for ExternalTaxAmountType1Code {
         path: &str,
         violations: &mut Vec<crate::common::validate::ConstraintViolation>,
     ) {
+        let len = self.0.chars().count();
         {
-            let value: &str = &self.0;
-            let violated = {
-                let len = value.chars().count();
-                len < 1usize
-            };
+            let violated = len < 1usize;
             if violated {
                 violations.push(crate::common::validate::ConstraintViolation {
                     path: path.to_string(),
-                    message: format!(
-                        "{} (got {})",
-                        "value is shorter than minimum length 1",
-                        value.chars().count()
-                    ),
+                    message: format!("{} (got {})", "value is shorter than minimum length 1", len),
                     kind: crate::common::validate::ConstraintKind::MinLength,
                 });
             }
         }
         {
-            let value: &str = &self.0;
-            let violated = {
-                let len = value.chars().count();
-                len > 4usize
-            };
+            let violated = len > 4usize;
             if violated {
                 violations.push(crate::common::validate::ConstraintViolation {
                     path: path.to_string(),
-                    message: format!(
-                        "{} (got {})",
-                        "value exceeds maximum length 4",
-                        value.chars().count()
-                    ),
+                    message: format!("{} (got {})", "value exceeds maximum length 4", len),
                     kind: crate::common::validate::ConstraintKind::MaxLength,
                 });
             }
@@ -19164,38 +18312,23 @@ impl crate::common::validate::Validatable for ExternalTechnicalInputChannel1Code
         path: &str,
         violations: &mut Vec<crate::common::validate::ConstraintViolation>,
     ) {
+        let len = self.0.chars().count();
         {
-            let value: &str = &self.0;
-            let violated = {
-                let len = value.chars().count();
-                len < 1usize
-            };
+            let violated = len < 1usize;
             if violated {
                 violations.push(crate::common::validate::ConstraintViolation {
                     path: path.to_string(),
-                    message: format!(
-                        "{} (got {})",
-                        "value is shorter than minimum length 1",
-                        value.chars().count()
-                    ),
+                    message: format!("{} (got {})", "value is shorter than minimum length 1", len),
                     kind: crate::common::validate::ConstraintKind::MinLength,
                 });
             }
         }
         {
-            let value: &str = &self.0;
-            let violated = {
-                let len = value.chars().count();
-                len > 4usize
-            };
+            let violated = len > 4usize;
             if violated {
                 violations.push(crate::common::validate::ConstraintViolation {
                     path: path.to_string(),
-                    message: format!(
-                        "{} (got {})",
-                        "value exceeds maximum length 4",
-                        value.chars().count()
-                    ),
+                    message: format!("{} (got {})", "value exceeds maximum length 4", len),
                     kind: crate::common::validate::ConstraintKind::MaxLength,
                 });
             }
@@ -19427,25 +18560,19 @@ impl crate::common::validate::Validatable for ImpliedCurrencyAndAmount {
     ) {
         {
             let value: &str = &self.0;
-            let violated = {
-                let frac_count = value.find('.').map_or(0, |dot| {
-                    value[dot + 1..]
-                        .chars()
-                        .filter(char::is_ascii_digit)
-                        .count()
-                });
-                frac_count > 5usize
-            };
+            let frac_count = value.find('.').map_or(0, |dot| {
+                value[dot + 1..]
+                    .chars()
+                    .filter(char::is_ascii_digit)
+                    .count()
+            });
+            let violated = frac_count > 5usize;
             if violated {
                 violations.push(crate::common::validate::ConstraintViolation {
                     path: path.to_string(),
                     message: format!(
                         "{} (got {})",
-                        "value exceeds maximum fraction digits 5",
-                        value.find('.').map_or(0, |dot| value[dot + 1..]
-                            .chars()
-                            .filter(char::is_ascii_digit)
-                            .count())
+                        "value exceeds maximum fraction digits 5", frac_count
                     ),
                     kind: crate::common::validate::ConstraintKind::FractionDigits,
                 });
@@ -19453,17 +18580,14 @@ impl crate::common::validate::Validatable for ImpliedCurrencyAndAmount {
         }
         {
             let value: &str = &self.0;
-            let violated = {
-                let digit_count = value.chars().filter(char::is_ascii_digit).count();
-                digit_count > 18usize
-            };
+            let digit_count = value.chars().filter(char::is_ascii_digit).count();
+            let violated = digit_count > 18usize;
             if violated {
                 violations.push(crate::common::validate::ConstraintViolation {
                     path: path.to_string(),
                     message: format!(
                         "{} (got {})",
-                        "value exceeds maximum total digits 18",
-                        value.chars().filter(char::is_ascii_digit).count()
+                        "value exceeds maximum total digits 18", digit_count
                     ),
                     kind: crate::common::validate::ConstraintKind::TotalDigits,
                 });
@@ -19589,38 +18713,23 @@ impl crate::common::validate::Validatable for Max1025Text {
         path: &str,
         violations: &mut Vec<crate::common::validate::ConstraintViolation>,
     ) {
+        let len = self.0.chars().count();
         {
-            let value: &str = &self.0;
-            let violated = {
-                let len = value.chars().count();
-                len < 1usize
-            };
+            let violated = len < 1usize;
             if violated {
                 violations.push(crate::common::validate::ConstraintViolation {
                     path: path.to_string(),
-                    message: format!(
-                        "{} (got {})",
-                        "value is shorter than minimum length 1",
-                        value.chars().count()
-                    ),
+                    message: format!("{} (got {})", "value is shorter than minimum length 1", len),
                     kind: crate::common::validate::ConstraintKind::MinLength,
                 });
             }
         }
         {
-            let value: &str = &self.0;
-            let violated = {
-                let len = value.chars().count();
-                len > 1025usize
-            };
+            let violated = len > 1025usize;
             if violated {
                 violations.push(crate::common::validate::ConstraintViolation {
                     path: path.to_string(),
-                    message: format!(
-                        "{} (got {})",
-                        "value exceeds maximum length 1025",
-                        value.chars().count()
-                    ),
+                    message: format!("{} (got {})", "value exceeds maximum length 1025", len),
                     kind: crate::common::validate::ConstraintKind::MaxLength,
                 });
             }
@@ -19634,38 +18743,23 @@ impl crate::common::validate::Validatable for Max105Text {
         path: &str,
         violations: &mut Vec<crate::common::validate::ConstraintViolation>,
     ) {
+        let len = self.0.chars().count();
         {
-            let value: &str = &self.0;
-            let violated = {
-                let len = value.chars().count();
-                len < 1usize
-            };
+            let violated = len < 1usize;
             if violated {
                 violations.push(crate::common::validate::ConstraintViolation {
                     path: path.to_string(),
-                    message: format!(
-                        "{} (got {})",
-                        "value is shorter than minimum length 1",
-                        value.chars().count()
-                    ),
+                    message: format!("{} (got {})", "value is shorter than minimum length 1", len),
                     kind: crate::common::validate::ConstraintKind::MinLength,
                 });
             }
         }
         {
-            let value: &str = &self.0;
-            let violated = {
-                let len = value.chars().count();
-                len > 105usize
-            };
+            let violated = len > 105usize;
             if violated {
                 violations.push(crate::common::validate::ConstraintViolation {
                     path: path.to_string(),
-                    message: format!(
-                        "{} (got {})",
-                        "value exceeds maximum length 105",
-                        value.chars().count()
-                    ),
+                    message: format!("{} (got {})", "value exceeds maximum length 105", len),
                     kind: crate::common::validate::ConstraintKind::MaxLength,
                 });
             }
@@ -19679,38 +18773,23 @@ impl crate::common::validate::Validatable for Max128Text {
         path: &str,
         violations: &mut Vec<crate::common::validate::ConstraintViolation>,
     ) {
+        let len = self.0.chars().count();
         {
-            let value: &str = &self.0;
-            let violated = {
-                let len = value.chars().count();
-                len < 1usize
-            };
+            let violated = len < 1usize;
             if violated {
                 violations.push(crate::common::validate::ConstraintViolation {
                     path: path.to_string(),
-                    message: format!(
-                        "{} (got {})",
-                        "value is shorter than minimum length 1",
-                        value.chars().count()
-                    ),
+                    message: format!("{} (got {})", "value is shorter than minimum length 1", len),
                     kind: crate::common::validate::ConstraintKind::MinLength,
                 });
             }
         }
         {
-            let value: &str = &self.0;
-            let violated = {
-                let len = value.chars().count();
-                len > 128usize
-            };
+            let violated = len > 128usize;
             if violated {
                 violations.push(crate::common::validate::ConstraintViolation {
                     path: path.to_string(),
-                    message: format!(
-                        "{} (got {})",
-                        "value exceeds maximum length 128",
-                        value.chars().count()
-                    ),
+                    message: format!("{} (got {})", "value exceeds maximum length 128", len),
                     kind: crate::common::validate::ConstraintKind::MaxLength,
                 });
             }
@@ -19724,38 +18803,23 @@ impl crate::common::validate::Validatable for Max140Text {
         path: &str,
         violations: &mut Vec<crate::common::validate::ConstraintViolation>,
     ) {
+        let len = self.0.chars().count();
         {
-            let value: &str = &self.0;
-            let violated = {
-                let len = value.chars().count();
-                len < 1usize
-            };
+            let violated = len < 1usize;
             if violated {
                 violations.push(crate::common::validate::ConstraintViolation {
                     path: path.to_string(),
-                    message: format!(
-                        "{} (got {})",
-                        "value is shorter than minimum length 1",
-                        value.chars().count()
-                    ),
+                    message: format!("{} (got {})", "value is shorter than minimum length 1", len),
                     kind: crate::common::validate::ConstraintKind::MinLength,
                 });
             }
         }
         {
-            let value: &str = &self.0;
-            let violated = {
-                let len = value.chars().count();
-                len > 140usize
-            };
+            let violated = len > 140usize;
             if violated {
                 violations.push(crate::common::validate::ConstraintViolation {
                     path: path.to_string(),
-                    message: format!(
-                        "{} (got {})",
-                        "value exceeds maximum length 140",
-                        value.chars().count()
-                    ),
+                    message: format!("{} (got {})", "value exceeds maximum length 140", len),
                     kind: crate::common::validate::ConstraintKind::MaxLength,
                 });
             }
@@ -19889,38 +18953,23 @@ impl crate::common::validate::Validatable for Max16Text {
         path: &str,
         violations: &mut Vec<crate::common::validate::ConstraintViolation>,
     ) {
+        let len = self.0.chars().count();
         {
-            let value: &str = &self.0;
-            let violated = {
-                let len = value.chars().count();
-                len < 1usize
-            };
+            let violated = len < 1usize;
             if violated {
                 violations.push(crate::common::validate::ConstraintViolation {
                     path: path.to_string(),
-                    message: format!(
-                        "{} (got {})",
-                        "value is shorter than minimum length 1",
-                        value.chars().count()
-                    ),
+                    message: format!("{} (got {})", "value is shorter than minimum length 1", len),
                     kind: crate::common::validate::ConstraintKind::MinLength,
                 });
             }
         }
         {
-            let value: &str = &self.0;
-            let violated = {
-                let len = value.chars().count();
-                len > 16usize
-            };
+            let violated = len > 16usize;
             if violated {
                 violations.push(crate::common::validate::ConstraintViolation {
                     path: path.to_string(),
-                    message: format!(
-                        "{} (got {})",
-                        "value exceeds maximum length 16",
-                        value.chars().count()
-                    ),
+                    message: format!("{} (got {})", "value exceeds maximum length 16", len),
                     kind: crate::common::validate::ConstraintKind::MaxLength,
                 });
             }
@@ -19934,38 +18983,23 @@ impl crate::common::validate::Validatable for Max2048Text {
         path: &str,
         violations: &mut Vec<crate::common::validate::ConstraintViolation>,
     ) {
+        let len = self.0.chars().count();
         {
-            let value: &str = &self.0;
-            let violated = {
-                let len = value.chars().count();
-                len < 1usize
-            };
+            let violated = len < 1usize;
             if violated {
                 violations.push(crate::common::validate::ConstraintViolation {
                     path: path.to_string(),
-                    message: format!(
-                        "{} (got {})",
-                        "value is shorter than minimum length 1",
-                        value.chars().count()
-                    ),
+                    message: format!("{} (got {})", "value is shorter than minimum length 1", len),
                     kind: crate::common::validate::ConstraintKind::MinLength,
                 });
             }
         }
         {
-            let value: &str = &self.0;
-            let violated = {
-                let len = value.chars().count();
-                len > 2048usize
-            };
+            let violated = len > 2048usize;
             if violated {
                 violations.push(crate::common::validate::ConstraintViolation {
                     path: path.to_string(),
-                    message: format!(
-                        "{} (got {})",
-                        "value exceeds maximum length 2048",
-                        value.chars().count()
-                    ),
+                    message: format!("{} (got {})", "value exceeds maximum length 2048", len),
                     kind: crate::common::validate::ConstraintKind::MaxLength,
                 });
             }
@@ -19979,38 +19013,23 @@ impl crate::common::validate::Validatable for Max34Text {
         path: &str,
         violations: &mut Vec<crate::common::validate::ConstraintViolation>,
     ) {
+        let len = self.0.chars().count();
         {
-            let value: &str = &self.0;
-            let violated = {
-                let len = value.chars().count();
-                len < 1usize
-            };
+            let violated = len < 1usize;
             if violated {
                 violations.push(crate::common::validate::ConstraintViolation {
                     path: path.to_string(),
-                    message: format!(
-                        "{} (got {})",
-                        "value is shorter than minimum length 1",
-                        value.chars().count()
-                    ),
+                    message: format!("{} (got {})", "value is shorter than minimum length 1", len),
                     kind: crate::common::validate::ConstraintKind::MinLength,
                 });
             }
         }
         {
-            let value: &str = &self.0;
-            let violated = {
-                let len = value.chars().count();
-                len > 34usize
-            };
+            let violated = len > 34usize;
             if violated {
                 violations.push(crate::common::validate::ConstraintViolation {
                     path: path.to_string(),
-                    message: format!(
-                        "{} (got {})",
-                        "value exceeds maximum length 34",
-                        value.chars().count()
-                    ),
+                    message: format!("{} (got {})", "value exceeds maximum length 34", len),
                     kind: crate::common::validate::ConstraintKind::MaxLength,
                 });
             }
@@ -20024,38 +19043,23 @@ impl crate::common::validate::Validatable for Max350Text {
         path: &str,
         violations: &mut Vec<crate::common::validate::ConstraintViolation>,
     ) {
+        let len = self.0.chars().count();
         {
-            let value: &str = &self.0;
-            let violated = {
-                let len = value.chars().count();
-                len < 1usize
-            };
+            let violated = len < 1usize;
             if violated {
                 violations.push(crate::common::validate::ConstraintViolation {
                     path: path.to_string(),
-                    message: format!(
-                        "{} (got {})",
-                        "value is shorter than minimum length 1",
-                        value.chars().count()
-                    ),
+                    message: format!("{} (got {})", "value is shorter than minimum length 1", len),
                     kind: crate::common::validate::ConstraintKind::MinLength,
                 });
             }
         }
         {
-            let value: &str = &self.0;
-            let violated = {
-                let len = value.chars().count();
-                len > 350usize
-            };
+            let violated = len > 350usize;
             if violated {
                 violations.push(crate::common::validate::ConstraintViolation {
                     path: path.to_string(),
-                    message: format!(
-                        "{} (got {})",
-                        "value exceeds maximum length 350",
-                        value.chars().count()
-                    ),
+                    message: format!("{} (got {})", "value exceeds maximum length 350", len),
                     kind: crate::common::validate::ConstraintKind::MaxLength,
                 });
             }
@@ -20069,38 +19073,23 @@ impl crate::common::validate::Validatable for Max35Text {
         path: &str,
         violations: &mut Vec<crate::common::validate::ConstraintViolation>,
     ) {
+        let len = self.0.chars().count();
         {
-            let value: &str = &self.0;
-            let violated = {
-                let len = value.chars().count();
-                len < 1usize
-            };
+            let violated = len < 1usize;
             if violated {
                 violations.push(crate::common::validate::ConstraintViolation {
                     path: path.to_string(),
-                    message: format!(
-                        "{} (got {})",
-                        "value is shorter than minimum length 1",
-                        value.chars().count()
-                    ),
+                    message: format!("{} (got {})", "value is shorter than minimum length 1", len),
                     kind: crate::common::validate::ConstraintKind::MinLength,
                 });
             }
         }
         {
-            let value: &str = &self.0;
-            let violated = {
-                let len = value.chars().count();
-                len > 35usize
-            };
+            let violated = len > 35usize;
             if violated {
                 violations.push(crate::common::validate::ConstraintViolation {
                     path: path.to_string(),
-                    message: format!(
-                        "{} (got {})",
-                        "value exceeds maximum length 35",
-                        value.chars().count()
-                    ),
+                    message: format!("{} (got {})", "value exceeds maximum length 35", len),
                     kind: crate::common::validate::ConstraintKind::MaxLength,
                 });
             }
@@ -20167,38 +19156,23 @@ impl crate::common::validate::Validatable for Max4Text {
         path: &str,
         violations: &mut Vec<crate::common::validate::ConstraintViolation>,
     ) {
+        let len = self.0.chars().count();
         {
-            let value: &str = &self.0;
-            let violated = {
-                let len = value.chars().count();
-                len < 1usize
-            };
+            let violated = len < 1usize;
             if violated {
                 violations.push(crate::common::validate::ConstraintViolation {
                     path: path.to_string(),
-                    message: format!(
-                        "{} (got {})",
-                        "value is shorter than minimum length 1",
-                        value.chars().count()
-                    ),
+                    message: format!("{} (got {})", "value is shorter than minimum length 1", len),
                     kind: crate::common::validate::ConstraintKind::MinLength,
                 });
             }
         }
         {
-            let value: &str = &self.0;
-            let violated = {
-                let len = value.chars().count();
-                len > 4usize
-            };
+            let violated = len > 4usize;
             if violated {
                 violations.push(crate::common::validate::ConstraintViolation {
                     path: path.to_string(),
-                    message: format!(
-                        "{} (got {})",
-                        "value exceeds maximum length 4",
-                        value.chars().count()
-                    ),
+                    message: format!("{} (got {})", "value exceeds maximum length 4", len),
                     kind: crate::common::validate::ConstraintKind::MaxLength,
                 });
             }
@@ -20212,38 +19186,23 @@ impl crate::common::validate::Validatable for Max500Text {
         path: &str,
         violations: &mut Vec<crate::common::validate::ConstraintViolation>,
     ) {
+        let len = self.0.chars().count();
         {
-            let value: &str = &self.0;
-            let violated = {
-                let len = value.chars().count();
-                len < 1usize
-            };
+            let violated = len < 1usize;
             if violated {
                 violations.push(crate::common::validate::ConstraintViolation {
                     path: path.to_string(),
-                    message: format!(
-                        "{} (got {})",
-                        "value is shorter than minimum length 1",
-                        value.chars().count()
-                    ),
+                    message: format!("{} (got {})", "value is shorter than minimum length 1", len),
                     kind: crate::common::validate::ConstraintKind::MinLength,
                 });
             }
         }
         {
-            let value: &str = &self.0;
-            let violated = {
-                let len = value.chars().count();
-                len > 500usize
-            };
+            let violated = len > 500usize;
             if violated {
                 violations.push(crate::common::validate::ConstraintViolation {
                     path: path.to_string(),
-                    message: format!(
-                        "{} (got {})",
-                        "value exceeds maximum length 500",
-                        value.chars().count()
-                    ),
+                    message: format!("{} (got {})", "value exceeds maximum length 500", len),
                     kind: crate::common::validate::ConstraintKind::MaxLength,
                 });
             }
@@ -20310,38 +19269,23 @@ impl crate::common::validate::Validatable for Max70Text {
         path: &str,
         violations: &mut Vec<crate::common::validate::ConstraintViolation>,
     ) {
+        let len = self.0.chars().count();
         {
-            let value: &str = &self.0;
-            let violated = {
-                let len = value.chars().count();
-                len < 1usize
-            };
+            let violated = len < 1usize;
             if violated {
                 violations.push(crate::common::validate::ConstraintViolation {
                     path: path.to_string(),
-                    message: format!(
-                        "{} (got {})",
-                        "value is shorter than minimum length 1",
-                        value.chars().count()
-                    ),
+                    message: format!("{} (got {})", "value is shorter than minimum length 1", len),
                     kind: crate::common::validate::ConstraintKind::MinLength,
                 });
             }
         }
         {
-            let value: &str = &self.0;
-            let violated = {
-                let len = value.chars().count();
-                len > 70usize
-            };
+            let violated = len > 70usize;
             if violated {
                 violations.push(crate::common::validate::ConstraintViolation {
                     path: path.to_string(),
-                    message: format!(
-                        "{} (got {})",
-                        "value exceeds maximum length 70",
-                        value.chars().count()
-                    ),
+                    message: format!("{} (got {})", "value exceeds maximum length 70", len),
                     kind: crate::common::validate::ConstraintKind::MaxLength,
                 });
             }
@@ -20524,25 +19468,19 @@ impl crate::common::validate::Validatable for NonNegativeDecimalNumber {
     ) {
         {
             let value: &str = &self.0;
-            let violated = {
-                let frac_count = value.find('.').map_or(0, |dot| {
-                    value[dot + 1..]
-                        .chars()
-                        .filter(char::is_ascii_digit)
-                        .count()
-                });
-                frac_count > 17usize
-            };
+            let frac_count = value.find('.').map_or(0, |dot| {
+                value[dot + 1..]
+                    .chars()
+                    .filter(char::is_ascii_digit)
+                    .count()
+            });
+            let violated = frac_count > 17usize;
             if violated {
                 violations.push(crate::common::validate::ConstraintViolation {
                     path: path.to_string(),
                     message: format!(
                         "{} (got {})",
-                        "value exceeds maximum fraction digits 17",
-                        value.find('.').map_or(0, |dot| value[dot + 1..]
-                            .chars()
-                            .filter(char::is_ascii_digit)
-                            .count())
+                        "value exceeds maximum fraction digits 17", frac_count
                     ),
                     kind: crate::common::validate::ConstraintKind::FractionDigits,
                 });
@@ -20550,17 +19488,14 @@ impl crate::common::validate::Validatable for NonNegativeDecimalNumber {
         }
         {
             let value: &str = &self.0;
-            let violated = {
-                let digit_count = value.chars().filter(char::is_ascii_digit).count();
-                digit_count > 18usize
-            };
+            let digit_count = value.chars().filter(char::is_ascii_digit).count();
+            let violated = digit_count > 18usize;
             if violated {
                 violations.push(crate::common::validate::ConstraintViolation {
                     path: path.to_string(),
                     message: format!(
                         "{} (got {})",
-                        "value exceeds maximum total digits 18",
-                        value.chars().filter(char::is_ascii_digit).count()
+                        "value exceeds maximum total digits 18", digit_count
                     ),
                     kind: crate::common::validate::ConstraintKind::TotalDigits,
                 });
@@ -20577,25 +19512,19 @@ impl crate::common::validate::Validatable for Number {
     ) {
         {
             let value: &str = &self.0;
-            let violated = {
-                let frac_count = value.find('.').map_or(0, |dot| {
-                    value[dot + 1..]
-                        .chars()
-                        .filter(char::is_ascii_digit)
-                        .count()
-                });
-                frac_count > 0usize
-            };
+            let frac_count = value.find('.').map_or(0, |dot| {
+                value[dot + 1..]
+                    .chars()
+                    .filter(char::is_ascii_digit)
+                    .count()
+            });
+            let violated = frac_count > 0usize;
             if violated {
                 violations.push(crate::common::validate::ConstraintViolation {
                     path: path.to_string(),
                     message: format!(
                         "{} (got {})",
-                        "value exceeds maximum fraction digits 0",
-                        value.find('.').map_or(0, |dot| value[dot + 1..]
-                            .chars()
-                            .filter(char::is_ascii_digit)
-                            .count())
+                        "value exceeds maximum fraction digits 0", frac_count
                     ),
                     kind: crate::common::validate::ConstraintKind::FractionDigits,
                 });
@@ -20603,17 +19532,14 @@ impl crate::common::validate::Validatable for Number {
         }
         {
             let value: &str = &self.0;
-            let violated = {
-                let digit_count = value.chars().filter(char::is_ascii_digit).count();
-                digit_count > 18usize
-            };
+            let digit_count = value.chars().filter(char::is_ascii_digit).count();
+            let violated = digit_count > 18usize;
             if violated {
                 violations.push(crate::common::validate::ConstraintViolation {
                     path: path.to_string(),
                     message: format!(
                         "{} (got {})",
-                        "value exceeds maximum total digits 18",
-                        value.chars().filter(char::is_ascii_digit).count()
+                        "value exceeds maximum total digits 18", digit_count
                     ),
                     kind: crate::common::validate::ConstraintKind::TotalDigits,
                 });
@@ -20662,25 +19588,19 @@ impl crate::common::validate::Validatable for PercentageRate {
     ) {
         {
             let value: &str = &self.0;
-            let violated = {
-                let frac_count = value.find('.').map_or(0, |dot| {
-                    value[dot + 1..]
-                        .chars()
-                        .filter(char::is_ascii_digit)
-                        .count()
-                });
-                frac_count > 10usize
-            };
+            let frac_count = value.find('.').map_or(0, |dot| {
+                value[dot + 1..]
+                    .chars()
+                    .filter(char::is_ascii_digit)
+                    .count()
+            });
+            let violated = frac_count > 10usize;
             if violated {
                 violations.push(crate::common::validate::ConstraintViolation {
                     path: path.to_string(),
                     message: format!(
                         "{} (got {})",
-                        "value exceeds maximum fraction digits 10",
-                        value.find('.').map_or(0, |dot| value[dot + 1..]
-                            .chars()
-                            .filter(char::is_ascii_digit)
-                            .count())
+                        "value exceeds maximum fraction digits 10", frac_count
                     ),
                     kind: crate::common::validate::ConstraintKind::FractionDigits,
                 });
@@ -20688,17 +19608,14 @@ impl crate::common::validate::Validatable for PercentageRate {
         }
         {
             let value: &str = &self.0;
-            let violated = {
-                let digit_count = value.chars().filter(char::is_ascii_digit).count();
-                digit_count > 11usize
-            };
+            let digit_count = value.chars().filter(char::is_ascii_digit).count();
+            let violated = digit_count > 11usize;
             if violated {
                 violations.push(crate::common::validate::ConstraintViolation {
                     path: path.to_string(),
                     message: format!(
                         "{} (got {})",
-                        "value exceeds maximum total digits 11",
-                        value.chars().filter(char::is_ascii_digit).count()
+                        "value exceeds maximum total digits 11", digit_count
                     ),
                     kind: crate::common::validate::ConstraintKind::TotalDigits,
                 });
@@ -20801,25 +19718,19 @@ impl crate::common::validate::Validatable for PositiveNumber {
     ) {
         {
             let value: &str = &self.0;
-            let violated = {
-                let frac_count = value.find('.').map_or(0, |dot| {
-                    value[dot + 1..]
-                        .chars()
-                        .filter(char::is_ascii_digit)
-                        .count()
-                });
-                frac_count > 0usize
-            };
+            let frac_count = value.find('.').map_or(0, |dot| {
+                value[dot + 1..]
+                    .chars()
+                    .filter(char::is_ascii_digit)
+                    .count()
+            });
+            let violated = frac_count > 0usize;
             if violated {
                 violations.push(crate::common::validate::ConstraintViolation {
                     path: path.to_string(),
                     message: format!(
                         "{} (got {})",
-                        "value exceeds maximum fraction digits 0",
-                        value.find('.').map_or(0, |dot| value[dot + 1..]
-                            .chars()
-                            .filter(char::is_ascii_digit)
-                            .count())
+                        "value exceeds maximum fraction digits 0", frac_count
                     ),
                     kind: crate::common::validate::ConstraintKind::FractionDigits,
                 });
@@ -20827,17 +19738,14 @@ impl crate::common::validate::Validatable for PositiveNumber {
         }
         {
             let value: &str = &self.0;
-            let violated = {
-                let digit_count = value.chars().filter(char::is_ascii_digit).count();
-                digit_count > 18usize
-            };
+            let digit_count = value.chars().filter(char::is_ascii_digit).count();
+            let violated = digit_count > 18usize;
             if violated {
                 violations.push(crate::common::validate::ConstraintViolation {
                     path: path.to_string(),
                     message: format!(
                         "{} (got {})",
-                        "value exceeds maximum total digits 18",
-                        value.chars().filter(char::is_ascii_digit).count()
+                        "value exceeds maximum total digits 18", digit_count
                     ),
                     kind: crate::common::validate::ConstraintKind::TotalDigits,
                 });
@@ -21103,10 +20011,24 @@ impl crate::common::validate::Validatable for AccountIdentification4Choice {
     ) {
         match self {
             Self::IBAN(inner) => {
-                inner.validate_constraints(&format!("{path}/IBAN"), violations);
+                let snap = violations.len();
+                inner.validate_constraints("", violations);
+                if violations.len() > snap {
+                    let pfx = format!("{path}/IBAN");
+                    for v in &mut violations[snap..] {
+                        v.path.insert_str(0, &pfx);
+                    }
+                }
             }
             Self::Othr(inner) => {
-                inner.validate_constraints(&format!("{path}/Othr"), violations);
+                let snap = violations.len();
+                inner.validate_constraints("", violations);
+                if violations.len() > snap {
+                    let pfx = format!("{path}/Othr");
+                    for v in &mut violations[snap..] {
+                        v.path.insert_str(0, &pfx);
+                    }
+                }
             }
         }
     }
@@ -21118,21 +20040,54 @@ impl crate::common::validate::Validatable for AccountInterest4 {
         violations: &mut Vec<crate::common::validate::ConstraintViolation>,
     ) {
         if let Some(ref wrapper) = self.tp {
-            wrapper
-                .inner
-                .validate_constraints(&format!("{path}/Tp"), violations);
+            let snap = violations.len();
+            wrapper.inner.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/Tp");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
-        for (i, item) in self.rate.iter().enumerate() {
-            item.validate_constraints(&format!("{path}/Rate[{i}]"), violations);
+        for (idx, elem) in self.rate.iter().enumerate() {
+            let snap = violations.len();
+            elem.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/Rate[{idx}]");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
         if let Some(ref val) = self.fr_to_dt {
-            val.validate_constraints(&format!("{path}/FrToDt"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/FrToDt");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
         if let Some(ref val) = self.rsn {
-            val.validate_constraints(&format!("{path}/Rsn"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/Rsn");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
         if let Some(ref val) = self.tax {
-            val.validate_constraints(&format!("{path}/Tax"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/Tax");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
     }
 }
@@ -21142,52 +20097,155 @@ impl crate::common::validate::Validatable for AccountNotification21 {
         path: &str,
         violations: &mut Vec<crate::common::validate::ConstraintViolation>,
     ) {
-        self.id
-            .validate_constraints(&format!("{path}/Id"), violations);
+        {
+            let snap = violations.len();
+            self.id.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/Id");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
+        }
         if let Some(ref val) = self.ntfctn_pgntn {
-            val.validate_constraints(&format!("{path}/NtfctnPgntn"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/NtfctnPgntn");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
         if let Some(ref val) = self.elctrnc_seq_nb {
-            val.validate_constraints(&format!("{path}/ElctrncSeqNb"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/ElctrncSeqNb");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
         if let Some(ref wrapper) = self.rptg_seq {
-            wrapper
-                .inner
-                .validate_constraints(&format!("{path}/RptgSeq"), violations);
+            let snap = violations.len();
+            wrapper.inner.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/RptgSeq");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
         if let Some(ref val) = self.lgl_seq_nb {
-            val.validate_constraints(&format!("{path}/LglSeqNb"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/LglSeqNb");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
         if let Some(ref val) = self.cre_dt_tm {
-            val.validate_constraints(&format!("{path}/CreDtTm"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/CreDtTm");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
         if let Some(ref val) = self.fr_to_dt {
-            val.validate_constraints(&format!("{path}/FrToDt"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/FrToDt");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
         if let Some(ref val) = self.cpy_dplct_ind {
-            val.validate_constraints(&format!("{path}/CpyDplctInd"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/CpyDplctInd");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
         if let Some(ref wrapper) = self.rptg_src {
-            wrapper
-                .inner
-                .validate_constraints(&format!("{path}/RptgSrc"), violations);
+            let snap = violations.len();
+            wrapper.inner.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/RptgSrc");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
-        self.acct
-            .validate_constraints(&format!("{path}/Acct"), violations);
+        {
+            let snap = violations.len();
+            self.acct.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/Acct");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
+        }
         if let Some(ref val) = self.rltd_acct {
-            val.validate_constraints(&format!("{path}/RltdAcct"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/RltdAcct");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
-        for (i, item) in self.intrst.iter().enumerate() {
-            item.validate_constraints(&format!("{path}/Intrst[{i}]"), violations);
+        for (idx, elem) in self.intrst.iter().enumerate() {
+            let snap = violations.len();
+            elem.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/Intrst[{idx}]");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
         if let Some(ref val) = self.txs_summry {
-            val.validate_constraints(&format!("{path}/TxsSummry"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/TxsSummry");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
-        for (i, item) in self.ntry.iter().enumerate() {
-            item.validate_constraints(&format!("{path}/Ntry[{i}]"), violations);
+        for (idx, elem) in self.ntry.iter().enumerate() {
+            let snap = violations.len();
+            elem.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/Ntry[{idx}]");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
         if let Some(ref val) = self.addtl_ntfctn_inf {
-            val.validate_constraints(&format!("{path}/AddtlNtfctnInf"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/AddtlNtfctnInf");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
     }
 }
@@ -21199,10 +20257,24 @@ impl crate::common::validate::Validatable for AccountSchemeName1Choice {
     ) {
         match self {
             Self::Cd(inner) => {
-                inner.validate_constraints(&format!("{path}/Cd"), violations);
+                let snap = violations.len();
+                inner.validate_constraints("", violations);
+                if violations.len() > snap {
+                    let pfx = format!("{path}/Cd");
+                    for v in &mut violations[snap..] {
+                        v.path.insert_str(0, &pfx);
+                    }
+                }
             }
             Self::Prtry(inner) => {
-                inner.validate_constraints(&format!("{path}/Prtry"), violations);
+                let snap = violations.len();
+                inner.validate_constraints("", violations);
+                if violations.len() > snap {
+                    let pfx = format!("{path}/Prtry");
+                    for v in &mut violations[snap..] {
+                        v.path.insert_str(0, &pfx);
+                    }
+                }
             }
         }
     }
@@ -21214,8 +20286,16 @@ impl crate::common::validate::Validatable for ActiveCurrencyAndAmount {
         violations: &mut Vec<crate::common::validate::ConstraintViolation>,
     ) {
         self.value.validate_constraints(path, violations);
-        self.ccy
-            .validate_constraints(&format!("{path}/@Ccy"), violations);
+        {
+            let snap = violations.len();
+            self.ccy.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/@Ccy");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
+        }
     }
 }
 impl crate::common::validate::Validatable for ActiveOrHistoricCurrencyAnd13DecimalAmount {
@@ -21225,8 +20305,16 @@ impl crate::common::validate::Validatable for ActiveOrHistoricCurrencyAnd13Decim
         violations: &mut Vec<crate::common::validate::ConstraintViolation>,
     ) {
         self.value.validate_constraints(path, violations);
-        self.ccy
-            .validate_constraints(&format!("{path}/@Ccy"), violations);
+        {
+            let snap = violations.len();
+            self.ccy.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/@Ccy");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
+        }
     }
 }
 impl crate::common::validate::Validatable for ActiveOrHistoricCurrencyAndAmount {
@@ -21236,8 +20324,16 @@ impl crate::common::validate::Validatable for ActiveOrHistoricCurrencyAndAmount 
         violations: &mut Vec<crate::common::validate::ConstraintViolation>,
     ) {
         self.value.validate_constraints(path, violations);
-        self.ccy
-            .validate_constraints(&format!("{path}/@Ccy"), violations);
+        {
+            let snap = violations.len();
+            self.ccy.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/@Ccy");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
+        }
     }
 }
 impl crate::common::validate::Validatable for ActiveOrHistoricCurrencyAndAmountRange2 {
@@ -21246,14 +20342,36 @@ impl crate::common::validate::Validatable for ActiveOrHistoricCurrencyAndAmountR
         path: &str,
         violations: &mut Vec<crate::common::validate::ConstraintViolation>,
     ) {
-        self.amt
-            .inner
-            .validate_constraints(&format!("{path}/Amt"), violations);
-        if let Some(ref val) = self.cdt_dbt_ind {
-            val.validate_constraints(&format!("{path}/CdtDbtInd"), violations);
+        {
+            let snap = violations.len();
+            self.amt.inner.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/Amt");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
-        self.ccy
-            .validate_constraints(&format!("{path}/Ccy"), violations);
+        if let Some(ref val) = self.cdt_dbt_ind {
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/CdtDbtInd");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
+        }
+        {
+            let snap = violations.len();
+            self.ccy.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/Ccy");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
+        }
     }
 }
 impl crate::common::validate::Validatable for AddressType3Choice {
@@ -21264,10 +20382,24 @@ impl crate::common::validate::Validatable for AddressType3Choice {
     ) {
         match self {
             Self::Cd(inner) => {
-                inner.validate_constraints(&format!("{path}/Cd"), violations);
+                let snap = violations.len();
+                inner.validate_constraints("", violations);
+                if violations.len() > snap {
+                    let pfx = format!("{path}/Cd");
+                    for v in &mut violations[snap..] {
+                        v.path.insert_str(0, &pfx);
+                    }
+                }
             }
             Self::Prtry(inner) => {
-                inner.validate_constraints(&format!("{path}/Prtry"), violations);
+                let snap = violations.len();
+                inner.validate_constraints("", violations);
+                if violations.len() > snap {
+                    let pfx = format!("{path}/Prtry");
+                    for v in &mut violations[snap..] {
+                        v.path.insert_str(0, &pfx);
+                    }
+                }
             }
         }
     }
@@ -21279,19 +20411,54 @@ impl crate::common::validate::Validatable for AmountAndCurrencyExchange4 {
         violations: &mut Vec<crate::common::validate::ConstraintViolation>,
     ) {
         if let Some(ref val) = self.instd_amt {
-            val.validate_constraints(&format!("{path}/InstdAmt"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/InstdAmt");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
         if let Some(ref val) = self.tx_amt {
-            val.validate_constraints(&format!("{path}/TxAmt"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/TxAmt");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
         if let Some(ref val) = self.cntr_val_amt {
-            val.validate_constraints(&format!("{path}/CntrValAmt"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/CntrValAmt");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
         if let Some(ref val) = self.anncd_pstng_amt {
-            val.validate_constraints(&format!("{path}/AnncdPstngAmt"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/AnncdPstngAmt");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
-        for (i, item) in self.prtry_amt.iter().enumerate() {
-            item.validate_constraints(&format!("{path}/PrtryAmt[{i}]"), violations);
+        for (idx, elem) in self.prtry_amt.iter().enumerate() {
+            let snap = violations.len();
+            elem.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/PrtryAmt[{idx}]");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
     }
 }
@@ -21301,10 +20468,25 @@ impl crate::common::validate::Validatable for AmountAndCurrencyExchangeDetails5 
         path: &str,
         violations: &mut Vec<crate::common::validate::ConstraintViolation>,
     ) {
-        self.amt
-            .validate_constraints(&format!("{path}/Amt"), violations);
+        {
+            let snap = violations.len();
+            self.amt.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/Amt");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
+        }
         if let Some(ref val) = self.ccy_xchg {
-            val.validate_constraints(&format!("{path}/CcyXchg"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/CcyXchg");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
     }
 }
@@ -21314,12 +20496,35 @@ impl crate::common::validate::Validatable for AmountAndCurrencyExchangeDetails6 
         path: &str,
         violations: &mut Vec<crate::common::validate::ConstraintViolation>,
     ) {
-        self.tp
-            .validate_constraints(&format!("{path}/Tp"), violations);
-        self.amt
-            .validate_constraints(&format!("{path}/Amt"), violations);
+        {
+            let snap = violations.len();
+            self.tp.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/Tp");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
+        }
+        {
+            let snap = violations.len();
+            self.amt.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/Amt");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
+        }
         if let Some(ref val) = self.ccy_xchg {
-            val.validate_constraints(&format!("{path}/CcyXchg"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/CcyXchg");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
     }
 }
@@ -21329,10 +20534,26 @@ impl crate::common::validate::Validatable for AmountAndDirection35 {
         path: &str,
         violations: &mut Vec<crate::common::validate::ConstraintViolation>,
     ) {
-        self.amt
-            .validate_constraints(&format!("{path}/Amt"), violations);
-        self.cdt_dbt_ind
-            .validate_constraints(&format!("{path}/CdtDbtInd"), violations);
+        {
+            let snap = violations.len();
+            self.amt.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/Amt");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
+        }
+        {
+            let snap = violations.len();
+            self.cdt_dbt_ind.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/CdtDbtInd");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
+        }
     }
 }
 impl crate::common::validate::Validatable for AmountRangeBoundary1 {
@@ -21341,10 +20562,26 @@ impl crate::common::validate::Validatable for AmountRangeBoundary1 {
         path: &str,
         violations: &mut Vec<crate::common::validate::ConstraintViolation>,
     ) {
-        self.bdry_amt
-            .validate_constraints(&format!("{path}/BdryAmt"), violations);
-        self.incl
-            .validate_constraints(&format!("{path}/Incl"), violations);
+        {
+            let snap = violations.len();
+            self.bdry_amt.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/BdryAmt");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
+        }
+        {
+            let snap = violations.len();
+            self.incl.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/Incl");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
+        }
     }
 }
 impl crate::common::validate::Validatable for BankToCustomerDebitCreditNotificationV11 {
@@ -21353,13 +20590,35 @@ impl crate::common::validate::Validatable for BankToCustomerDebitCreditNotificat
         path: &str,
         violations: &mut Vec<crate::common::validate::ConstraintViolation>,
     ) {
-        self.grp_hdr
-            .validate_constraints(&format!("{path}/GrpHdr"), violations);
-        for (i, item) in self.ntfctn.iter().enumerate() {
-            item.validate_constraints(&format!("{path}/Ntfctn[{i}]"), violations);
+        {
+            let snap = violations.len();
+            self.grp_hdr.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/GrpHdr");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
-        for (i, item) in self.splmtry_data.iter().enumerate() {
-            item.validate_constraints(&format!("{path}/SplmtryData[{i}]"), violations);
+        for (idx, elem) in self.ntfctn.iter().enumerate() {
+            let snap = violations.len();
+            elem.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/Ntfctn[{idx}]");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
+        }
+        for (idx, elem) in self.splmtry_data.iter().enumerate() {
+            let snap = violations.len();
+            elem.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/SplmtryData[{idx}]");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
     }
 }
@@ -21370,10 +20629,24 @@ impl crate::common::validate::Validatable for BankTransactionCodeStructure4 {
         violations: &mut Vec<crate::common::validate::ConstraintViolation>,
     ) {
         if let Some(ref val) = self.domn {
-            val.validate_constraints(&format!("{path}/Domn"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/Domn");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
         if let Some(ref val) = self.prtry {
-            val.validate_constraints(&format!("{path}/Prtry"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/Prtry");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
     }
 }
@@ -21383,10 +20656,26 @@ impl crate::common::validate::Validatable for BankTransactionCodeStructure5 {
         path: &str,
         violations: &mut Vec<crate::common::validate::ConstraintViolation>,
     ) {
-        self.cd
-            .validate_constraints(&format!("{path}/Cd"), violations);
-        self.fmly
-            .validate_constraints(&format!("{path}/Fmly"), violations);
+        {
+            let snap = violations.len();
+            self.cd.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/Cd");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
+        }
+        {
+            let snap = violations.len();
+            self.fmly.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/Fmly");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
+        }
     }
 }
 impl crate::common::validate::Validatable for BankTransactionCodeStructure6 {
@@ -21395,10 +20684,26 @@ impl crate::common::validate::Validatable for BankTransactionCodeStructure6 {
         path: &str,
         violations: &mut Vec<crate::common::validate::ConstraintViolation>,
     ) {
-        self.cd
-            .validate_constraints(&format!("{path}/Cd"), violations);
-        self.sub_fmly_cd
-            .validate_constraints(&format!("{path}/SubFmlyCd"), violations);
+        {
+            let snap = violations.len();
+            self.cd.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/Cd");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
+        }
+        {
+            let snap = violations.len();
+            self.sub_fmly_cd.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/SubFmlyCd");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
+        }
     }
 }
 impl crate::common::validate::Validatable for BatchInformation2 {
@@ -21408,19 +20713,54 @@ impl crate::common::validate::Validatable for BatchInformation2 {
         violations: &mut Vec<crate::common::validate::ConstraintViolation>,
     ) {
         if let Some(ref val) = self.msg_id {
-            val.validate_constraints(&format!("{path}/MsgId"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/MsgId");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
         if let Some(ref val) = self.pmt_inf_id {
-            val.validate_constraints(&format!("{path}/PmtInfId"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/PmtInfId");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
         if let Some(ref val) = self.nb_of_txs {
-            val.validate_constraints(&format!("{path}/NbOfTxs"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/NbOfTxs");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
         if let Some(ref val) = self.ttl_amt {
-            val.validate_constraints(&format!("{path}/TtlAmt"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/TtlAmt");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
         if let Some(ref val) = self.cdt_dbt_ind {
-            val.validate_constraints(&format!("{path}/CdtDbtInd"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/CdtDbtInd");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
     }
 }
@@ -21430,10 +20770,25 @@ impl crate::common::validate::Validatable for BranchAndFinancialInstitutionIdent
         path: &str,
         violations: &mut Vec<crate::common::validate::ConstraintViolation>,
     ) {
-        self.fin_instn_id
-            .validate_constraints(&format!("{path}/FinInstnId"), violations);
+        {
+            let snap = violations.len();
+            self.fin_instn_id.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/FinInstnId");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
+        }
         if let Some(ref val) = self.brnch_id {
-            val.validate_constraints(&format!("{path}/BrnchId"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/BrnchId");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
     }
 }
@@ -21444,16 +20799,44 @@ impl crate::common::validate::Validatable for BranchData3 {
         violations: &mut Vec<crate::common::validate::ConstraintViolation>,
     ) {
         if let Some(ref val) = self.id {
-            val.validate_constraints(&format!("{path}/Id"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/Id");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
         if let Some(ref val) = self.lei {
-            val.validate_constraints(&format!("{path}/LEI"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/LEI");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
         if let Some(ref val) = self.nm {
-            val.validate_constraints(&format!("{path}/Nm"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/Nm");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
         if let Some(ref val) = self.pstl_adr {
-            val.validate_constraints(&format!("{path}/PstlAdr"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/PstlAdr");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
     }
 }
@@ -21464,21 +20847,54 @@ impl crate::common::validate::Validatable for CardAggregated2 {
         violations: &mut Vec<crate::common::validate::ConstraintViolation>,
     ) {
         if let Some(ref val) = self.addtl_svc {
-            val.validate_constraints(&format!("{path}/AddtlSvc"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/AddtlSvc");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
         if let Some(ref val) = self.tx_ctgy {
-            val.validate_constraints(&format!("{path}/TxCtgy"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/TxCtgy");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
         if let Some(ref val) = self.sale_rcncltn_id {
-            val.validate_constraints(&format!("{path}/SaleRcncltnId"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/SaleRcncltnId");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
         if let Some(ref val) = self.seq_nb_rg {
-            val.validate_constraints(&format!("{path}/SeqNbRg"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/SeqNbRg");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
         if let Some(ref wrapper) = self.tx_dt_rg {
-            wrapper
-                .inner
-                .validate_constraints(&format!("{path}/TxDtRg"), violations);
+            let snap = violations.len();
+            wrapper.inner.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/TxDtRg");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
     }
 }
@@ -21489,16 +20905,44 @@ impl crate::common::validate::Validatable for CardEntry5 {
         violations: &mut Vec<crate::common::validate::ConstraintViolation>,
     ) {
         if let Some(ref val) = self.card {
-            val.validate_constraints(&format!("{path}/Card"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/Card");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
         if let Some(ref val) = self.poi {
-            val.validate_constraints(&format!("{path}/POI"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/POI");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
         if let Some(ref val) = self.aggtd_ntry {
-            val.validate_constraints(&format!("{path}/AggtdNtry"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/AggtdNtry");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
         if let Some(ref val) = self.pre_pd_acct {
-            val.validate_constraints(&format!("{path}/PrePdAcct"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/PrePdAcct");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
     }
 }
@@ -21509,40 +20953,124 @@ impl crate::common::validate::Validatable for CardIndividualTransaction2 {
         violations: &mut Vec<crate::common::validate::ConstraintViolation>,
     ) {
         if let Some(ref val) = self.icc_rltd_data {
-            val.validate_constraints(&format!("{path}/ICCRltdData"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/ICCRltdData");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
         if let Some(ref val) = self.pmt_cntxt {
-            val.validate_constraints(&format!("{path}/PmtCntxt"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/PmtCntxt");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
         if let Some(ref val) = self.addtl_svc {
-            val.validate_constraints(&format!("{path}/AddtlSvc"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/AddtlSvc");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
         if let Some(ref val) = self.tx_ctgy {
-            val.validate_constraints(&format!("{path}/TxCtgy"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/TxCtgy");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
         if let Some(ref val) = self.sale_rcncltn_id {
-            val.validate_constraints(&format!("{path}/SaleRcncltnId"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/SaleRcncltnId");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
         if let Some(ref val) = self.sale_ref_nb {
-            val.validate_constraints(&format!("{path}/SaleRefNb"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/SaleRefNb");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
         if let Some(ref val) = self.re_presntmnt_rsn {
-            val.validate_constraints(&format!("{path}/RePresntmntRsn"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/RePresntmntRsn");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
         if let Some(ref val) = self.seq_nb {
-            val.validate_constraints(&format!("{path}/SeqNb"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/SeqNb");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
         if let Some(ref val) = self.tx_id {
-            val.validate_constraints(&format!("{path}/TxId"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/TxId");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
         if let Some(ref val) = self.pdct {
-            val.validate_constraints(&format!("{path}/Pdct"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/Pdct");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
         if let Some(ref val) = self.vldtn_dt {
-            val.validate_constraints(&format!("{path}/VldtnDt"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/VldtnDt");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
         if let Some(ref val) = self.vldtn_seq_nb {
-            val.validate_constraints(&format!("{path}/VldtnSeqNb"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/VldtnSeqNb");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
     }
 }
@@ -21552,10 +21080,25 @@ impl crate::common::validate::Validatable for CardSecurityInformation1 {
         path: &str,
         violations: &mut Vec<crate::common::validate::ConstraintViolation>,
     ) {
-        self.csc_mgmt
-            .validate_constraints(&format!("{path}/CSCMgmt"), violations);
+        {
+            let snap = violations.len();
+            self.csc_mgmt.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/CSCMgmt");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
+        }
         if let Some(ref val) = self.csc_val {
-            val.validate_constraints(&format!("{path}/CSCVal"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/CSCVal");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
     }
 }
@@ -21566,10 +21109,24 @@ impl crate::common::validate::Validatable for CardSequenceNumberRange1 {
         violations: &mut Vec<crate::common::validate::ConstraintViolation>,
     ) {
         if let Some(ref val) = self.frst_tx {
-            val.validate_constraints(&format!("{path}/FrstTx"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/FrstTx");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
         if let Some(ref val) = self.last_tx {
-            val.validate_constraints(&format!("{path}/LastTx"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/LastTx");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
     }
 }
@@ -21580,18 +21137,44 @@ impl crate::common::validate::Validatable for CardTransaction18 {
         violations: &mut Vec<crate::common::validate::ConstraintViolation>,
     ) {
         if let Some(ref val) = self.card {
-            val.validate_constraints(&format!("{path}/Card"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/Card");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
         if let Some(ref val) = self.poi {
-            val.validate_constraints(&format!("{path}/POI"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/POI");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
         if let Some(ref wrapper) = self.tx {
-            wrapper
-                .inner
-                .validate_constraints(&format!("{path}/Tx"), violations);
+            let snap = violations.len();
+            wrapper.inner.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/Tx");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
         if let Some(ref val) = self.pre_pd_acct {
-            val.validate_constraints(&format!("{path}/PrePdAcct"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/PrePdAcct");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
     }
 }
@@ -21603,10 +21186,24 @@ impl crate::common::validate::Validatable for CardTransaction3Choice {
     ) {
         match self {
             Self::Aggtd(inner) => {
-                inner.validate_constraints(&format!("{path}/Aggtd"), violations);
+                let snap = violations.len();
+                inner.validate_constraints("", violations);
+                if violations.len() > snap {
+                    let pfx = format!("{path}/Aggtd");
+                    for v in &mut violations[snap..] {
+                        v.path.insert_str(0, &pfx);
+                    }
+                }
             }
             Self::Indv(inner) => {
-                inner.validate_constraints(&format!("{path}/Indv"), violations);
+                let snap = violations.len();
+                inner.validate_constraints("", violations);
+                if violations.len() > snap {
+                    let pfx = format!("{path}/Indv");
+                    for v in &mut violations[snap..] {
+                        v.path.insert_str(0, &pfx);
+                    }
+                }
             }
         }
     }
@@ -21617,10 +21214,26 @@ impl crate::common::validate::Validatable for CardholderAuthentication2 {
         path: &str,
         violations: &mut Vec<crate::common::validate::ConstraintViolation>,
     ) {
-        self.authntcn_mtd
-            .validate_constraints(&format!("{path}/AuthntcnMtd"), violations);
-        self.authntcn_ntty
-            .validate_constraints(&format!("{path}/AuthntcnNtty"), violations);
+        {
+            let snap = violations.len();
+            self.authntcn_mtd.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/AuthntcnMtd");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
+        }
+        {
+            let snap = violations.len();
+            self.authntcn_ntty.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/AuthntcnNtty");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
+        }
     }
 }
 impl crate::common::validate::Validatable for CashAccount40 {
@@ -21630,23 +21243,54 @@ impl crate::common::validate::Validatable for CashAccount40 {
         violations: &mut Vec<crate::common::validate::ConstraintViolation>,
     ) {
         if let Some(ref wrapper) = self.id {
-            wrapper
-                .inner
-                .validate_constraints(&format!("{path}/Id"), violations);
+            let snap = violations.len();
+            wrapper.inner.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/Id");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
         if let Some(ref wrapper) = self.tp {
-            wrapper
-                .inner
-                .validate_constraints(&format!("{path}/Tp"), violations);
+            let snap = violations.len();
+            wrapper.inner.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/Tp");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
         if let Some(ref val) = self.ccy {
-            val.validate_constraints(&format!("{path}/Ccy"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/Ccy");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
         if let Some(ref val) = self.nm {
-            val.validate_constraints(&format!("{path}/Nm"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/Nm");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
         if let Some(ref val) = self.prxy {
-            val.validate_constraints(&format!("{path}/Prxy"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/Prxy");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
     }
 }
@@ -21657,29 +21301,74 @@ impl crate::common::validate::Validatable for CashAccount41 {
         violations: &mut Vec<crate::common::validate::ConstraintViolation>,
     ) {
         if let Some(ref wrapper) = self.id {
-            wrapper
-                .inner
-                .validate_constraints(&format!("{path}/Id"), violations);
+            let snap = violations.len();
+            wrapper.inner.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/Id");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
         if let Some(ref wrapper) = self.tp {
-            wrapper
-                .inner
-                .validate_constraints(&format!("{path}/Tp"), violations);
+            let snap = violations.len();
+            wrapper.inner.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/Tp");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
         if let Some(ref val) = self.ccy {
-            val.validate_constraints(&format!("{path}/Ccy"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/Ccy");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
         if let Some(ref val) = self.nm {
-            val.validate_constraints(&format!("{path}/Nm"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/Nm");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
         if let Some(ref val) = self.prxy {
-            val.validate_constraints(&format!("{path}/Prxy"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/Prxy");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
         if let Some(ref val) = self.ownr {
-            val.validate_constraints(&format!("{path}/Ownr"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/Ownr");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
         if let Some(ref val) = self.svcr {
-            val.validate_constraints(&format!("{path}/Svcr"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/Svcr");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
     }
 }
@@ -21691,10 +21380,24 @@ impl crate::common::validate::Validatable for CashAccountType2Choice {
     ) {
         match self {
             Self::Cd(inner) => {
-                inner.validate_constraints(&format!("{path}/Cd"), violations);
+                let snap = violations.len();
+                inner.validate_constraints("", violations);
+                if violations.len() > snap {
+                    let pfx = format!("{path}/Cd");
+                    for v in &mut violations[snap..] {
+                        v.path.insert_str(0, &pfx);
+                    }
+                }
             }
             Self::Prtry(inner) => {
-                inner.validate_constraints(&format!("{path}/Prtry"), violations);
+                let snap = violations.len();
+                inner.validate_constraints("", violations);
+                if violations.len() > snap {
+                    let pfx = format!("{path}/Prtry");
+                    for v in &mut violations[snap..] {
+                        v.path.insert_str(0, &pfx);
+                    }
+                }
             }
         }
     }
@@ -21705,13 +21408,36 @@ impl crate::common::validate::Validatable for CashAvailability1 {
         path: &str,
         violations: &mut Vec<crate::common::validate::ConstraintViolation>,
     ) {
-        self.dt
-            .inner
-            .validate_constraints(&format!("{path}/Dt"), violations);
-        self.amt
-            .validate_constraints(&format!("{path}/Amt"), violations);
-        self.cdt_dbt_ind
-            .validate_constraints(&format!("{path}/CdtDbtInd"), violations);
+        {
+            let snap = violations.len();
+            self.dt.inner.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/Dt");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
+        }
+        {
+            let snap = violations.len();
+            self.amt.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/Amt");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
+        }
+        {
+            let snap = violations.len();
+            self.cdt_dbt_ind.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/CdtDbtInd");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
+        }
     }
 }
 impl crate::common::validate::Validatable for CashAvailabilityDate1Choice {
@@ -21722,10 +21448,24 @@ impl crate::common::validate::Validatable for CashAvailabilityDate1Choice {
     ) {
         match self {
             Self::NbOfDays(inner) => {
-                inner.validate_constraints(&format!("{path}/NbOfDays"), violations);
+                let snap = violations.len();
+                inner.validate_constraints("", violations);
+                if violations.len() > snap {
+                    let pfx = format!("{path}/NbOfDays");
+                    for v in &mut violations[snap..] {
+                        v.path.insert_str(0, &pfx);
+                    }
+                }
             }
             Self::ActlDt(inner) => {
-                inner.validate_constraints(&format!("{path}/ActlDt"), violations);
+                let snap = violations.len();
+                inner.validate_constraints("", violations);
+                if violations.len() > snap {
+                    let pfx = format!("{path}/ActlDt");
+                    for v in &mut violations[snap..] {
+                        v.path.insert_str(0, &pfx);
+                    }
+                }
             }
         }
     }
@@ -21736,12 +21476,36 @@ impl crate::common::validate::Validatable for CashDeposit1 {
         path: &str,
         violations: &mut Vec<crate::common::validate::ConstraintViolation>,
     ) {
-        self.note_dnmtn
-            .validate_constraints(&format!("{path}/NoteDnmtn"), violations);
-        self.nb_of_notes
-            .validate_constraints(&format!("{path}/NbOfNotes"), violations);
-        self.amt
-            .validate_constraints(&format!("{path}/Amt"), violations);
+        {
+            let snap = violations.len();
+            self.note_dnmtn.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/NoteDnmtn");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
+        }
+        {
+            let snap = violations.len();
+            self.nb_of_notes.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/NbOfNotes");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
+        }
+        {
+            let snap = violations.len();
+            self.amt.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/Amt");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
+        }
     }
 }
 impl crate::common::validate::Validatable for CategoryPurpose1Choice {
@@ -21752,10 +21516,24 @@ impl crate::common::validate::Validatable for CategoryPurpose1Choice {
     ) {
         match self {
             Self::Cd(inner) => {
-                inner.validate_constraints(&format!("{path}/Cd"), violations);
+                let snap = violations.len();
+                inner.validate_constraints("", violations);
+                if violations.len() > snap {
+                    let pfx = format!("{path}/Cd");
+                    for v in &mut violations[snap..] {
+                        v.path.insert_str(0, &pfx);
+                    }
+                }
             }
             Self::Prtry(inner) => {
-                inner.validate_constraints(&format!("{path}/Prtry"), violations);
+                let snap = violations.len();
+                inner.validate_constraints("", violations);
+                if violations.len() > snap {
+                    let pfx = format!("{path}/Prtry");
+                    for v in &mut violations[snap..] {
+                        v.path.insert_str(0, &pfx);
+                    }
+                }
             }
         }
     }
@@ -21768,10 +21546,24 @@ impl crate::common::validate::Validatable for ChargeType3Choice {
     ) {
         match self {
             Self::Cd(inner) => {
-                inner.validate_constraints(&format!("{path}/Cd"), violations);
+                let snap = violations.len();
+                inner.validate_constraints("", violations);
+                if violations.len() > snap {
+                    let pfx = format!("{path}/Cd");
+                    for v in &mut violations[snap..] {
+                        v.path.insert_str(0, &pfx);
+                    }
+                }
             }
             Self::Prtry(inner) => {
-                inner.validate_constraints(&format!("{path}/Prtry"), violations);
+                let snap = violations.len();
+                inner.validate_constraints("", violations);
+                if violations.len() > snap {
+                    let pfx = format!("{path}/Prtry");
+                    for v in &mut violations[snap..] {
+                        v.path.insert_str(0, &pfx);
+                    }
+                }
             }
         }
     }
@@ -21783,10 +21575,24 @@ impl crate::common::validate::Validatable for Charges6 {
         violations: &mut Vec<crate::common::validate::ConstraintViolation>,
     ) {
         if let Some(ref val) = self.ttl_chrgs_and_tax_amt {
-            val.validate_constraints(&format!("{path}/TtlChrgsAndTaxAmt"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/TtlChrgsAndTaxAmt");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
-        for (i, item) in self.rcrd.iter().enumerate() {
-            item.validate_constraints(&format!("{path}/Rcrd[{i}]"), violations);
+        for (idx, elem) in self.rcrd.iter().enumerate() {
+            let snap = violations.len();
+            elem.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/Rcrd[{idx}]");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
     }
 }
@@ -21796,30 +21602,85 @@ impl crate::common::validate::Validatable for ChargesRecord3 {
         path: &str,
         violations: &mut Vec<crate::common::validate::ConstraintViolation>,
     ) {
-        self.amt
-            .validate_constraints(&format!("{path}/Amt"), violations);
+        {
+            let snap = violations.len();
+            self.amt.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/Amt");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
+        }
         if let Some(ref val) = self.cdt_dbt_ind {
-            val.validate_constraints(&format!("{path}/CdtDbtInd"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/CdtDbtInd");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
         if let Some(ref val) = self.chrg_incl_ind {
-            val.validate_constraints(&format!("{path}/ChrgInclInd"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/ChrgInclInd");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
         if let Some(ref wrapper) = self.tp {
-            wrapper
-                .inner
-                .validate_constraints(&format!("{path}/Tp"), violations);
+            let snap = violations.len();
+            wrapper.inner.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/Tp");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
         if let Some(ref val) = self.rate {
-            val.validate_constraints(&format!("{path}/Rate"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/Rate");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
         if let Some(ref val) = self.br {
-            val.validate_constraints(&format!("{path}/Br"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/Br");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
         if let Some(ref val) = self.agt {
-            val.validate_constraints(&format!("{path}/Agt"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/Agt");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
         if let Some(ref val) = self.tax {
-            val.validate_constraints(&format!("{path}/Tax"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/Tax");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
     }
 }
@@ -21831,10 +21692,24 @@ impl crate::common::validate::Validatable for ClearingSystemIdentification2Choic
     ) {
         match self {
             Self::Cd(inner) => {
-                inner.validate_constraints(&format!("{path}/Cd"), violations);
+                let snap = violations.len();
+                inner.validate_constraints("", violations);
+                if violations.len() > snap {
+                    let pfx = format!("{path}/Cd");
+                    for v in &mut violations[snap..] {
+                        v.path.insert_str(0, &pfx);
+                    }
+                }
             }
             Self::Prtry(inner) => {
-                inner.validate_constraints(&format!("{path}/Prtry"), violations);
+                let snap = violations.len();
+                inner.validate_constraints("", violations);
+                if violations.len() > snap {
+                    let pfx = format!("{path}/Prtry");
+                    for v in &mut violations[snap..] {
+                        v.path.insert_str(0, &pfx);
+                    }
+                }
             }
         }
     }
@@ -21846,12 +21721,25 @@ impl crate::common::validate::Validatable for ClearingSystemMemberIdentification
         violations: &mut Vec<crate::common::validate::ConstraintViolation>,
     ) {
         if let Some(ref wrapper) = self.clr_sys_id {
-            wrapper
-                .inner
-                .validate_constraints(&format!("{path}/ClrSysId"), violations);
+            let snap = violations.len();
+            wrapper.inner.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/ClrSysId");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
-        self.mmb_id
-            .validate_constraints(&format!("{path}/MmbId"), violations);
+        {
+            let snap = violations.len();
+            self.mmb_id.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/MmbId");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
+        }
     }
 }
 impl crate::common::validate::Validatable for Contact4 {
@@ -21861,40 +21749,124 @@ impl crate::common::validate::Validatable for Contact4 {
         violations: &mut Vec<crate::common::validate::ConstraintViolation>,
     ) {
         if let Some(ref val) = self.nm_prfx {
-            val.validate_constraints(&format!("{path}/NmPrfx"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/NmPrfx");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
         if let Some(ref val) = self.nm {
-            val.validate_constraints(&format!("{path}/Nm"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/Nm");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
         if let Some(ref val) = self.phne_nb {
-            val.validate_constraints(&format!("{path}/PhneNb"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/PhneNb");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
         if let Some(ref val) = self.mob_nb {
-            val.validate_constraints(&format!("{path}/MobNb"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/MobNb");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
         if let Some(ref val) = self.fax_nb {
-            val.validate_constraints(&format!("{path}/FaxNb"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/FaxNb");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
         if let Some(ref val) = self.email_adr {
-            val.validate_constraints(&format!("{path}/EmailAdr"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/EmailAdr");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
         if let Some(ref val) = self.email_purp {
-            val.validate_constraints(&format!("{path}/EmailPurp"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/EmailPurp");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
         if let Some(ref val) = self.job_titl {
-            val.validate_constraints(&format!("{path}/JobTitl"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/JobTitl");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
         if let Some(ref val) = self.rspnsblty {
-            val.validate_constraints(&format!("{path}/Rspnsblty"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/Rspnsblty");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
         if let Some(ref val) = self.dept {
-            val.validate_constraints(&format!("{path}/Dept"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/Dept");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
-        for (i, item) in self.othr.iter().enumerate() {
-            item.validate_constraints(&format!("{path}/Othr[{i}]"), violations);
+        for (idx, elem) in self.othr.iter().enumerate() {
+            let snap = violations.len();
+            elem.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/Othr[{idx}]");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
         if let Some(ref val) = self.prefrd_mtd {
-            val.validate_constraints(&format!("{path}/PrefrdMtd"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/PrefrdMtd");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
     }
 }
@@ -21904,10 +21876,26 @@ impl crate::common::validate::Validatable for CorporateAction9 {
         path: &str,
         violations: &mut Vec<crate::common::validate::ConstraintViolation>,
     ) {
-        self.evt_tp
-            .validate_constraints(&format!("{path}/EvtTp"), violations);
-        self.evt_id
-            .validate_constraints(&format!("{path}/EvtId"), violations);
+        {
+            let snap = violations.len();
+            self.evt_tp.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/EvtTp");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
+        }
+        {
+            let snap = violations.len();
+            self.evt_id.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/EvtId");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
+        }
     }
 }
 impl crate::common::validate::Validatable for CreditorReferenceInformation2 {
@@ -21917,10 +21905,24 @@ impl crate::common::validate::Validatable for CreditorReferenceInformation2 {
         violations: &mut Vec<crate::common::validate::ConstraintViolation>,
     ) {
         if let Some(ref val) = self.tp {
-            val.validate_constraints(&format!("{path}/Tp"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/Tp");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
         if let Some(ref val) = self.r#ref {
-            val.validate_constraints(&format!("{path}/Ref"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/Ref");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
     }
 }
@@ -21932,10 +21934,24 @@ impl crate::common::validate::Validatable for CreditorReferenceType1Choice {
     ) {
         match self {
             Self::Cd(inner) => {
-                inner.validate_constraints(&format!("{path}/Cd"), violations);
+                let snap = violations.len();
+                inner.validate_constraints("", violations);
+                if violations.len() > snap {
+                    let pfx = format!("{path}/Cd");
+                    for v in &mut violations[snap..] {
+                        v.path.insert_str(0, &pfx);
+                    }
+                }
             }
             Self::Prtry(inner) => {
-                inner.validate_constraints(&format!("{path}/Prtry"), violations);
+                let snap = violations.len();
+                inner.validate_constraints("", violations);
+                if violations.len() > snap {
+                    let pfx = format!("{path}/Prtry");
+                    for v in &mut violations[snap..] {
+                        v.path.insert_str(0, &pfx);
+                    }
+                }
             }
         }
     }
@@ -21946,11 +21962,25 @@ impl crate::common::validate::Validatable for CreditorReferenceType2 {
         path: &str,
         violations: &mut Vec<crate::common::validate::ConstraintViolation>,
     ) {
-        self.cd_or_prtry
-            .inner
-            .validate_constraints(&format!("{path}/CdOrPrtry"), violations);
+        {
+            let snap = violations.len();
+            self.cd_or_prtry.inner.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/CdOrPrtry");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
+        }
         if let Some(ref val) = self.issr {
-            val.validate_constraints(&format!("{path}/Issr"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/Issr");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
     }
 }
@@ -21960,24 +21990,75 @@ impl crate::common::validate::Validatable for CurrencyExchange24 {
         path: &str,
         violations: &mut Vec<crate::common::validate::ConstraintViolation>,
     ) {
-        self.src_ccy
-            .validate_constraints(&format!("{path}/SrcCcy"), violations);
+        {
+            let snap = violations.len();
+            self.src_ccy.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/SrcCcy");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
+        }
         if let Some(ref val) = self.trgt_ccy {
-            val.validate_constraints(&format!("{path}/TrgtCcy"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/TrgtCcy");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
         if let Some(ref val) = self.unit_ccy {
-            val.validate_constraints(&format!("{path}/UnitCcy"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/UnitCcy");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
-        self.xchg_rate
-            .validate_constraints(&format!("{path}/XchgRate"), violations);
+        {
+            let snap = violations.len();
+            self.xchg_rate.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/XchgRate");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
+        }
         if let Some(ref val) = self.ctrct_id {
-            val.validate_constraints(&format!("{path}/CtrctId"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/CtrctId");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
         if let Some(ref val) = self.qtn_dt {
-            val.validate_constraints(&format!("{path}/QtnDt"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/QtnDt");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
         if let Some(ref val) = self.xchg_rate_base {
-            val.validate_constraints(&format!("{path}/XchgRateBase"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/XchgRateBase");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
     }
 }
@@ -21989,10 +22070,24 @@ impl crate::common::validate::Validatable for DateAndDateTime2Choice {
     ) {
         match self {
             Self::Dt(inner) => {
-                inner.validate_constraints(&format!("{path}/Dt"), violations);
+                let snap = violations.len();
+                inner.validate_constraints("", violations);
+                if violations.len() > snap {
+                    let pfx = format!("{path}/Dt");
+                    for v in &mut violations[snap..] {
+                        v.path.insert_str(0, &pfx);
+                    }
+                }
             }
             Self::DtTm(inner) => {
-                inner.validate_constraints(&format!("{path}/DtTm"), violations);
+                let snap = violations.len();
+                inner.validate_constraints("", violations);
+                if violations.len() > snap {
+                    let pfx = format!("{path}/DtTm");
+                    for v in &mut violations[snap..] {
+                        v.path.insert_str(0, &pfx);
+                    }
+                }
             }
         }
     }
@@ -22003,15 +22098,46 @@ impl crate::common::validate::Validatable for DateAndPlaceOfBirth1 {
         path: &str,
         violations: &mut Vec<crate::common::validate::ConstraintViolation>,
     ) {
-        self.birth_dt
-            .validate_constraints(&format!("{path}/BirthDt"), violations);
-        if let Some(ref val) = self.prvc_of_birth {
-            val.validate_constraints(&format!("{path}/PrvcOfBirth"), violations);
+        {
+            let snap = violations.len();
+            self.birth_dt.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/BirthDt");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
-        self.city_of_birth
-            .validate_constraints(&format!("{path}/CityOfBirth"), violations);
-        self.ctry_of_birth
-            .validate_constraints(&format!("{path}/CtryOfBirth"), violations);
+        if let Some(ref val) = self.prvc_of_birth {
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/PrvcOfBirth");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
+        }
+        {
+            let snap = violations.len();
+            self.city_of_birth.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/CityOfBirth");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
+        }
+        {
+            let snap = violations.len();
+            self.ctry_of_birth.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/CtryOfBirth");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
+        }
     }
 }
 impl crate::common::validate::Validatable for DateOrDateTimePeriod1Choice {
@@ -22022,10 +22148,24 @@ impl crate::common::validate::Validatable for DateOrDateTimePeriod1Choice {
     ) {
         match self {
             Self::Dt(inner) => {
-                inner.validate_constraints(&format!("{path}/Dt"), violations);
+                let snap = violations.len();
+                inner.validate_constraints("", violations);
+                if violations.len() > snap {
+                    let pfx = format!("{path}/Dt");
+                    for v in &mut violations[snap..] {
+                        v.path.insert_str(0, &pfx);
+                    }
+                }
             }
             Self::DtTm(inner) => {
-                inner.validate_constraints(&format!("{path}/DtTm"), violations);
+                let snap = violations.len();
+                inner.validate_constraints("", violations);
+                if violations.len() > snap {
+                    let pfx = format!("{path}/DtTm");
+                    for v in &mut violations[snap..] {
+                        v.path.insert_str(0, &pfx);
+                    }
+                }
             }
         }
     }
@@ -22036,10 +22176,26 @@ impl crate::common::validate::Validatable for DatePeriod2 {
         path: &str,
         violations: &mut Vec<crate::common::validate::ConstraintViolation>,
     ) {
-        self.fr_dt
-            .validate_constraints(&format!("{path}/FrDt"), violations);
-        self.to_dt
-            .validate_constraints(&format!("{path}/ToDt"), violations);
+        {
+            let snap = violations.len();
+            self.fr_dt.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/FrDt");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
+        }
+        {
+            let snap = violations.len();
+            self.to_dt.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/ToDt");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
+        }
     }
 }
 impl crate::common::validate::Validatable for DateTimePeriod1 {
@@ -22048,10 +22204,26 @@ impl crate::common::validate::Validatable for DateTimePeriod1 {
         path: &str,
         violations: &mut Vec<crate::common::validate::ConstraintViolation>,
     ) {
-        self.fr_dt_tm
-            .validate_constraints(&format!("{path}/FrDtTm"), violations);
-        self.to_dt_tm
-            .validate_constraints(&format!("{path}/ToDtTm"), violations);
+        {
+            let snap = violations.len();
+            self.fr_dt_tm.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/FrDtTm");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
+        }
+        {
+            let snap = violations.len();
+            self.to_dt_tm.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/ToDtTm");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
+        }
     }
 }
 impl crate::common::validate::Validatable for DiscountAmountAndType1 {
@@ -22061,12 +22233,25 @@ impl crate::common::validate::Validatable for DiscountAmountAndType1 {
         violations: &mut Vec<crate::common::validate::ConstraintViolation>,
     ) {
         if let Some(ref wrapper) = self.tp {
-            wrapper
-                .inner
-                .validate_constraints(&format!("{path}/Tp"), violations);
+            let snap = violations.len();
+            wrapper.inner.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/Tp");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
-        self.amt
-            .validate_constraints(&format!("{path}/Amt"), violations);
+        {
+            let snap = violations.len();
+            self.amt.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/Amt");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
+        }
     }
 }
 impl crate::common::validate::Validatable for DiscountAmountType1Choice {
@@ -22077,10 +22262,24 @@ impl crate::common::validate::Validatable for DiscountAmountType1Choice {
     ) {
         match self {
             Self::Cd(inner) => {
-                inner.validate_constraints(&format!("{path}/Cd"), violations);
+                let snap = violations.len();
+                inner.validate_constraints("", violations);
+                if violations.len() > snap {
+                    let pfx = format!("{path}/Cd");
+                    for v in &mut violations[snap..] {
+                        v.path.insert_str(0, &pfx);
+                    }
+                }
             }
             Self::Prtry(inner) => {
-                inner.validate_constraints(&format!("{path}/Prtry"), violations);
+                let snap = violations.len();
+                inner.validate_constraints("", violations);
+                if violations.len() > snap {
+                    let pfx = format!("{path}/Prtry");
+                    for v in &mut violations[snap..] {
+                        v.path.insert_str(0, &pfx);
+                    }
+                }
             }
         }
     }
@@ -22091,12 +22290,36 @@ impl crate::common::validate::Validatable for DisplayCapabilities1 {
         path: &str,
         violations: &mut Vec<crate::common::validate::ConstraintViolation>,
     ) {
-        self.disp_tp
-            .validate_constraints(&format!("{path}/DispTp"), violations);
-        self.nb_of_lines
-            .validate_constraints(&format!("{path}/NbOfLines"), violations);
-        self.line_width
-            .validate_constraints(&format!("{path}/LineWidth"), violations);
+        {
+            let snap = violations.len();
+            self.disp_tp.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/DispTp");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
+        }
+        {
+            let snap = violations.len();
+            self.nb_of_lines.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/NbOfLines");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
+        }
+        {
+            let snap = violations.len();
+            self.line_width.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/LineWidth");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
+        }
     }
 }
 impl crate::common::validate::Validatable for Document {
@@ -22105,8 +22328,17 @@ impl crate::common::validate::Validatable for Document {
         path: &str,
         violations: &mut Vec<crate::common::validate::ConstraintViolation>,
     ) {
-        self.bk_to_cstmr_dbt_cdt_ntfctn
-            .validate_constraints(&format!("{path}/BkToCstmrDbtCdtNtfctn"), violations);
+        {
+            let snap = violations.len();
+            self.bk_to_cstmr_dbt_cdt_ntfctn
+                .validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/BkToCstmrDbtCdtNtfctn");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
+        }
     }
 }
 impl crate::common::validate::Validatable for DocumentAdjustment1 {
@@ -22115,16 +22347,45 @@ impl crate::common::validate::Validatable for DocumentAdjustment1 {
         path: &str,
         violations: &mut Vec<crate::common::validate::ConstraintViolation>,
     ) {
-        self.amt
-            .validate_constraints(&format!("{path}/Amt"), violations);
+        {
+            let snap = violations.len();
+            self.amt.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/Amt");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
+        }
         if let Some(ref val) = self.cdt_dbt_ind {
-            val.validate_constraints(&format!("{path}/CdtDbtInd"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/CdtDbtInd");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
         if let Some(ref val) = self.rsn {
-            val.validate_constraints(&format!("{path}/Rsn"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/Rsn");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
         if let Some(ref val) = self.addtl_inf {
-            val.validate_constraints(&format!("{path}/AddtlInf"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/AddtlInf");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
     }
 }
@@ -22135,13 +22396,34 @@ impl crate::common::validate::Validatable for DocumentLineIdentification1 {
         violations: &mut Vec<crate::common::validate::ConstraintViolation>,
     ) {
         if let Some(ref val) = self.tp {
-            val.validate_constraints(&format!("{path}/Tp"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/Tp");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
         if let Some(ref val) = self.nb {
-            val.validate_constraints(&format!("{path}/Nb"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/Nb");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
         if let Some(ref val) = self.rltd_dt {
-            val.validate_constraints(&format!("{path}/RltdDt"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/RltdDt");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
     }
 }
@@ -22151,14 +22433,35 @@ impl crate::common::validate::Validatable for DocumentLineInformation1 {
         path: &str,
         violations: &mut Vec<crate::common::validate::ConstraintViolation>,
     ) {
-        for (i, item) in self.id.iter().enumerate() {
-            item.validate_constraints(&format!("{path}/Id[{i}]"), violations);
+        for (idx, elem) in self.id.iter().enumerate() {
+            let snap = violations.len();
+            elem.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/Id[{idx}]");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
         if let Some(ref val) = self.desc {
-            val.validate_constraints(&format!("{path}/Desc"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/Desc");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
         if let Some(ref val) = self.amt {
-            val.validate_constraints(&format!("{path}/Amt"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/Amt");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
     }
 }
@@ -22168,11 +22471,25 @@ impl crate::common::validate::Validatable for DocumentLineType1 {
         path: &str,
         violations: &mut Vec<crate::common::validate::ConstraintViolation>,
     ) {
-        self.cd_or_prtry
-            .inner
-            .validate_constraints(&format!("{path}/CdOrPrtry"), violations);
+        {
+            let snap = violations.len();
+            self.cd_or_prtry.inner.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/CdOrPrtry");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
+        }
         if let Some(ref val) = self.issr {
-            val.validate_constraints(&format!("{path}/Issr"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/Issr");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
     }
 }
@@ -22184,10 +22501,24 @@ impl crate::common::validate::Validatable for DocumentLineType1Choice {
     ) {
         match self {
             Self::Cd(inner) => {
-                inner.validate_constraints(&format!("{path}/Cd"), violations);
+                let snap = violations.len();
+                inner.validate_constraints("", violations);
+                if violations.len() > snap {
+                    let pfx = format!("{path}/Cd");
+                    for v in &mut violations[snap..] {
+                        v.path.insert_str(0, &pfx);
+                    }
+                }
             }
             Self::Prtry(inner) => {
-                inner.validate_constraints(&format!("{path}/Prtry"), violations);
+                let snap = violations.len();
+                inner.validate_constraints("", violations);
+                if violations.len() > snap {
+                    let pfx = format!("{path}/Prtry");
+                    for v in &mut violations[snap..] {
+                        v.path.insert_str(0, &pfx);
+                    }
+                }
             }
         }
     }
@@ -22199,10 +22530,24 @@ impl crate::common::validate::Validatable for EntryDetails12 {
         violations: &mut Vec<crate::common::validate::ConstraintViolation>,
     ) {
         if let Some(ref val) = self.btch {
-            val.validate_constraints(&format!("{path}/Btch"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/Btch");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
-        for (i, item) in self.tx_dtls.iter().enumerate() {
-            item.validate_constraints(&format!("{path}/TxDtls[{i}]"), violations);
+        for (idx, elem) in self.tx_dtls.iter().enumerate() {
+            let snap = violations.len();
+            elem.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/TxDtls[{idx}]");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
     }
 }
@@ -22214,10 +22559,24 @@ impl crate::common::validate::Validatable for EntryStatus1Choice {
     ) {
         match self {
             Self::Cd(inner) => {
-                inner.validate_constraints(&format!("{path}/Cd"), violations);
+                let snap = violations.len();
+                inner.validate_constraints("", violations);
+                if violations.len() > snap {
+                    let pfx = format!("{path}/Cd");
+                    for v in &mut violations[snap..] {
+                        v.path.insert_str(0, &pfx);
+                    }
+                }
             }
             Self::Prtry(inner) => {
-                inner.validate_constraints(&format!("{path}/Prtry"), violations);
+                let snap = violations.len();
+                inner.validate_constraints("", violations);
+                if violations.len() > snap {
+                    let pfx = format!("{path}/Prtry");
+                    for v in &mut violations[snap..] {
+                        v.path.insert_str(0, &pfx);
+                    }
+                }
             }
         }
     }
@@ -22229,92 +22588,274 @@ impl crate::common::validate::Validatable for EntryTransaction13 {
         violations: &mut Vec<crate::common::validate::ConstraintViolation>,
     ) {
         if let Some(ref val) = self.refs {
-            val.validate_constraints(&format!("{path}/Refs"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/Refs");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
         if let Some(ref val) = self.amt {
-            val.validate_constraints(&format!("{path}/Amt"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/Amt");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
         if let Some(ref val) = self.cdt_dbt_ind {
-            val.validate_constraints(&format!("{path}/CdtDbtInd"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/CdtDbtInd");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
         if let Some(ref val) = self.amt_dtls {
-            val.validate_constraints(&format!("{path}/AmtDtls"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/AmtDtls");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
-        for (i, item) in self.avlbty.iter().enumerate() {
-            item.validate_constraints(&format!("{path}/Avlbty[{i}]"), violations);
+        for (idx, elem) in self.avlbty.iter().enumerate() {
+            let snap = violations.len();
+            elem.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/Avlbty[{idx}]");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
         if let Some(ref val) = self.bk_tx_cd {
-            val.validate_constraints(&format!("{path}/BkTxCd"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/BkTxCd");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
         if let Some(ref val) = self.chrgs {
-            val.validate_constraints(&format!("{path}/Chrgs"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/Chrgs");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
         if let Some(ref val) = self.intrst {
-            val.validate_constraints(&format!("{path}/Intrst"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/Intrst");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
         if let Some(ref val) = self.rltd_pties {
-            val.validate_constraints(&format!("{path}/RltdPties"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/RltdPties");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
         if let Some(ref val) = self.rltd_agts {
-            val.validate_constraints(&format!("{path}/RltdAgts"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/RltdAgts");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
         if let Some(ref wrapper) = self.lcl_instrm {
-            wrapper
-                .inner
-                .validate_constraints(&format!("{path}/LclInstrm"), violations);
+            let snap = violations.len();
+            wrapper.inner.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/LclInstrm");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
         if let Some(ref val) = self.pmt_tp_inf {
-            val.validate_constraints(&format!("{path}/PmtTpInf"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/PmtTpInf");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
         if let Some(ref wrapper) = self.purp {
-            wrapper
-                .inner
-                .validate_constraints(&format!("{path}/Purp"), violations);
+            let snap = violations.len();
+            wrapper.inner.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/Purp");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
-        for (i, item) in self.rltd_rmt_inf.iter().enumerate() {
-            item.validate_constraints(&format!("{path}/RltdRmtInf[{i}]"), violations);
+        for (idx, elem) in self.rltd_rmt_inf.iter().enumerate() {
+            let snap = violations.len();
+            elem.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/RltdRmtInf[{idx}]");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
         if let Some(ref val) = self.rmt_inf {
-            val.validate_constraints(&format!("{path}/RmtInf"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/RmtInf");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
         if let Some(ref val) = self.rltd_dts {
-            val.validate_constraints(&format!("{path}/RltdDts"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/RltdDts");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
         if let Some(ref wrapper) = self.rltd_pric {
-            wrapper
-                .inner
-                .validate_constraints(&format!("{path}/RltdPric"), violations);
+            let snap = violations.len();
+            wrapper.inner.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/RltdPric");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
-        for (i, item) in self.rltd_qties.iter().enumerate() {
-            item.inner
-                .validate_constraints(&format!("{path}/RltdQties[{i}]"), violations);
+        for (idx, elem) in self.rltd_qties.iter().enumerate() {
+            let snap = violations.len();
+            elem.inner.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/RltdQties[{idx}]");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
         if let Some(ref val) = self.fin_instrm_id {
-            val.validate_constraints(&format!("{path}/FinInstrmId"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/FinInstrmId");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
         if let Some(ref val) = self.tax {
-            val.validate_constraints(&format!("{path}/Tax"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/Tax");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
         if let Some(ref val) = self.rtr_inf {
-            val.validate_constraints(&format!("{path}/RtrInf"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/RtrInf");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
         if let Some(ref val) = self.corp_actn {
-            val.validate_constraints(&format!("{path}/CorpActn"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/CorpActn");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
         if let Some(ref val) = self.sfkpg_acct {
-            val.validate_constraints(&format!("{path}/SfkpgAcct"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/SfkpgAcct");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
-        for (i, item) in self.csh_dpst.iter().enumerate() {
-            item.validate_constraints(&format!("{path}/CshDpst[{i}]"), violations);
+        for (idx, elem) in self.csh_dpst.iter().enumerate() {
+            let snap = violations.len();
+            elem.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/CshDpst[{idx}]");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
         if let Some(ref val) = self.card_tx {
-            val.validate_constraints(&format!("{path}/CardTx"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/CardTx");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
         if let Some(ref val) = self.addtl_tx_inf {
-            val.validate_constraints(&format!("{path}/AddtlTxInf"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/AddtlTxInf");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
-        for (i, item) in self.splmtry_data.iter().enumerate() {
-            item.validate_constraints(&format!("{path}/SplmtryData[{i}]"), violations);
+        for (idx, elem) in self.splmtry_data.iter().enumerate() {
+            let snap = violations.len();
+            elem.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/SplmtryData[{idx}]");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
     }
 }
@@ -22326,10 +22867,24 @@ impl crate::common::validate::Validatable for FinancialIdentificationSchemeName1
     ) {
         match self {
             Self::Cd(inner) => {
-                inner.validate_constraints(&format!("{path}/Cd"), violations);
+                let snap = violations.len();
+                inner.validate_constraints("", violations);
+                if violations.len() > snap {
+                    let pfx = format!("{path}/Cd");
+                    for v in &mut violations[snap..] {
+                        v.path.insert_str(0, &pfx);
+                    }
+                }
             }
             Self::Prtry(inner) => {
-                inner.validate_constraints(&format!("{path}/Prtry"), violations);
+                let snap = violations.len();
+                inner.validate_constraints("", violations);
+                if violations.len() > snap {
+                    let pfx = format!("{path}/Prtry");
+                    for v in &mut violations[snap..] {
+                        v.path.insert_str(0, &pfx);
+                    }
+                }
             }
         }
     }
@@ -22341,22 +22896,64 @@ impl crate::common::validate::Validatable for FinancialInstitutionIdentification
         violations: &mut Vec<crate::common::validate::ConstraintViolation>,
     ) {
         if let Some(ref val) = self.bicfi {
-            val.validate_constraints(&format!("{path}/BICFI"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/BICFI");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
         if let Some(ref val) = self.clr_sys_mmb_id {
-            val.validate_constraints(&format!("{path}/ClrSysMmbId"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/ClrSysMmbId");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
         if let Some(ref val) = self.lei {
-            val.validate_constraints(&format!("{path}/LEI"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/LEI");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
         if let Some(ref val) = self.nm {
-            val.validate_constraints(&format!("{path}/Nm"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/Nm");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
         if let Some(ref val) = self.pstl_adr {
-            val.validate_constraints(&format!("{path}/PstlAdr"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/PstlAdr");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
         if let Some(ref val) = self.othr {
-            val.validate_constraints(&format!("{path}/Othr"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/Othr");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
     }
 }
@@ -22368,13 +22965,34 @@ impl crate::common::validate::Validatable for FinancialInstrumentQuantity1Choice
     ) {
         match self {
             Self::Unit(inner) => {
-                inner.validate_constraints(&format!("{path}/Unit"), violations);
+                let snap = violations.len();
+                inner.validate_constraints("", violations);
+                if violations.len() > snap {
+                    let pfx = format!("{path}/Unit");
+                    for v in &mut violations[snap..] {
+                        v.path.insert_str(0, &pfx);
+                    }
+                }
             }
             Self::FaceAmt(inner) => {
-                inner.validate_constraints(&format!("{path}/FaceAmt"), violations);
+                let snap = violations.len();
+                inner.validate_constraints("", violations);
+                if violations.len() > snap {
+                    let pfx = format!("{path}/FaceAmt");
+                    for v in &mut violations[snap..] {
+                        v.path.insert_str(0, &pfx);
+                    }
+                }
             }
             Self::AmtsdVal(inner) => {
-                inner.validate_constraints(&format!("{path}/AmtsdVal"), violations);
+                let snap = violations.len();
+                inner.validate_constraints("", violations);
+                if violations.len() > snap {
+                    let pfx = format!("{path}/AmtsdVal");
+                    for v in &mut violations[snap..] {
+                        v.path.insert_str(0, &pfx);
+                    }
+                }
             }
         }
     }
@@ -22385,10 +23003,26 @@ impl crate::common::validate::Validatable for FromToAmountRange1 {
         path: &str,
         violations: &mut Vec<crate::common::validate::ConstraintViolation>,
     ) {
-        self.fr_amt
-            .validate_constraints(&format!("{path}/FrAmt"), violations);
-        self.to_amt
-            .validate_constraints(&format!("{path}/ToAmt"), violations);
+        {
+            let snap = violations.len();
+            self.fr_amt.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/FrAmt");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
+        }
+        {
+            let snap = violations.len();
+            self.to_amt.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/ToAmt");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
+        }
     }
 }
 impl crate::common::validate::Validatable for Garnishment3 {
@@ -22397,28 +23031,85 @@ impl crate::common::validate::Validatable for Garnishment3 {
         path: &str,
         violations: &mut Vec<crate::common::validate::ConstraintViolation>,
     ) {
-        self.tp
-            .validate_constraints(&format!("{path}/Tp"), violations);
+        {
+            let snap = violations.len();
+            self.tp.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/Tp");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
+        }
         if let Some(ref val) = self.grnshee {
-            val.validate_constraints(&format!("{path}/Grnshee"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/Grnshee");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
         if let Some(ref val) = self.grnshmt_admstr {
-            val.validate_constraints(&format!("{path}/GrnshmtAdmstr"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/GrnshmtAdmstr");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
         if let Some(ref val) = self.ref_nb {
-            val.validate_constraints(&format!("{path}/RefNb"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/RefNb");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
         if let Some(ref val) = self.dt {
-            val.validate_constraints(&format!("{path}/Dt"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/Dt");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
         if let Some(ref val) = self.rmtd_amt {
-            val.validate_constraints(&format!("{path}/RmtdAmt"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/RmtdAmt");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
         if let Some(ref val) = self.fmly_mdcl_insrnc_ind {
-            val.validate_constraints(&format!("{path}/FmlyMdclInsrncInd"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/FmlyMdclInsrncInd");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
         if let Some(ref val) = self.mplyee_termntn_ind {
-            val.validate_constraints(&format!("{path}/MplyeeTermntnInd"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/MplyeeTermntnInd");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
     }
 }
@@ -22428,11 +23119,25 @@ impl crate::common::validate::Validatable for GarnishmentType1 {
         path: &str,
         violations: &mut Vec<crate::common::validate::ConstraintViolation>,
     ) {
-        self.cd_or_prtry
-            .inner
-            .validate_constraints(&format!("{path}/CdOrPrtry"), violations);
+        {
+            let snap = violations.len();
+            self.cd_or_prtry.inner.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/CdOrPrtry");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
+        }
         if let Some(ref val) = self.issr {
-            val.validate_constraints(&format!("{path}/Issr"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/Issr");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
     }
 }
@@ -22444,10 +23149,24 @@ impl crate::common::validate::Validatable for GarnishmentType1Choice {
     ) {
         match self {
             Self::Cd(inner) => {
-                inner.validate_constraints(&format!("{path}/Cd"), violations);
+                let snap = violations.len();
+                inner.validate_constraints("", violations);
+                if violations.len() > snap {
+                    let pfx = format!("{path}/Cd");
+                    for v in &mut violations[snap..] {
+                        v.path.insert_str(0, &pfx);
+                    }
+                }
             }
             Self::Prtry(inner) => {
-                inner.validate_constraints(&format!("{path}/Prtry"), violations);
+                let snap = violations.len();
+                inner.validate_constraints("", violations);
+                if violations.len() > snap {
+                    let pfx = format!("{path}/Prtry");
+                    for v in &mut violations[snap..] {
+                        v.path.insert_str(0, &pfx);
+                    }
+                }
             }
         }
     }
@@ -22458,15 +23177,35 @@ impl crate::common::validate::Validatable for GenericAccountIdentification1 {
         path: &str,
         violations: &mut Vec<crate::common::validate::ConstraintViolation>,
     ) {
-        self.id
-            .validate_constraints(&format!("{path}/Id"), violations);
+        {
+            let snap = violations.len();
+            self.id.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/Id");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
+        }
         if let Some(ref wrapper) = self.schme_nm {
-            wrapper
-                .inner
-                .validate_constraints(&format!("{path}/SchmeNm"), violations);
+            let snap = violations.len();
+            wrapper.inner.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/SchmeNm");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
         if let Some(ref val) = self.issr {
-            val.validate_constraints(&format!("{path}/Issr"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/Issr");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
     }
 }
@@ -22476,15 +23215,35 @@ impl crate::common::validate::Validatable for GenericFinancialIdentification1 {
         path: &str,
         violations: &mut Vec<crate::common::validate::ConstraintViolation>,
     ) {
-        self.id
-            .validate_constraints(&format!("{path}/Id"), violations);
+        {
+            let snap = violations.len();
+            self.id.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/Id");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
+        }
         if let Some(ref wrapper) = self.schme_nm {
-            wrapper
-                .inner
-                .validate_constraints(&format!("{path}/SchmeNm"), violations);
+            let snap = violations.len();
+            wrapper.inner.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/SchmeNm");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
         if let Some(ref val) = self.issr {
-            val.validate_constraints(&format!("{path}/Issr"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/Issr");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
     }
 }
@@ -22494,13 +23253,35 @@ impl crate::common::validate::Validatable for GenericIdentification1 {
         path: &str,
         violations: &mut Vec<crate::common::validate::ConstraintViolation>,
     ) {
-        self.id
-            .validate_constraints(&format!("{path}/Id"), violations);
+        {
+            let snap = violations.len();
+            self.id.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/Id");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
+        }
         if let Some(ref val) = self.schme_nm {
-            val.validate_constraints(&format!("{path}/SchmeNm"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/SchmeNm");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
         if let Some(ref val) = self.issr {
-            val.validate_constraints(&format!("{path}/Issr"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/Issr");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
     }
 }
@@ -22510,10 +23291,25 @@ impl crate::common::validate::Validatable for GenericIdentification3 {
         path: &str,
         violations: &mut Vec<crate::common::validate::ConstraintViolation>,
     ) {
-        self.id
-            .validate_constraints(&format!("{path}/Id"), violations);
+        {
+            let snap = violations.len();
+            self.id.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/Id");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
+        }
         if let Some(ref val) = self.issr {
-            val.validate_constraints(&format!("{path}/Issr"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/Issr");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
     }
 }
@@ -22523,12 +23319,35 @@ impl crate::common::validate::Validatable for GenericIdentification30 {
         path: &str,
         violations: &mut Vec<crate::common::validate::ConstraintViolation>,
     ) {
-        self.id
-            .validate_constraints(&format!("{path}/Id"), violations);
-        self.issr
-            .validate_constraints(&format!("{path}/Issr"), violations);
+        {
+            let snap = violations.len();
+            self.id.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/Id");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
+        }
+        {
+            let snap = violations.len();
+            self.issr.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/Issr");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
+        }
         if let Some(ref val) = self.schme_nm {
-            val.validate_constraints(&format!("{path}/SchmeNm"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/SchmeNm");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
     }
 }
@@ -22538,16 +23357,45 @@ impl crate::common::validate::Validatable for GenericIdentification32 {
         path: &str,
         violations: &mut Vec<crate::common::validate::ConstraintViolation>,
     ) {
-        self.id
-            .validate_constraints(&format!("{path}/Id"), violations);
+        {
+            let snap = violations.len();
+            self.id.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/Id");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
+        }
         if let Some(ref val) = self.tp {
-            val.validate_constraints(&format!("{path}/Tp"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/Tp");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
         if let Some(ref val) = self.issr {
-            val.validate_constraints(&format!("{path}/Issr"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/Issr");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
         if let Some(ref val) = self.shrt_nm {
-            val.validate_constraints(&format!("{path}/ShrtNm"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/ShrtNm");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
     }
 }
@@ -22557,15 +23405,35 @@ impl crate::common::validate::Validatable for GenericOrganisationIdentification1
         path: &str,
         violations: &mut Vec<crate::common::validate::ConstraintViolation>,
     ) {
-        self.id
-            .validate_constraints(&format!("{path}/Id"), violations);
+        {
+            let snap = violations.len();
+            self.id.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/Id");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
+        }
         if let Some(ref wrapper) = self.schme_nm {
-            wrapper
-                .inner
-                .validate_constraints(&format!("{path}/SchmeNm"), violations);
+            let snap = violations.len();
+            wrapper.inner.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/SchmeNm");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
         if let Some(ref val) = self.issr {
-            val.validate_constraints(&format!("{path}/Issr"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/Issr");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
     }
 }
@@ -22575,15 +23443,35 @@ impl crate::common::validate::Validatable for GenericPersonIdentification1 {
         path: &str,
         violations: &mut Vec<crate::common::validate::ConstraintViolation>,
     ) {
-        self.id
-            .validate_constraints(&format!("{path}/Id"), violations);
+        {
+            let snap = violations.len();
+            self.id.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/Id");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
+        }
         if let Some(ref wrapper) = self.schme_nm {
-            wrapper
-                .inner
-                .validate_constraints(&format!("{path}/SchmeNm"), violations);
+            let snap = violations.len();
+            wrapper.inner.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/SchmeNm");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
         if let Some(ref val) = self.issr {
-            val.validate_constraints(&format!("{path}/Issr"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/Issr");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
     }
 }
@@ -22593,21 +23481,65 @@ impl crate::common::validate::Validatable for GroupHeader81 {
         path: &str,
         violations: &mut Vec<crate::common::validate::ConstraintViolation>,
     ) {
-        self.msg_id
-            .validate_constraints(&format!("{path}/MsgId"), violations);
-        self.cre_dt_tm
-            .validate_constraints(&format!("{path}/CreDtTm"), violations);
+        {
+            let snap = violations.len();
+            self.msg_id.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/MsgId");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
+        }
+        {
+            let snap = violations.len();
+            self.cre_dt_tm.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/CreDtTm");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
+        }
         if let Some(ref val) = self.msg_rcpt {
-            val.validate_constraints(&format!("{path}/MsgRcpt"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/MsgRcpt");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
         if let Some(ref val) = self.msg_pgntn {
-            val.validate_constraints(&format!("{path}/MsgPgntn"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/MsgPgntn");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
         if let Some(ref val) = self.orgnl_biz_qry {
-            val.validate_constraints(&format!("{path}/OrgnlBizQry"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/OrgnlBizQry");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
         if let Some(ref val) = self.addtl_inf {
-            val.validate_constraints(&format!("{path}/AddtlInf"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/AddtlInf");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
     }
 }
@@ -22619,10 +23551,24 @@ impl crate::common::validate::Validatable for IdentificationSource3Choice {
     ) {
         match self {
             Self::Cd(inner) => {
-                inner.validate_constraints(&format!("{path}/Cd"), violations);
+                let snap = violations.len();
+                inner.validate_constraints("", violations);
+                if violations.len() > snap {
+                    let pfx = format!("{path}/Cd");
+                    for v in &mut violations[snap..] {
+                        v.path.insert_str(0, &pfx);
+                    }
+                }
             }
             Self::Prtry(inner) => {
-                inner.validate_constraints(&format!("{path}/Prtry"), violations);
+                let snap = violations.len();
+                inner.validate_constraints("", violations);
+                if violations.len() > snap {
+                    let pfx = format!("{path}/Prtry");
+                    for v in &mut violations[snap..] {
+                        v.path.insert_str(0, &pfx);
+                    }
+                }
             }
         }
     }
@@ -22635,19 +23581,54 @@ impl crate::common::validate::Validatable for ImpliedCurrencyAmountRange1Choice 
     ) {
         match self {
             Self::FrAmt(inner) => {
-                inner.validate_constraints(&format!("{path}/FrAmt"), violations);
+                let snap = violations.len();
+                inner.validate_constraints("", violations);
+                if violations.len() > snap {
+                    let pfx = format!("{path}/FrAmt");
+                    for v in &mut violations[snap..] {
+                        v.path.insert_str(0, &pfx);
+                    }
+                }
             }
             Self::ToAmt(inner) => {
-                inner.validate_constraints(&format!("{path}/ToAmt"), violations);
+                let snap = violations.len();
+                inner.validate_constraints("", violations);
+                if violations.len() > snap {
+                    let pfx = format!("{path}/ToAmt");
+                    for v in &mut violations[snap..] {
+                        v.path.insert_str(0, &pfx);
+                    }
+                }
             }
             Self::FrToAmt(inner) => {
-                inner.validate_constraints(&format!("{path}/FrToAmt"), violations);
+                let snap = violations.len();
+                inner.validate_constraints("", violations);
+                if violations.len() > snap {
+                    let pfx = format!("{path}/FrToAmt");
+                    for v in &mut violations[snap..] {
+                        v.path.insert_str(0, &pfx);
+                    }
+                }
             }
             Self::EQAmt(inner) => {
-                inner.validate_constraints(&format!("{path}/EQAmt"), violations);
+                let snap = violations.len();
+                inner.validate_constraints("", violations);
+                if violations.len() > snap {
+                    let pfx = format!("{path}/EQAmt");
+                    for v in &mut violations[snap..] {
+                        v.path.insert_str(0, &pfx);
+                    }
+                }
             }
             Self::NEQAmt(inner) => {
-                inner.validate_constraints(&format!("{path}/NEQAmt"), violations);
+                let snap = violations.len();
+                inner.validate_constraints("", violations);
+                if violations.len() > snap {
+                    let pfx = format!("{path}/NEQAmt");
+                    for v in &mut violations[snap..] {
+                        v.path.insert_str(0, &pfx);
+                    }
+                }
             }
         }
     }
@@ -22658,26 +23639,75 @@ impl crate::common::validate::Validatable for InterestRecord2 {
         path: &str,
         violations: &mut Vec<crate::common::validate::ConstraintViolation>,
     ) {
-        self.amt
-            .validate_constraints(&format!("{path}/Amt"), violations);
-        self.cdt_dbt_ind
-            .validate_constraints(&format!("{path}/CdtDbtInd"), violations);
+        {
+            let snap = violations.len();
+            self.amt.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/Amt");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
+        }
+        {
+            let snap = violations.len();
+            self.cdt_dbt_ind.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/CdtDbtInd");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
+        }
         if let Some(ref wrapper) = self.tp {
-            wrapper
-                .inner
-                .validate_constraints(&format!("{path}/Tp"), violations);
+            let snap = violations.len();
+            wrapper.inner.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/Tp");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
         if let Some(ref val) = self.rate {
-            val.validate_constraints(&format!("{path}/Rate"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/Rate");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
         if let Some(ref val) = self.fr_to_dt {
-            val.validate_constraints(&format!("{path}/FrToDt"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/FrToDt");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
         if let Some(ref val) = self.rsn {
-            val.validate_constraints(&format!("{path}/Rsn"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/Rsn");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
         if let Some(ref val) = self.tax {
-            val.validate_constraints(&format!("{path}/Tax"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/Tax");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
     }
 }
@@ -22689,10 +23719,24 @@ impl crate::common::validate::Validatable for InterestType1Choice {
     ) {
         match self {
             Self::Cd(inner) => {
-                inner.validate_constraints(&format!("{path}/Cd"), violations);
+                let snap = violations.len();
+                inner.validate_constraints("", violations);
+                if violations.len() > snap {
+                    let pfx = format!("{path}/Cd");
+                    for v in &mut violations[snap..] {
+                        v.path.insert_str(0, &pfx);
+                    }
+                }
             }
             Self::Prtry(inner) => {
-                inner.validate_constraints(&format!("{path}/Prtry"), violations);
+                let snap = violations.len();
+                inner.validate_constraints("", violations);
+                if violations.len() > snap {
+                    let pfx = format!("{path}/Prtry");
+                    for v in &mut violations[snap..] {
+                        v.path.insert_str(0, &pfx);
+                    }
+                }
             }
         }
     }
@@ -22705,10 +23749,24 @@ impl crate::common::validate::Validatable for LocalInstrument2Choice {
     ) {
         match self {
             Self::Cd(inner) => {
-                inner.validate_constraints(&format!("{path}/Cd"), violations);
+                let snap = violations.len();
+                inner.validate_constraints("", violations);
+                if violations.len() > snap {
+                    let pfx = format!("{path}/Cd");
+                    for v in &mut violations[snap..] {
+                        v.path.insert_str(0, &pfx);
+                    }
+                }
             }
             Self::Prtry(inner) => {
-                inner.validate_constraints(&format!("{path}/Prtry"), violations);
+                let snap = violations.len();
+                inner.validate_constraints("", violations);
+                if violations.len() > snap {
+                    let pfx = format!("{path}/Prtry");
+                    for v in &mut violations[snap..] {
+                        v.path.insert_str(0, &pfx);
+                    }
+                }
             }
         }
     }
@@ -22720,10 +23778,24 @@ impl crate::common::validate::Validatable for MessageIdentification2 {
         violations: &mut Vec<crate::common::validate::ConstraintViolation>,
     ) {
         if let Some(ref val) = self.msg_nm_id {
-            val.validate_constraints(&format!("{path}/MsgNmId"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/MsgNmId");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
         if let Some(ref val) = self.msg_id {
-            val.validate_constraints(&format!("{path}/MsgId"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/MsgId");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
     }
 }
@@ -22733,10 +23805,26 @@ impl crate::common::validate::Validatable for NameAndAddress16 {
         path: &str,
         violations: &mut Vec<crate::common::validate::ConstraintViolation>,
     ) {
-        self.nm
-            .validate_constraints(&format!("{path}/Nm"), violations);
-        self.adr
-            .validate_constraints(&format!("{path}/Adr"), violations);
+        {
+            let snap = violations.len();
+            self.nm.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/Nm");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
+        }
+        {
+            let snap = violations.len();
+            self.adr.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/Adr");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
+        }
     }
 }
 impl crate::common::validate::Validatable for NumberAndSumOfTransactions1 {
@@ -22746,10 +23834,24 @@ impl crate::common::validate::Validatable for NumberAndSumOfTransactions1 {
         violations: &mut Vec<crate::common::validate::ConstraintViolation>,
     ) {
         if let Some(ref val) = self.nb_of_ntries {
-            val.validate_constraints(&format!("{path}/NbOfNtries"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/NbOfNtries");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
         if let Some(ref val) = self.sum {
-            val.validate_constraints(&format!("{path}/Sum"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/Sum");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
     }
 }
@@ -22760,13 +23862,34 @@ impl crate::common::validate::Validatable for NumberAndSumOfTransactions4 {
         violations: &mut Vec<crate::common::validate::ConstraintViolation>,
     ) {
         if let Some(ref val) = self.nb_of_ntries {
-            val.validate_constraints(&format!("{path}/NbOfNtries"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/NbOfNtries");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
         if let Some(ref val) = self.sum {
-            val.validate_constraints(&format!("{path}/Sum"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/Sum");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
         if let Some(ref val) = self.ttl_net_ntry {
-            val.validate_constraints(&format!("{path}/TtlNetNtry"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/TtlNetNtry");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
     }
 }
@@ -22777,13 +23900,34 @@ impl crate::common::validate::Validatable for OrganisationIdentification29 {
         violations: &mut Vec<crate::common::validate::ConstraintViolation>,
     ) {
         if let Some(ref val) = self.any_bic {
-            val.validate_constraints(&format!("{path}/AnyBIC"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/AnyBIC");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
         if let Some(ref val) = self.lei {
-            val.validate_constraints(&format!("{path}/LEI"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/LEI");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
-        for (i, item) in self.othr.iter().enumerate() {
-            item.validate_constraints(&format!("{path}/Othr[{i}]"), violations);
+        for (idx, elem) in self.othr.iter().enumerate() {
+            let snap = violations.len();
+            elem.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/Othr[{idx}]");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
     }
 }
@@ -22795,10 +23939,24 @@ impl crate::common::validate::Validatable for OrganisationIdentificationSchemeNa
     ) {
         match self {
             Self::Cd(inner) => {
-                inner.validate_constraints(&format!("{path}/Cd"), violations);
+                let snap = violations.len();
+                inner.validate_constraints("", violations);
+                if violations.len() > snap {
+                    let pfx = format!("{path}/Cd");
+                    for v in &mut violations[snap..] {
+                        v.path.insert_str(0, &pfx);
+                    }
+                }
             }
             Self::Prtry(inner) => {
-                inner.validate_constraints(&format!("{path}/Prtry"), violations);
+                let snap = violations.len();
+                inner.validate_constraints("", violations);
+                if violations.len() > snap {
+                    let pfx = format!("{path}/Prtry");
+                    for v in &mut violations[snap..] {
+                        v.path.insert_str(0, &pfx);
+                    }
+                }
             }
         }
     }
@@ -22809,10 +23967,26 @@ impl crate::common::validate::Validatable for OriginalAndCurrentQuantities1 {
         path: &str,
         violations: &mut Vec<crate::common::validate::ConstraintViolation>,
     ) {
-        self.face_amt
-            .validate_constraints(&format!("{path}/FaceAmt"), violations);
-        self.amtsd_val
-            .validate_constraints(&format!("{path}/AmtsdVal"), violations);
+        {
+            let snap = violations.len();
+            self.face_amt.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/FaceAmt");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
+        }
+        {
+            let snap = violations.len();
+            self.amtsd_val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/AmtsdVal");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
+        }
     }
 }
 impl crate::common::validate::Validatable for OriginalBusinessQuery1 {
@@ -22821,13 +23995,35 @@ impl crate::common::validate::Validatable for OriginalBusinessQuery1 {
         path: &str,
         violations: &mut Vec<crate::common::validate::ConstraintViolation>,
     ) {
-        self.msg_id
-            .validate_constraints(&format!("{path}/MsgId"), violations);
+        {
+            let snap = violations.len();
+            self.msg_id.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/MsgId");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
+        }
         if let Some(ref val) = self.msg_nm_id {
-            val.validate_constraints(&format!("{path}/MsgNmId"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/MsgNmId");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
         if let Some(ref val) = self.cre_dt_tm {
-            val.validate_constraints(&format!("{path}/CreDtTm"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/CreDtTm");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
     }
 }
@@ -22837,10 +24033,25 @@ impl crate::common::validate::Validatable for OtherContact1 {
         path: &str,
         violations: &mut Vec<crate::common::validate::ConstraintViolation>,
     ) {
-        self.chanl_tp
-            .validate_constraints(&format!("{path}/ChanlTp"), violations);
+        {
+            let snap = violations.len();
+            self.chanl_tp.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/ChanlTp");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
+        }
         if let Some(ref val) = self.id {
-            val.validate_constraints(&format!("{path}/Id"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/Id");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
     }
 }
@@ -22850,14 +24061,36 @@ impl crate::common::validate::Validatable for OtherIdentification1 {
         path: &str,
         violations: &mut Vec<crate::common::validate::ConstraintViolation>,
     ) {
-        self.id
-            .validate_constraints(&format!("{path}/Id"), violations);
-        if let Some(ref val) = self.sfx {
-            val.validate_constraints(&format!("{path}/Sfx"), violations);
+        {
+            let snap = violations.len();
+            self.id.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/Id");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
-        self.tp
-            .inner
-            .validate_constraints(&format!("{path}/Tp"), violations);
+        if let Some(ref val) = self.sfx {
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/Sfx");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
+        }
+        {
+            let snap = violations.len();
+            self.tp.inner.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/Tp");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
+        }
     }
 }
 impl crate::common::validate::Validatable for Pagination1 {
@@ -22866,10 +24099,26 @@ impl crate::common::validate::Validatable for Pagination1 {
         path: &str,
         violations: &mut Vec<crate::common::validate::ConstraintViolation>,
     ) {
-        self.pg_nb
-            .validate_constraints(&format!("{path}/PgNb"), violations);
-        self.last_pg_ind
-            .validate_constraints(&format!("{path}/LastPgInd"), violations);
+        {
+            let snap = violations.len();
+            self.pg_nb.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/PgNb");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
+        }
+        {
+            let snap = violations.len();
+            self.last_pg_ind.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/LastPgInd");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
+        }
     }
 }
 impl crate::common::validate::Validatable for Party38Choice {
@@ -22880,10 +24129,24 @@ impl crate::common::validate::Validatable for Party38Choice {
     ) {
         match self {
             Self::OrgId(inner) => {
-                inner.validate_constraints(&format!("{path}/OrgId"), violations);
+                let snap = violations.len();
+                inner.validate_constraints("", violations);
+                if violations.len() > snap {
+                    let pfx = format!("{path}/OrgId");
+                    for v in &mut violations[snap..] {
+                        v.path.insert_str(0, &pfx);
+                    }
+                }
             }
             Self::PrvtId(inner) => {
-                inner.validate_constraints(&format!("{path}/PrvtId"), violations);
+                let snap = violations.len();
+                inner.validate_constraints("", violations);
+                if violations.len() > snap {
+                    let pfx = format!("{path}/PrvtId");
+                    for v in &mut violations[snap..] {
+                        v.path.insert_str(0, &pfx);
+                    }
+                }
             }
         }
     }
@@ -22896,10 +24159,24 @@ impl crate::common::validate::Validatable for Party40Choice {
     ) {
         match self {
             Self::Pty(inner) => {
-                inner.validate_constraints(&format!("{path}/Pty"), violations);
+                let snap = violations.len();
+                inner.validate_constraints("", violations);
+                if violations.len() > snap {
+                    let pfx = format!("{path}/Pty");
+                    for v in &mut violations[snap..] {
+                        v.path.insert_str(0, &pfx);
+                    }
+                }
             }
             Self::Agt(inner) => {
-                inner.validate_constraints(&format!("{path}/Agt"), violations);
+                let snap = violations.len();
+                inner.validate_constraints("", violations);
+                if violations.len() > snap {
+                    let pfx = format!("{path}/Agt");
+                    for v in &mut violations[snap..] {
+                        v.path.insert_str(0, &pfx);
+                    }
+                }
             }
         }
     }
@@ -22911,21 +24188,54 @@ impl crate::common::validate::Validatable for PartyIdentification135 {
         violations: &mut Vec<crate::common::validate::ConstraintViolation>,
     ) {
         if let Some(ref val) = self.nm {
-            val.validate_constraints(&format!("{path}/Nm"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/Nm");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
         if let Some(ref val) = self.pstl_adr {
-            val.validate_constraints(&format!("{path}/PstlAdr"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/PstlAdr");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
         if let Some(ref wrapper) = self.id {
-            wrapper
-                .inner
-                .validate_constraints(&format!("{path}/Id"), violations);
+            let snap = violations.len();
+            wrapper.inner.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/Id");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
         if let Some(ref val) = self.ctry_of_res {
-            val.validate_constraints(&format!("{path}/CtryOfRes"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/CtryOfRes");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
         if let Some(ref val) = self.ctct_dtls {
-            val.validate_constraints(&format!("{path}/CtctDtls"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/CtctDtls");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
     }
 }
@@ -22936,16 +24246,44 @@ impl crate::common::validate::Validatable for PaymentCard4 {
         violations: &mut Vec<crate::common::validate::ConstraintViolation>,
     ) {
         if let Some(ref val) = self.plain_card_data {
-            val.validate_constraints(&format!("{path}/PlainCardData"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/PlainCardData");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
         if let Some(ref val) = self.card_ctry_cd {
-            val.validate_constraints(&format!("{path}/CardCtryCd"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/CardCtryCd");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
         if let Some(ref val) = self.card_brnd {
-            val.validate_constraints(&format!("{path}/CardBrnd"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/CardBrnd");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
         if let Some(ref val) = self.addtl_card_data {
-            val.validate_constraints(&format!("{path}/AddtlCardData"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/AddtlCardData");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
     }
 }
@@ -22956,36 +24294,114 @@ impl crate::common::validate::Validatable for PaymentContext3 {
         violations: &mut Vec<crate::common::validate::ConstraintViolation>,
     ) {
         if let Some(ref val) = self.card_pres {
-            val.validate_constraints(&format!("{path}/CardPres"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/CardPres");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
         if let Some(ref val) = self.crdhldr_pres {
-            val.validate_constraints(&format!("{path}/CrdhldrPres"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/CrdhldrPres");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
         if let Some(ref val) = self.on_line_cntxt {
-            val.validate_constraints(&format!("{path}/OnLineCntxt"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/OnLineCntxt");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
         if let Some(ref val) = self.attndnc_cntxt {
-            val.validate_constraints(&format!("{path}/AttndncCntxt"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/AttndncCntxt");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
         if let Some(ref val) = self.tx_envt {
-            val.validate_constraints(&format!("{path}/TxEnvt"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/TxEnvt");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
         if let Some(ref val) = self.tx_chanl {
-            val.validate_constraints(&format!("{path}/TxChanl"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/TxChanl");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
         if let Some(ref val) = self.attndnt_msg_cpbl {
-            val.validate_constraints(&format!("{path}/AttndntMsgCpbl"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/AttndntMsgCpbl");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
         if let Some(ref val) = self.attndnt_lang {
-            val.validate_constraints(&format!("{path}/AttndntLang"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/AttndntLang");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
-        self.card_data_ntry_md
-            .validate_constraints(&format!("{path}/CardDataNtryMd"), violations);
+        {
+            let snap = violations.len();
+            self.card_data_ntry_md.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/CardDataNtryMd");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
+        }
         if let Some(ref val) = self.fllbck_ind {
-            val.validate_constraints(&format!("{path}/FllbckInd"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/FllbckInd");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
         if let Some(ref val) = self.authntcn_mtd {
-            val.validate_constraints(&format!("{path}/AuthntcnMtd"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/AuthntcnMtd");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
     }
 }
@@ -22996,18 +24412,44 @@ impl crate::common::validate::Validatable for PaymentReturnReason5 {
         violations: &mut Vec<crate::common::validate::ConstraintViolation>,
     ) {
         if let Some(ref val) = self.orgnl_bk_tx_cd {
-            val.validate_constraints(&format!("{path}/OrgnlBkTxCd"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/OrgnlBkTxCd");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
         if let Some(ref val) = self.orgtr {
-            val.validate_constraints(&format!("{path}/Orgtr"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/Orgtr");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
         if let Some(ref wrapper) = self.rsn {
-            wrapper
-                .inner
-                .validate_constraints(&format!("{path}/Rsn"), violations);
+            let snap = violations.len();
+            wrapper.inner.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/Rsn");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
-        for (i, item) in self.addtl_inf.iter().enumerate() {
-            item.validate_constraints(&format!("{path}/AddtlInf[{i}]"), violations);
+        for (idx, elem) in self.addtl_inf.iter().enumerate() {
+            let snap = violations.len();
+            elem.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/AddtlInf[{idx}]");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
     }
 }
@@ -23018,27 +24460,64 @@ impl crate::common::validate::Validatable for PaymentTypeInformation27 {
         violations: &mut Vec<crate::common::validate::ConstraintViolation>,
     ) {
         if let Some(ref val) = self.instr_prty {
-            val.validate_constraints(&format!("{path}/InstrPrty"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/InstrPrty");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
         if let Some(ref val) = self.clr_chanl {
-            val.validate_constraints(&format!("{path}/ClrChanl"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/ClrChanl");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
-        for (i, item) in self.svc_lvl.iter().enumerate() {
-            item.inner
-                .validate_constraints(&format!("{path}/SvcLvl[{i}]"), violations);
+        for (idx, elem) in self.svc_lvl.iter().enumerate() {
+            let snap = violations.len();
+            elem.inner.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/SvcLvl[{idx}]");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
         if let Some(ref wrapper) = self.lcl_instrm {
-            wrapper
-                .inner
-                .validate_constraints(&format!("{path}/LclInstrm"), violations);
+            let snap = violations.len();
+            wrapper.inner.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/LclInstrm");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
         if let Some(ref val) = self.seq_tp {
-            val.validate_constraints(&format!("{path}/SeqTp"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/SeqTp");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
         if let Some(ref wrapper) = self.ctgy_purp {
-            wrapper
-                .inner
-                .validate_constraints(&format!("{path}/CtgyPurp"), violations);
+            let snap = violations.len();
+            wrapper.inner.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/CtgyPurp");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
     }
 }
@@ -23049,10 +24528,24 @@ impl crate::common::validate::Validatable for PersonIdentification13 {
         violations: &mut Vec<crate::common::validate::ConstraintViolation>,
     ) {
         if let Some(ref val) = self.dt_and_plc_of_birth {
-            val.validate_constraints(&format!("{path}/DtAndPlcOfBirth"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/DtAndPlcOfBirth");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
-        for (i, item) in self.othr.iter().enumerate() {
-            item.validate_constraints(&format!("{path}/Othr[{i}]"), violations);
+        for (idx, elem) in self.othr.iter().enumerate() {
+            let snap = violations.len();
+            elem.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/Othr[{idx}]");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
     }
 }
@@ -23064,10 +24557,24 @@ impl crate::common::validate::Validatable for PersonIdentificationSchemeName1Cho
     ) {
         match self {
             Self::Cd(inner) => {
-                inner.validate_constraints(&format!("{path}/Cd"), violations);
+                let snap = violations.len();
+                inner.validate_constraints("", violations);
+                if violations.len() > snap {
+                    let pfx = format!("{path}/Cd");
+                    for v in &mut violations[snap..] {
+                        v.path.insert_str(0, &pfx);
+                    }
+                }
             }
             Self::Prtry(inner) => {
-                inner.validate_constraints(&format!("{path}/Prtry"), violations);
+                let snap = violations.len();
+                inner.validate_constraints("", violations);
+                if violations.len() > snap {
+                    let pfx = format!("{path}/Prtry");
+                    for v in &mut violations[snap..] {
+                        v.path.insert_str(0, &pfx);
+                    }
+                }
             }
         }
     }
@@ -23078,24 +24585,75 @@ impl crate::common::validate::Validatable for PlainCardData1 {
         path: &str,
         violations: &mut Vec<crate::common::validate::ConstraintViolation>,
     ) {
-        self.pan
-            .validate_constraints(&format!("{path}/PAN"), violations);
+        {
+            let snap = violations.len();
+            self.pan.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/PAN");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
+        }
         if let Some(ref val) = self.card_seq_nb {
-            val.validate_constraints(&format!("{path}/CardSeqNb"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/CardSeqNb");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
         if let Some(ref val) = self.fctv_dt {
-            val.validate_constraints(&format!("{path}/FctvDt"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/FctvDt");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
-        self.xpry_dt
-            .validate_constraints(&format!("{path}/XpryDt"), violations);
+        {
+            let snap = violations.len();
+            self.xpry_dt.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/XpryDt");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
+        }
         if let Some(ref val) = self.svc_cd {
-            val.validate_constraints(&format!("{path}/SvcCd"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/SvcCd");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
-        for (i, item) in self.trck_data.iter().enumerate() {
-            item.validate_constraints(&format!("{path}/TrckData[{i}]"), violations);
+        for (idx, elem) in self.trck_data.iter().enumerate() {
+            let snap = violations.len();
+            elem.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/TrckData[{idx}]");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
         if let Some(ref val) = self.card_scty_cd {
-            val.validate_constraints(&format!("{path}/CardSctyCd"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/CardSctyCd");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
     }
 }
@@ -23105,19 +24663,55 @@ impl crate::common::validate::Validatable for PointOfInteraction1 {
         path: &str,
         violations: &mut Vec<crate::common::validate::ConstraintViolation>,
     ) {
-        self.id
-            .validate_constraints(&format!("{path}/Id"), violations);
+        {
+            let snap = violations.len();
+            self.id.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/Id");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
+        }
         if let Some(ref val) = self.sys_nm {
-            val.validate_constraints(&format!("{path}/SysNm"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/SysNm");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
         if let Some(ref val) = self.grp_id {
-            val.validate_constraints(&format!("{path}/GrpId"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/GrpId");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
         if let Some(ref val) = self.cpblties {
-            val.validate_constraints(&format!("{path}/Cpblties"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/Cpblties");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
-        for (i, item) in self.cmpnt.iter().enumerate() {
-            item.validate_constraints(&format!("{path}/Cmpnt[{i}]"), violations);
+        for (idx, elem) in self.cmpnt.iter().enumerate() {
+            let snap = violations.len();
+            elem.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/Cmpnt[{idx}]");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
     }
 }
@@ -23127,20 +24721,55 @@ impl crate::common::validate::Validatable for PointOfInteractionCapabilities1 {
         path: &str,
         violations: &mut Vec<crate::common::validate::ConstraintViolation>,
     ) {
-        for (i, item) in self.card_rdng_cpblties.iter().enumerate() {
-            item.validate_constraints(&format!("{path}/CardRdngCpblties[{i}]"), violations);
+        for (idx, elem) in self.card_rdng_cpblties.iter().enumerate() {
+            let snap = violations.len();
+            elem.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/CardRdngCpblties[{idx}]");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
-        for (i, item) in self.crdhldr_vrfctn_cpblties.iter().enumerate() {
-            item.validate_constraints(&format!("{path}/CrdhldrVrfctnCpblties[{i}]"), violations);
+        for (idx, elem) in self.crdhldr_vrfctn_cpblties.iter().enumerate() {
+            let snap = violations.len();
+            elem.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/CrdhldrVrfctnCpblties[{idx}]");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
         if let Some(ref val) = self.on_line_cpblties {
-            val.validate_constraints(&format!("{path}/OnLineCpblties"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/OnLineCpblties");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
-        for (i, item) in self.disp_cpblties.iter().enumerate() {
-            item.validate_constraints(&format!("{path}/DispCpblties[{i}]"), violations);
+        for (idx, elem) in self.disp_cpblties.iter().enumerate() {
+            let snap = violations.len();
+            elem.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/DispCpblties[{idx}]");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
         if let Some(ref val) = self.prt_line_width {
-            val.validate_constraints(&format!("{path}/PrtLineWidth"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/PrtLineWidth");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
     }
 }
@@ -23150,22 +24779,65 @@ impl crate::common::validate::Validatable for PointOfInteractionComponent1 {
         path: &str,
         violations: &mut Vec<crate::common::validate::ConstraintViolation>,
     ) {
-        self.poi_cmpnt_tp
-            .validate_constraints(&format!("{path}/POICmpntTp"), violations);
+        {
+            let snap = violations.len();
+            self.poi_cmpnt_tp.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/POICmpntTp");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
+        }
         if let Some(ref val) = self.manfctr_id {
-            val.validate_constraints(&format!("{path}/ManfctrId"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/ManfctrId");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
         if let Some(ref val) = self.mdl {
-            val.validate_constraints(&format!("{path}/Mdl"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/Mdl");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
         if let Some(ref val) = self.vrsn_nb {
-            val.validate_constraints(&format!("{path}/VrsnNb"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/VrsnNb");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
         if let Some(ref val) = self.srl_nb {
-            val.validate_constraints(&format!("{path}/SrlNb"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/SrlNb");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
-        for (i, item) in self.apprvl_nb.iter().enumerate() {
-            item.validate_constraints(&format!("{path}/ApprvlNb[{i}]"), violations);
+        for (idx, elem) in self.apprvl_nb.iter().enumerate() {
+            let snap = violations.len();
+            elem.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/ApprvlNb[{idx}]");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
     }
 }
@@ -23176,54 +24848,164 @@ impl crate::common::validate::Validatable for PostalAddress24 {
         violations: &mut Vec<crate::common::validate::ConstraintViolation>,
     ) {
         if let Some(ref wrapper) = self.adr_tp {
-            wrapper
-                .inner
-                .validate_constraints(&format!("{path}/AdrTp"), violations);
+            let snap = violations.len();
+            wrapper.inner.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/AdrTp");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
         if let Some(ref val) = self.dept {
-            val.validate_constraints(&format!("{path}/Dept"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/Dept");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
         if let Some(ref val) = self.sub_dept {
-            val.validate_constraints(&format!("{path}/SubDept"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/SubDept");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
         if let Some(ref val) = self.strt_nm {
-            val.validate_constraints(&format!("{path}/StrtNm"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/StrtNm");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
         if let Some(ref val) = self.bldg_nb {
-            val.validate_constraints(&format!("{path}/BldgNb"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/BldgNb");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
         if let Some(ref val) = self.bldg_nm {
-            val.validate_constraints(&format!("{path}/BldgNm"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/BldgNm");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
         if let Some(ref val) = self.flr {
-            val.validate_constraints(&format!("{path}/Flr"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/Flr");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
         if let Some(ref val) = self.pst_bx {
-            val.validate_constraints(&format!("{path}/PstBx"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/PstBx");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
         if let Some(ref val) = self.room {
-            val.validate_constraints(&format!("{path}/Room"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/Room");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
         if let Some(ref val) = self.pst_cd {
-            val.validate_constraints(&format!("{path}/PstCd"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/PstCd");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
         if let Some(ref val) = self.twn_nm {
-            val.validate_constraints(&format!("{path}/TwnNm"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/TwnNm");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
         if let Some(ref val) = self.twn_lctn_nm {
-            val.validate_constraints(&format!("{path}/TwnLctnNm"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/TwnLctnNm");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
         if let Some(ref val) = self.dstrct_nm {
-            val.validate_constraints(&format!("{path}/DstrctNm"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/DstrctNm");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
         if let Some(ref val) = self.ctry_sub_dvsn {
-            val.validate_constraints(&format!("{path}/CtrySubDvsn"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/CtrySubDvsn");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
         if let Some(ref val) = self.ctry {
-            val.validate_constraints(&format!("{path}/Ctry"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/Ctry");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
-        for (i, item) in self.adr_line.iter().enumerate() {
-            item.validate_constraints(&format!("{path}/AdrLine[{i}]"), violations);
+        for (idx, elem) in self.adr_line.iter().enumerate() {
+            let snap = violations.len();
+            elem.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/AdrLine[{idx}]");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
     }
 }
@@ -23233,12 +25015,26 @@ impl crate::common::validate::Validatable for Price7 {
         path: &str,
         violations: &mut Vec<crate::common::validate::ConstraintViolation>,
     ) {
-        self.tp
-            .inner
-            .validate_constraints(&format!("{path}/Tp"), violations);
-        self.val
-            .inner
-            .validate_constraints(&format!("{path}/Val"), violations);
+        {
+            let snap = violations.len();
+            self.tp.inner.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/Tp");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
+        }
+        {
+            let snap = violations.len();
+            self.val.inner.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/Val");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
+        }
     }
 }
 impl crate::common::validate::Validatable for PriceRateOrAmount3Choice {
@@ -23249,10 +25045,24 @@ impl crate::common::validate::Validatable for PriceRateOrAmount3Choice {
     ) {
         match self {
             Self::Rate(inner) => {
-                inner.validate_constraints(&format!("{path}/Rate"), violations);
+                let snap = violations.len();
+                inner.validate_constraints("", violations);
+                if violations.len() > snap {
+                    let pfx = format!("{path}/Rate");
+                    for v in &mut violations[snap..] {
+                        v.path.insert_str(0, &pfx);
+                    }
+                }
             }
             Self::Amt(inner) => {
-                inner.validate_constraints(&format!("{path}/Amt"), violations);
+                let snap = violations.len();
+                inner.validate_constraints("", violations);
+                if violations.len() > snap {
+                    let pfx = format!("{path}/Amt");
+                    for v in &mut violations[snap..] {
+                        v.path.insert_str(0, &pfx);
+                    }
+                }
             }
         }
     }
@@ -23263,25 +25073,75 @@ impl crate::common::validate::Validatable for Product2 {
         path: &str,
         violations: &mut Vec<crate::common::validate::ConstraintViolation>,
     ) {
-        self.pdct_cd
-            .validate_constraints(&format!("{path}/PdctCd"), violations);
+        {
+            let snap = violations.len();
+            self.pdct_cd.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/PdctCd");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
+        }
         if let Some(ref val) = self.unit_of_measr {
-            val.validate_constraints(&format!("{path}/UnitOfMeasr"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/UnitOfMeasr");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
         if let Some(ref val) = self.pdct_qty {
-            val.validate_constraints(&format!("{path}/PdctQty"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/PdctQty");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
         if let Some(ref val) = self.unit_pric {
-            val.validate_constraints(&format!("{path}/UnitPric"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/UnitPric");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
         if let Some(ref val) = self.pdct_amt {
-            val.validate_constraints(&format!("{path}/PdctAmt"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/PdctAmt");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
         if let Some(ref val) = self.tax_tp {
-            val.validate_constraints(&format!("{path}/TaxTp"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/TaxTp");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
         if let Some(ref val) = self.addtl_pdct_inf {
-            val.validate_constraints(&format!("{path}/AddtlPdctInf"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/AddtlPdctInf");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
     }
 }
@@ -23291,10 +25151,26 @@ impl crate::common::validate::Validatable for ProprietaryAgent4 {
         path: &str,
         violations: &mut Vec<crate::common::validate::ConstraintViolation>,
     ) {
-        self.tp
-            .validate_constraints(&format!("{path}/Tp"), violations);
-        self.agt
-            .validate_constraints(&format!("{path}/Agt"), violations);
+        {
+            let snap = violations.len();
+            self.tp.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/Tp");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
+        }
+        {
+            let snap = violations.len();
+            self.agt.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/Agt");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
+        }
     }
 }
 impl crate::common::validate::Validatable for ProprietaryBankTransactionCodeStructure1 {
@@ -23303,10 +25179,25 @@ impl crate::common::validate::Validatable for ProprietaryBankTransactionCodeStru
         path: &str,
         violations: &mut Vec<crate::common::validate::ConstraintViolation>,
     ) {
-        self.cd
-            .validate_constraints(&format!("{path}/Cd"), violations);
+        {
+            let snap = violations.len();
+            self.cd.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/Cd");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
+        }
         if let Some(ref val) = self.issr {
-            val.validate_constraints(&format!("{path}/Issr"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/Issr");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
     }
 }
@@ -23316,11 +25207,26 @@ impl crate::common::validate::Validatable for ProprietaryDate3 {
         path: &str,
         violations: &mut Vec<crate::common::validate::ConstraintViolation>,
     ) {
-        self.tp
-            .validate_constraints(&format!("{path}/Tp"), violations);
-        self.dt
-            .inner
-            .validate_constraints(&format!("{path}/Dt"), violations);
+        {
+            let snap = violations.len();
+            self.tp.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/Tp");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
+        }
+        {
+            let snap = violations.len();
+            self.dt.inner.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/Dt");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
+        }
     }
 }
 impl crate::common::validate::Validatable for ProprietaryParty5 {
@@ -23329,11 +25235,26 @@ impl crate::common::validate::Validatable for ProprietaryParty5 {
         path: &str,
         violations: &mut Vec<crate::common::validate::ConstraintViolation>,
     ) {
-        self.tp
-            .validate_constraints(&format!("{path}/Tp"), violations);
-        self.pty
-            .inner
-            .validate_constraints(&format!("{path}/Pty"), violations);
+        {
+            let snap = violations.len();
+            self.tp.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/Tp");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
+        }
+        {
+            let snap = violations.len();
+            self.pty.inner.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/Pty");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
+        }
     }
 }
 impl crate::common::validate::Validatable for ProprietaryPrice2 {
@@ -23342,10 +25263,26 @@ impl crate::common::validate::Validatable for ProprietaryPrice2 {
         path: &str,
         violations: &mut Vec<crate::common::validate::ConstraintViolation>,
     ) {
-        self.tp
-            .validate_constraints(&format!("{path}/Tp"), violations);
-        self.pric
-            .validate_constraints(&format!("{path}/Pric"), violations);
+        {
+            let snap = violations.len();
+            self.tp.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/Tp");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
+        }
+        {
+            let snap = violations.len();
+            self.pric.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/Pric");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
+        }
     }
 }
 impl crate::common::validate::Validatable for ProprietaryQuantity1 {
@@ -23354,10 +25291,26 @@ impl crate::common::validate::Validatable for ProprietaryQuantity1 {
         path: &str,
         violations: &mut Vec<crate::common::validate::ConstraintViolation>,
     ) {
-        self.tp
-            .validate_constraints(&format!("{path}/Tp"), violations);
-        self.qty
-            .validate_constraints(&format!("{path}/Qty"), violations);
+        {
+            let snap = violations.len();
+            self.tp.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/Tp");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
+        }
+        {
+            let snap = violations.len();
+            self.qty.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/Qty");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
+        }
     }
 }
 impl crate::common::validate::Validatable for ProprietaryReference1 {
@@ -23366,10 +25319,26 @@ impl crate::common::validate::Validatable for ProprietaryReference1 {
         path: &str,
         violations: &mut Vec<crate::common::validate::ConstraintViolation>,
     ) {
-        self.tp
-            .validate_constraints(&format!("{path}/Tp"), violations);
-        self.r#ref
-            .validate_constraints(&format!("{path}/Ref"), violations);
+        {
+            let snap = violations.len();
+            self.tp.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/Tp");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
+        }
+        {
+            let snap = violations.len();
+            self.r#ref.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/Ref");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
+        }
     }
 }
 impl crate::common::validate::Validatable for ProxyAccountIdentification1 {
@@ -23379,12 +25348,25 @@ impl crate::common::validate::Validatable for ProxyAccountIdentification1 {
         violations: &mut Vec<crate::common::validate::ConstraintViolation>,
     ) {
         if let Some(ref wrapper) = self.tp {
-            wrapper
-                .inner
-                .validate_constraints(&format!("{path}/Tp"), violations);
+            let snap = violations.len();
+            wrapper.inner.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/Tp");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
-        self.id
-            .validate_constraints(&format!("{path}/Id"), violations);
+        {
+            let snap = violations.len();
+            self.id.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/Id");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
+        }
     }
 }
 impl crate::common::validate::Validatable for ProxyAccountType1Choice {
@@ -23395,10 +25377,24 @@ impl crate::common::validate::Validatable for ProxyAccountType1Choice {
     ) {
         match self {
             Self::Cd(inner) => {
-                inner.validate_constraints(&format!("{path}/Cd"), violations);
+                let snap = violations.len();
+                inner.validate_constraints("", violations);
+                if violations.len() > snap {
+                    let pfx = format!("{path}/Cd");
+                    for v in &mut violations[snap..] {
+                        v.path.insert_str(0, &pfx);
+                    }
+                }
             }
             Self::Prtry(inner) => {
-                inner.validate_constraints(&format!("{path}/Prtry"), violations);
+                let snap = violations.len();
+                inner.validate_constraints("", violations);
+                if violations.len() > snap {
+                    let pfx = format!("{path}/Prtry");
+                    for v in &mut violations[snap..] {
+                        v.path.insert_str(0, &pfx);
+                    }
+                }
             }
         }
     }
@@ -23411,10 +25407,24 @@ impl crate::common::validate::Validatable for Purpose2Choice {
     ) {
         match self {
             Self::Cd(inner) => {
-                inner.validate_constraints(&format!("{path}/Cd"), violations);
+                let snap = violations.len();
+                inner.validate_constraints("", violations);
+                if violations.len() > snap {
+                    let pfx = format!("{path}/Cd");
+                    for v in &mut violations[snap..] {
+                        v.path.insert_str(0, &pfx);
+                    }
+                }
             }
             Self::Prtry(inner) => {
-                inner.validate_constraints(&format!("{path}/Prtry"), violations);
+                let snap = violations.len();
+                inner.validate_constraints("", violations);
+                if violations.len() > snap {
+                    let pfx = format!("{path}/Prtry");
+                    for v in &mut violations[snap..] {
+                        v.path.insert_str(0, &pfx);
+                    }
+                }
             }
         }
     }
@@ -23425,11 +25435,25 @@ impl crate::common::validate::Validatable for Rate4 {
         path: &str,
         violations: &mut Vec<crate::common::validate::ConstraintViolation>,
     ) {
-        self.tp
-            .inner
-            .validate_constraints(&format!("{path}/Tp"), violations);
+        {
+            let snap = violations.len();
+            self.tp.inner.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/Tp");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
+        }
         if let Some(ref val) = self.vldty_rg {
-            val.validate_constraints(&format!("{path}/VldtyRg"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/VldtyRg");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
     }
 }
@@ -23441,10 +25465,24 @@ impl crate::common::validate::Validatable for RateType4Choice {
     ) {
         match self {
             Self::Pctg(inner) => {
-                inner.validate_constraints(&format!("{path}/Pctg"), violations);
+                let snap = violations.len();
+                inner.validate_constraints("", violations);
+                if violations.len() > snap {
+                    let pfx = format!("{path}/Pctg");
+                    for v in &mut violations[snap..] {
+                        v.path.insert_str(0, &pfx);
+                    }
+                }
             }
             Self::Othr(inner) => {
-                inner.validate_constraints(&format!("{path}/Othr"), violations);
+                let snap = violations.len();
+                inner.validate_constraints("", violations);
+                if violations.len() > snap {
+                    let pfx = format!("{path}/Othr");
+                    for v in &mut violations[snap..] {
+                        v.path.insert_str(0, &pfx);
+                    }
+                }
             }
         }
     }
@@ -23456,16 +25494,44 @@ impl crate::common::validate::Validatable for ReferredDocumentInformation7 {
         violations: &mut Vec<crate::common::validate::ConstraintViolation>,
     ) {
         if let Some(ref val) = self.tp {
-            val.validate_constraints(&format!("{path}/Tp"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/Tp");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
         if let Some(ref val) = self.nb {
-            val.validate_constraints(&format!("{path}/Nb"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/Nb");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
         if let Some(ref val) = self.rltd_dt {
-            val.validate_constraints(&format!("{path}/RltdDt"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/RltdDt");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
-        for (i, item) in self.line_dtls.iter().enumerate() {
-            item.validate_constraints(&format!("{path}/LineDtls[{i}]"), violations);
+        for (idx, elem) in self.line_dtls.iter().enumerate() {
+            let snap = violations.len();
+            elem.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/LineDtls[{idx}]");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
     }
 }
@@ -23477,10 +25543,24 @@ impl crate::common::validate::Validatable for ReferredDocumentType3Choice {
     ) {
         match self {
             Self::Cd(inner) => {
-                inner.validate_constraints(&format!("{path}/Cd"), violations);
+                let snap = violations.len();
+                inner.validate_constraints("", violations);
+                if violations.len() > snap {
+                    let pfx = format!("{path}/Cd");
+                    for v in &mut violations[snap..] {
+                        v.path.insert_str(0, &pfx);
+                    }
+                }
             }
             Self::Prtry(inner) => {
-                inner.validate_constraints(&format!("{path}/Prtry"), violations);
+                let snap = violations.len();
+                inner.validate_constraints("", violations);
+                if violations.len() > snap {
+                    let pfx = format!("{path}/Prtry");
+                    for v in &mut violations[snap..] {
+                        v.path.insert_str(0, &pfx);
+                    }
+                }
             }
         }
     }
@@ -23491,11 +25571,25 @@ impl crate::common::validate::Validatable for ReferredDocumentType4 {
         path: &str,
         violations: &mut Vec<crate::common::validate::ConstraintViolation>,
     ) {
-        self.cd_or_prtry
-            .inner
-            .validate_constraints(&format!("{path}/CdOrPrtry"), violations);
+        {
+            let snap = violations.len();
+            self.cd_or_prtry.inner.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/CdOrPrtry");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
+        }
         if let Some(ref val) = self.issr {
-            val.validate_constraints(&format!("{path}/Issr"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/Issr");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
     }
 }
@@ -23506,22 +25600,64 @@ impl crate::common::validate::Validatable for RemittanceAmount2 {
         violations: &mut Vec<crate::common::validate::ConstraintViolation>,
     ) {
         if let Some(ref val) = self.due_pybl_amt {
-            val.validate_constraints(&format!("{path}/DuePyblAmt"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/DuePyblAmt");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
-        for (i, item) in self.dscnt_apld_amt.iter().enumerate() {
-            item.validate_constraints(&format!("{path}/DscntApldAmt[{i}]"), violations);
+        for (idx, elem) in self.dscnt_apld_amt.iter().enumerate() {
+            let snap = violations.len();
+            elem.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/DscntApldAmt[{idx}]");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
         if let Some(ref val) = self.cdt_note_amt {
-            val.validate_constraints(&format!("{path}/CdtNoteAmt"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/CdtNoteAmt");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
-        for (i, item) in self.tax_amt.iter().enumerate() {
-            item.validate_constraints(&format!("{path}/TaxAmt[{i}]"), violations);
+        for (idx, elem) in self.tax_amt.iter().enumerate() {
+            let snap = violations.len();
+            elem.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/TaxAmt[{idx}]");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
-        for (i, item) in self.adjstmnt_amt_and_rsn.iter().enumerate() {
-            item.validate_constraints(&format!("{path}/AdjstmntAmtAndRsn[{i}]"), violations);
+        for (idx, elem) in self.adjstmnt_amt_and_rsn.iter().enumerate() {
+            let snap = violations.len();
+            elem.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/AdjstmntAmtAndRsn[{idx}]");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
         if let Some(ref val) = self.rmtd_amt {
-            val.validate_constraints(&format!("{path}/RmtdAmt"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/RmtdAmt");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
     }
 }
@@ -23532,22 +25668,64 @@ impl crate::common::validate::Validatable for RemittanceAmount3 {
         violations: &mut Vec<crate::common::validate::ConstraintViolation>,
     ) {
         if let Some(ref val) = self.due_pybl_amt {
-            val.validate_constraints(&format!("{path}/DuePyblAmt"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/DuePyblAmt");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
-        for (i, item) in self.dscnt_apld_amt.iter().enumerate() {
-            item.validate_constraints(&format!("{path}/DscntApldAmt[{i}]"), violations);
+        for (idx, elem) in self.dscnt_apld_amt.iter().enumerate() {
+            let snap = violations.len();
+            elem.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/DscntApldAmt[{idx}]");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
         if let Some(ref val) = self.cdt_note_amt {
-            val.validate_constraints(&format!("{path}/CdtNoteAmt"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/CdtNoteAmt");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
-        for (i, item) in self.tax_amt.iter().enumerate() {
-            item.validate_constraints(&format!("{path}/TaxAmt[{i}]"), violations);
+        for (idx, elem) in self.tax_amt.iter().enumerate() {
+            let snap = violations.len();
+            elem.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/TaxAmt[{idx}]");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
-        for (i, item) in self.adjstmnt_amt_and_rsn.iter().enumerate() {
-            item.validate_constraints(&format!("{path}/AdjstmntAmtAndRsn[{i}]"), violations);
+        for (idx, elem) in self.adjstmnt_amt_and_rsn.iter().enumerate() {
+            let snap = violations.len();
+            elem.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/AdjstmntAmtAndRsn[{idx}]");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
         if let Some(ref val) = self.rmtd_amt {
-            val.validate_constraints(&format!("{path}/RmtdAmt"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/RmtdAmt");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
     }
 }
@@ -23557,11 +25735,25 @@ impl crate::common::validate::Validatable for RemittanceInformation21 {
         path: &str,
         violations: &mut Vec<crate::common::validate::ConstraintViolation>,
     ) {
-        for (i, item) in self.ustrd.iter().enumerate() {
-            item.validate_constraints(&format!("{path}/Ustrd[{i}]"), violations);
+        for (idx, elem) in self.ustrd.iter().enumerate() {
+            let snap = violations.len();
+            elem.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/Ustrd[{idx}]");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
-        for (i, item) in self.strd.iter().enumerate() {
-            item.validate_constraints(&format!("{path}/Strd[{i}]"), violations);
+        for (idx, elem) in self.strd.iter().enumerate() {
+            let snap = violations.len();
+            elem.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/Strd[{idx}]");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
     }
 }
@@ -23572,10 +25764,24 @@ impl crate::common::validate::Validatable for RemittanceLocation7 {
         violations: &mut Vec<crate::common::validate::ConstraintViolation>,
     ) {
         if let Some(ref val) = self.rmt_id {
-            val.validate_constraints(&format!("{path}/RmtId"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/RmtId");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
-        for (i, item) in self.rmt_lctn_dtls.iter().enumerate() {
-            item.validate_constraints(&format!("{path}/RmtLctnDtls[{i}]"), violations);
+        for (idx, elem) in self.rmt_lctn_dtls.iter().enumerate() {
+            let snap = violations.len();
+            elem.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/RmtLctnDtls[{idx}]");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
     }
 }
@@ -23585,13 +25791,35 @@ impl crate::common::validate::Validatable for RemittanceLocationData1 {
         path: &str,
         violations: &mut Vec<crate::common::validate::ConstraintViolation>,
     ) {
-        self.mtd
-            .validate_constraints(&format!("{path}/Mtd"), violations);
+        {
+            let snap = violations.len();
+            self.mtd.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/Mtd");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
+        }
         if let Some(ref val) = self.elctrnc_adr {
-            val.validate_constraints(&format!("{path}/ElctrncAdr"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/ElctrncAdr");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
         if let Some(ref val) = self.pstl_adr {
-            val.validate_constraints(&format!("{path}/PstlAdr"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/PstlAdr");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
     }
 }
@@ -23602,64 +25830,194 @@ impl crate::common::validate::Validatable for ReportEntry13 {
         violations: &mut Vec<crate::common::validate::ConstraintViolation>,
     ) {
         if let Some(ref val) = self.ntry_ref {
-            val.validate_constraints(&format!("{path}/NtryRef"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/NtryRef");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
-        self.amt
-            .validate_constraints(&format!("{path}/Amt"), violations);
-        self.cdt_dbt_ind
-            .validate_constraints(&format!("{path}/CdtDbtInd"), violations);
+        {
+            let snap = violations.len();
+            self.amt.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/Amt");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
+        }
+        {
+            let snap = violations.len();
+            self.cdt_dbt_ind.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/CdtDbtInd");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
+        }
         if let Some(ref val) = self.rvsl_ind {
-            val.validate_constraints(&format!("{path}/RvslInd"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/RvslInd");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
-        self.sts
-            .inner
-            .validate_constraints(&format!("{path}/Sts"), violations);
+        {
+            let snap = violations.len();
+            self.sts.inner.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/Sts");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
+        }
         if let Some(ref wrapper) = self.bookg_dt {
-            wrapper
-                .inner
-                .validate_constraints(&format!("{path}/BookgDt"), violations);
+            let snap = violations.len();
+            wrapper.inner.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/BookgDt");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
         if let Some(ref wrapper) = self.val_dt {
-            wrapper
-                .inner
-                .validate_constraints(&format!("{path}/ValDt"), violations);
+            let snap = violations.len();
+            wrapper.inner.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/ValDt");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
         if let Some(ref val) = self.acct_svcr_ref {
-            val.validate_constraints(&format!("{path}/AcctSvcrRef"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/AcctSvcrRef");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
-        for (i, item) in self.avlbty.iter().enumerate() {
-            item.validate_constraints(&format!("{path}/Avlbty[{i}]"), violations);
+        for (idx, elem) in self.avlbty.iter().enumerate() {
+            let snap = violations.len();
+            elem.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/Avlbty[{idx}]");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
-        self.bk_tx_cd
-            .validate_constraints(&format!("{path}/BkTxCd"), violations);
+        {
+            let snap = violations.len();
+            self.bk_tx_cd.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/BkTxCd");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
+        }
         if let Some(ref val) = self.comssn_wvr_ind {
-            val.validate_constraints(&format!("{path}/ComssnWvrInd"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/ComssnWvrInd");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
         if let Some(ref val) = self.addtl_inf_ind {
-            val.validate_constraints(&format!("{path}/AddtlInfInd"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/AddtlInfInd");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
         if let Some(ref val) = self.amt_dtls {
-            val.validate_constraints(&format!("{path}/AmtDtls"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/AmtDtls");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
         if let Some(ref val) = self.chrgs {
-            val.validate_constraints(&format!("{path}/Chrgs"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/Chrgs");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
         if let Some(ref wrapper) = self.tech_inpt_chanl {
-            wrapper
-                .inner
-                .validate_constraints(&format!("{path}/TechInptChanl"), violations);
+            let snap = violations.len();
+            wrapper.inner.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/TechInptChanl");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
         if let Some(ref val) = self.intrst {
-            val.validate_constraints(&format!("{path}/Intrst"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/Intrst");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
         if let Some(ref val) = self.card_tx {
-            val.validate_constraints(&format!("{path}/CardTx"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/CardTx");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
-        for (i, item) in self.ntry_dtls.iter().enumerate() {
-            item.validate_constraints(&format!("{path}/NtryDtls[{i}]"), violations);
+        for (idx, elem) in self.ntry_dtls.iter().enumerate() {
+            let snap = violations.len();
+            elem.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/NtryDtls[{idx}]");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
         if let Some(ref val) = self.addtl_ntry_inf {
-            val.validate_constraints(&format!("{path}/AddtlNtryInf"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/AddtlNtryInf");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
     }
 }
@@ -23671,10 +26029,24 @@ impl crate::common::validate::Validatable for ReportingSource1Choice {
     ) {
         match self {
             Self::Cd(inner) => {
-                inner.validate_constraints(&format!("{path}/Cd"), violations);
+                let snap = violations.len();
+                inner.validate_constraints("", violations);
+                if violations.len() > snap {
+                    let pfx = format!("{path}/Cd");
+                    for v in &mut violations[snap..] {
+                        v.path.insert_str(0, &pfx);
+                    }
+                }
             }
             Self::Prtry(inner) => {
-                inner.validate_constraints(&format!("{path}/Prtry"), violations);
+                let snap = violations.len();
+                inner.validate_constraints("", violations);
+                if violations.len() > snap {
+                    let pfx = format!("{path}/Prtry");
+                    for v in &mut violations[snap..] {
+                        v.path.insert_str(0, &pfx);
+                    }
+                }
             }
         }
     }
@@ -23687,10 +26059,24 @@ impl crate::common::validate::Validatable for ReturnReason5Choice {
     ) {
         match self {
             Self::Cd(inner) => {
-                inner.validate_constraints(&format!("{path}/Cd"), violations);
+                let snap = violations.len();
+                inner.validate_constraints("", violations);
+                if violations.len() > snap {
+                    let pfx = format!("{path}/Cd");
+                    for v in &mut violations[snap..] {
+                        v.path.insert_str(0, &pfx);
+                    }
+                }
             }
             Self::Prtry(inner) => {
-                inner.validate_constraints(&format!("{path}/Prtry"), violations);
+                let snap = violations.len();
+                inner.validate_constraints("", violations);
+                if violations.len() > snap {
+                    let pfx = format!("{path}/Prtry");
+                    for v in &mut violations[snap..] {
+                        v.path.insert_str(0, &pfx);
+                    }
+                }
             }
         }
     }
@@ -23701,13 +26087,35 @@ impl crate::common::validate::Validatable for SecuritiesAccount19 {
         path: &str,
         violations: &mut Vec<crate::common::validate::ConstraintViolation>,
     ) {
-        self.id
-            .validate_constraints(&format!("{path}/Id"), violations);
+        {
+            let snap = violations.len();
+            self.id.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/Id");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
+        }
         if let Some(ref val) = self.tp {
-            val.validate_constraints(&format!("{path}/Tp"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/Tp");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
         if let Some(ref val) = self.nm {
-            val.validate_constraints(&format!("{path}/Nm"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/Nm");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
     }
 }
@@ -23718,13 +26126,34 @@ impl crate::common::validate::Validatable for SecurityIdentification19 {
         violations: &mut Vec<crate::common::validate::ConstraintViolation>,
     ) {
         if let Some(ref val) = self.isin {
-            val.validate_constraints(&format!("{path}/ISIN"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/ISIN");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
-        for (i, item) in self.othr_id.iter().enumerate() {
-            item.validate_constraints(&format!("{path}/OthrId[{i}]"), violations);
+        for (idx, elem) in self.othr_id.iter().enumerate() {
+            let snap = violations.len();
+            elem.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/OthrId[{idx}]");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
         if let Some(ref val) = self.desc {
-            val.validate_constraints(&format!("{path}/Desc"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/Desc");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
     }
 }
@@ -23734,10 +26163,26 @@ impl crate::common::validate::Validatable for SequenceRange1 {
         path: &str,
         violations: &mut Vec<crate::common::validate::ConstraintViolation>,
     ) {
-        self.fr_seq
-            .validate_constraints(&format!("{path}/FrSeq"), violations);
-        self.to_seq
-            .validate_constraints(&format!("{path}/ToSeq"), violations);
+        {
+            let snap = violations.len();
+            self.fr_seq.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/FrSeq");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
+        }
+        {
+            let snap = violations.len();
+            self.to_seq.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/ToSeq");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
+        }
     }
 }
 impl crate::common::validate::Validatable for SequenceRange1Choice {
@@ -23748,19 +26193,54 @@ impl crate::common::validate::Validatable for SequenceRange1Choice {
     ) {
         match self {
             Self::FrSeq(inner) => {
-                inner.validate_constraints(&format!("{path}/FrSeq"), violations);
+                let snap = violations.len();
+                inner.validate_constraints("", violations);
+                if violations.len() > snap {
+                    let pfx = format!("{path}/FrSeq");
+                    for v in &mut violations[snap..] {
+                        v.path.insert_str(0, &pfx);
+                    }
+                }
             }
             Self::ToSeq(inner) => {
-                inner.validate_constraints(&format!("{path}/ToSeq"), violations);
+                let snap = violations.len();
+                inner.validate_constraints("", violations);
+                if violations.len() > snap {
+                    let pfx = format!("{path}/ToSeq");
+                    for v in &mut violations[snap..] {
+                        v.path.insert_str(0, &pfx);
+                    }
+                }
             }
             Self::FrToSeq(inner) => {
-                inner.validate_constraints(&format!("{path}/FrToSeq"), violations);
+                let snap = violations.len();
+                inner.validate_constraints("", violations);
+                if violations.len() > snap {
+                    let pfx = format!("{path}/FrToSeq");
+                    for v in &mut violations[snap..] {
+                        v.path.insert_str(0, &pfx);
+                    }
+                }
             }
             Self::EQSeq(inner) => {
-                inner.validate_constraints(&format!("{path}/EQSeq"), violations);
+                let snap = violations.len();
+                inner.validate_constraints("", violations);
+                if violations.len() > snap {
+                    let pfx = format!("{path}/EQSeq");
+                    for v in &mut violations[snap..] {
+                        v.path.insert_str(0, &pfx);
+                    }
+                }
             }
             Self::NEQSeq(inner) => {
-                inner.validate_constraints(&format!("{path}/NEQSeq"), violations);
+                let snap = violations.len();
+                inner.validate_constraints("", violations);
+                if violations.len() > snap {
+                    let pfx = format!("{path}/NEQSeq");
+                    for v in &mut violations[snap..] {
+                        v.path.insert_str(0, &pfx);
+                    }
+                }
             }
         }
     }
@@ -23773,10 +26253,24 @@ impl crate::common::validate::Validatable for ServiceLevel8Choice {
     ) {
         match self {
             Self::Cd(inner) => {
-                inner.validate_constraints(&format!("{path}/Cd"), violations);
+                let snap = violations.len();
+                inner.validate_constraints("", violations);
+                if violations.len() > snap {
+                    let pfx = format!("{path}/Cd");
+                    for v in &mut violations[snap..] {
+                        v.path.insert_str(0, &pfx);
+                    }
+                }
             }
             Self::Prtry(inner) => {
-                inner.validate_constraints(&format!("{path}/Prtry"), violations);
+                let snap = violations.len();
+                inner.validate_constraints("", violations);
+                if violations.len() > snap {
+                    let pfx = format!("{path}/Prtry");
+                    for v in &mut violations[snap..] {
+                        v.path.insert_str(0, &pfx);
+                    }
+                }
             }
         }
     }
@@ -23787,29 +26281,85 @@ impl crate::common::validate::Validatable for StructuredRemittanceInformation17 
         path: &str,
         violations: &mut Vec<crate::common::validate::ConstraintViolation>,
     ) {
-        for (i, item) in self.rfrd_doc_inf.iter().enumerate() {
-            item.validate_constraints(&format!("{path}/RfrdDocInf[{i}]"), violations);
+        for (idx, elem) in self.rfrd_doc_inf.iter().enumerate() {
+            let snap = violations.len();
+            elem.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/RfrdDocInf[{idx}]");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
         if let Some(ref val) = self.rfrd_doc_amt {
-            val.validate_constraints(&format!("{path}/RfrdDocAmt"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/RfrdDocAmt");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
         if let Some(ref val) = self.cdtr_ref_inf {
-            val.validate_constraints(&format!("{path}/CdtrRefInf"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/CdtrRefInf");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
         if let Some(ref val) = self.invcr {
-            val.validate_constraints(&format!("{path}/Invcr"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/Invcr");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
         if let Some(ref val) = self.invcee {
-            val.validate_constraints(&format!("{path}/Invcee"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/Invcee");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
         if let Some(ref val) = self.tax_rmt {
-            val.validate_constraints(&format!("{path}/TaxRmt"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/TaxRmt");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
         if let Some(ref val) = self.grnshmt_rmt {
-            val.validate_constraints(&format!("{path}/GrnshmtRmt"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/GrnshmtRmt");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
-        for (i, item) in self.addtl_rmt_inf.iter().enumerate() {
-            item.validate_constraints(&format!("{path}/AddtlRmtInf[{i}]"), violations);
+        for (idx, elem) in self.addtl_rmt_inf.iter().enumerate() {
+            let snap = violations.len();
+            elem.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/AddtlRmtInf[{idx}]");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
     }
 }
@@ -23820,10 +26370,25 @@ impl crate::common::validate::Validatable for SupplementaryData1 {
         violations: &mut Vec<crate::common::validate::ConstraintViolation>,
     ) {
         if let Some(ref val) = self.plc_and_nm {
-            val.validate_constraints(&format!("{path}/PlcAndNm"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/PlcAndNm");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
-        self.envlp
-            .validate_constraints(&format!("{path}/Envlp"), violations);
+        {
+            let snap = violations.len();
+            self.envlp.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/Envlp");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
+        }
     }
 }
 impl crate::common::validate::Validatable for SupplementaryDataEnvelope1 {
@@ -23841,16 +26406,44 @@ impl crate::common::validate::Validatable for TaxAmount3 {
         violations: &mut Vec<crate::common::validate::ConstraintViolation>,
     ) {
         if let Some(ref val) = self.rate {
-            val.validate_constraints(&format!("{path}/Rate"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/Rate");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
         if let Some(ref val) = self.taxbl_base_amt {
-            val.validate_constraints(&format!("{path}/TaxblBaseAmt"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/TaxblBaseAmt");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
         if let Some(ref val) = self.ttl_amt {
-            val.validate_constraints(&format!("{path}/TtlAmt"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/TtlAmt");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
-        for (i, item) in self.dtls.iter().enumerate() {
-            item.validate_constraints(&format!("{path}/Dtls[{i}]"), violations);
+        for (idx, elem) in self.dtls.iter().enumerate() {
+            let snap = violations.len();
+            elem.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/Dtls[{idx}]");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
     }
 }
@@ -23861,12 +26454,25 @@ impl crate::common::validate::Validatable for TaxAmountAndType1 {
         violations: &mut Vec<crate::common::validate::ConstraintViolation>,
     ) {
         if let Some(ref wrapper) = self.tp {
-            wrapper
-                .inner
-                .validate_constraints(&format!("{path}/Tp"), violations);
+            let snap = violations.len();
+            wrapper.inner.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/Tp");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
-        self.amt
-            .validate_constraints(&format!("{path}/Amt"), violations);
+        {
+            let snap = violations.len();
+            self.amt.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/Amt");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
+        }
     }
 }
 impl crate::common::validate::Validatable for TaxAmountType1Choice {
@@ -23877,10 +26483,24 @@ impl crate::common::validate::Validatable for TaxAmountType1Choice {
     ) {
         match self {
             Self::Cd(inner) => {
-                inner.validate_constraints(&format!("{path}/Cd"), violations);
+                let snap = violations.len();
+                inner.validate_constraints("", violations);
+                if violations.len() > snap {
+                    let pfx = format!("{path}/Cd");
+                    for v in &mut violations[snap..] {
+                        v.path.insert_str(0, &pfx);
+                    }
+                }
             }
             Self::Prtry(inner) => {
-                inner.validate_constraints(&format!("{path}/Prtry"), violations);
+                let snap = violations.len();
+                inner.validate_constraints("", violations);
+                if violations.len() > snap {
+                    let pfx = format!("{path}/Prtry");
+                    for v in &mut violations[snap..] {
+                        v.path.insert_str(0, &pfx);
+                    }
+                }
             }
         }
     }
@@ -23892,10 +26512,24 @@ impl crate::common::validate::Validatable for TaxAuthorisation1 {
         violations: &mut Vec<crate::common::validate::ConstraintViolation>,
     ) {
         if let Some(ref val) = self.titl {
-            val.validate_constraints(&format!("{path}/Titl"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/Titl");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
         if let Some(ref val) = self.nm {
-            val.validate_constraints(&format!("{path}/Nm"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/Nm");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
     }
 }
@@ -23906,13 +26540,34 @@ impl crate::common::validate::Validatable for TaxCharges2 {
         violations: &mut Vec<crate::common::validate::ConstraintViolation>,
     ) {
         if let Some(ref val) = self.id {
-            val.validate_constraints(&format!("{path}/Id"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/Id");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
         if let Some(ref val) = self.rate {
-            val.validate_constraints(&format!("{path}/Rate"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/Rate");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
         if let Some(ref val) = self.amt {
-            val.validate_constraints(&format!("{path}/Amt"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/Amt");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
     }
 }
@@ -23923,37 +26578,114 @@ impl crate::common::validate::Validatable for TaxData1 {
         violations: &mut Vec<crate::common::validate::ConstraintViolation>,
     ) {
         if let Some(ref val) = self.cdtr {
-            val.validate_constraints(&format!("{path}/Cdtr"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/Cdtr");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
         if let Some(ref val) = self.dbtr {
-            val.validate_constraints(&format!("{path}/Dbtr"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/Dbtr");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
         if let Some(ref val) = self.ultmt_dbtr {
-            val.validate_constraints(&format!("{path}/UltmtDbtr"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/UltmtDbtr");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
         if let Some(ref val) = self.admstn_zone {
-            val.validate_constraints(&format!("{path}/AdmstnZone"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/AdmstnZone");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
         if let Some(ref val) = self.ref_nb {
-            val.validate_constraints(&format!("{path}/RefNb"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/RefNb");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
         if let Some(ref val) = self.mtd {
-            val.validate_constraints(&format!("{path}/Mtd"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/Mtd");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
         if let Some(ref val) = self.ttl_taxbl_base_amt {
-            val.validate_constraints(&format!("{path}/TtlTaxblBaseAmt"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/TtlTaxblBaseAmt");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
         if let Some(ref val) = self.ttl_tax_amt {
-            val.validate_constraints(&format!("{path}/TtlTaxAmt"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/TtlTaxAmt");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
         if let Some(ref val) = self.dt {
-            val.validate_constraints(&format!("{path}/Dt"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/Dt");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
         if let Some(ref val) = self.seq_nb {
-            val.validate_constraints(&format!("{path}/SeqNb"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/SeqNb");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
-        for (i, item) in self.rcrd.iter().enumerate() {
-            item.validate_constraints(&format!("{path}/Rcrd[{i}]"), violations);
+        for (idx, elem) in self.rcrd.iter().enumerate() {
+            let snap = violations.len();
+            elem.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/Rcrd[{idx}]");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
     }
 }
@@ -23964,34 +26696,104 @@ impl crate::common::validate::Validatable for TaxInformation10 {
         violations: &mut Vec<crate::common::validate::ConstraintViolation>,
     ) {
         if let Some(ref val) = self.cdtr {
-            val.validate_constraints(&format!("{path}/Cdtr"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/Cdtr");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
         if let Some(ref val) = self.dbtr {
-            val.validate_constraints(&format!("{path}/Dbtr"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/Dbtr");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
         if let Some(ref val) = self.admstn_zone {
-            val.validate_constraints(&format!("{path}/AdmstnZone"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/AdmstnZone");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
         if let Some(ref val) = self.ref_nb {
-            val.validate_constraints(&format!("{path}/RefNb"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/RefNb");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
         if let Some(ref val) = self.mtd {
-            val.validate_constraints(&format!("{path}/Mtd"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/Mtd");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
         if let Some(ref val) = self.ttl_taxbl_base_amt {
-            val.validate_constraints(&format!("{path}/TtlTaxblBaseAmt"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/TtlTaxblBaseAmt");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
         if let Some(ref val) = self.ttl_tax_amt {
-            val.validate_constraints(&format!("{path}/TtlTaxAmt"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/TtlTaxAmt");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
         if let Some(ref val) = self.dt {
-            val.validate_constraints(&format!("{path}/Dt"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/Dt");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
         if let Some(ref val) = self.seq_nb {
-            val.validate_constraints(&format!("{path}/SeqNb"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/SeqNb");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
-        for (i, item) in self.rcrd.iter().enumerate() {
-            item.validate_constraints(&format!("{path}/Rcrd[{i}]"), violations);
+        for (idx, elem) in self.rcrd.iter().enumerate() {
+            let snap = violations.len();
+            elem.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/Rcrd[{idx}]");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
     }
 }
@@ -24002,13 +26804,34 @@ impl crate::common::validate::Validatable for TaxParty1 {
         violations: &mut Vec<crate::common::validate::ConstraintViolation>,
     ) {
         if let Some(ref val) = self.tax_id {
-            val.validate_constraints(&format!("{path}/TaxId"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/TaxId");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
         if let Some(ref val) = self.regn_id {
-            val.validate_constraints(&format!("{path}/RegnId"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/RegnId");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
         if let Some(ref val) = self.tax_tp {
-            val.validate_constraints(&format!("{path}/TaxTp"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/TaxTp");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
     }
 }
@@ -24019,16 +26842,44 @@ impl crate::common::validate::Validatable for TaxParty2 {
         violations: &mut Vec<crate::common::validate::ConstraintViolation>,
     ) {
         if let Some(ref val) = self.tax_id {
-            val.validate_constraints(&format!("{path}/TaxId"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/TaxId");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
         if let Some(ref val) = self.regn_id {
-            val.validate_constraints(&format!("{path}/RegnId"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/RegnId");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
         if let Some(ref val) = self.tax_tp {
-            val.validate_constraints(&format!("{path}/TaxTp"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/TaxTp");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
         if let Some(ref val) = self.authstn {
-            val.validate_constraints(&format!("{path}/Authstn"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/Authstn");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
     }
 }
@@ -24039,13 +26890,34 @@ impl crate::common::validate::Validatable for TaxPeriod3 {
         violations: &mut Vec<crate::common::validate::ConstraintViolation>,
     ) {
         if let Some(ref val) = self.yr {
-            val.validate_constraints(&format!("{path}/Yr"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/Yr");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
         if let Some(ref val) = self.tp {
-            val.validate_constraints(&format!("{path}/Tp"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/Tp");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
         if let Some(ref val) = self.fr_to_dt {
-            val.validate_constraints(&format!("{path}/FrToDt"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/FrToDt");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
     }
 }
@@ -24056,31 +26928,94 @@ impl crate::common::validate::Validatable for TaxRecord3 {
         violations: &mut Vec<crate::common::validate::ConstraintViolation>,
     ) {
         if let Some(ref val) = self.tp {
-            val.validate_constraints(&format!("{path}/Tp"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/Tp");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
         if let Some(ref val) = self.ctgy {
-            val.validate_constraints(&format!("{path}/Ctgy"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/Ctgy");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
         if let Some(ref val) = self.ctgy_dtls {
-            val.validate_constraints(&format!("{path}/CtgyDtls"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/CtgyDtls");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
         if let Some(ref val) = self.dbtr_sts {
-            val.validate_constraints(&format!("{path}/DbtrSts"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/DbtrSts");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
         if let Some(ref val) = self.cert_id {
-            val.validate_constraints(&format!("{path}/CertId"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/CertId");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
         if let Some(ref val) = self.frms_cd {
-            val.validate_constraints(&format!("{path}/FrmsCd"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/FrmsCd");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
         if let Some(ref val) = self.prd {
-            val.validate_constraints(&format!("{path}/Prd"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/Prd");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
         if let Some(ref val) = self.tax_amt {
-            val.validate_constraints(&format!("{path}/TaxAmt"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/TaxAmt");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
         if let Some(ref val) = self.addtl_inf {
-            val.validate_constraints(&format!("{path}/AddtlInf"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/AddtlInf");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
     }
 }
@@ -24091,10 +27026,25 @@ impl crate::common::validate::Validatable for TaxRecordDetails3 {
         violations: &mut Vec<crate::common::validate::ConstraintViolation>,
     ) {
         if let Some(ref val) = self.prd {
-            val.validate_constraints(&format!("{path}/Prd"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/Prd");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
-        self.amt
-            .validate_constraints(&format!("{path}/Amt"), violations);
+        {
+            let snap = violations.len();
+            self.amt.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/Amt");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
+        }
     }
 }
 impl crate::common::validate::Validatable for TechnicalInputChannel1Choice {
@@ -24105,10 +27055,24 @@ impl crate::common::validate::Validatable for TechnicalInputChannel1Choice {
     ) {
         match self {
             Self::Cd(inner) => {
-                inner.validate_constraints(&format!("{path}/Cd"), violations);
+                let snap = violations.len();
+                inner.validate_constraints("", violations);
+                if violations.len() > snap {
+                    let pfx = format!("{path}/Cd");
+                    for v in &mut violations[snap..] {
+                        v.path.insert_str(0, &pfx);
+                    }
+                }
             }
             Self::Prtry(inner) => {
-                inner.validate_constraints(&format!("{path}/Prtry"), violations);
+                let snap = violations.len();
+                inner.validate_constraints("", violations);
+                if violations.len() > snap {
+                    let pfx = format!("{path}/Prtry");
+                    for v in &mut violations[snap..] {
+                        v.path.insert_str(0, &pfx);
+                    }
+                }
             }
         }
     }
@@ -24120,16 +27084,44 @@ impl crate::common::validate::Validatable for TotalTransactions6 {
         violations: &mut Vec<crate::common::validate::ConstraintViolation>,
     ) {
         if let Some(ref val) = self.ttl_ntries {
-            val.validate_constraints(&format!("{path}/TtlNtries"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/TtlNtries");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
         if let Some(ref val) = self.ttl_cdt_ntries {
-            val.validate_constraints(&format!("{path}/TtlCdtNtries"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/TtlCdtNtries");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
         if let Some(ref val) = self.ttl_dbt_ntries {
-            val.validate_constraints(&format!("{path}/TtlDbtNtries"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/TtlDbtNtries");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
-        for (i, item) in self.ttl_ntries_per_bk_tx_cd.iter().enumerate() {
-            item.validate_constraints(&format!("{path}/TtlNtriesPerBkTxCd[{i}]"), violations);
+        for (idx, elem) in self.ttl_ntries_per_bk_tx_cd.iter().enumerate() {
+            let snap = violations.len();
+            elem.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/TtlNtriesPerBkTxCd[{idx}]");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
     }
 }
@@ -24140,32 +27132,94 @@ impl crate::common::validate::Validatable for TotalsPerBankTransactionCode5 {
         violations: &mut Vec<crate::common::validate::ConstraintViolation>,
     ) {
         if let Some(ref val) = self.nb_of_ntries {
-            val.validate_constraints(&format!("{path}/NbOfNtries"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/NbOfNtries");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
         if let Some(ref val) = self.sum {
-            val.validate_constraints(&format!("{path}/Sum"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/Sum");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
         if let Some(ref val) = self.ttl_net_ntry {
-            val.validate_constraints(&format!("{path}/TtlNetNtry"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/TtlNetNtry");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
         if let Some(ref val) = self.cdt_ntries {
-            val.validate_constraints(&format!("{path}/CdtNtries"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/CdtNtries");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
         if let Some(ref val) = self.dbt_ntries {
-            val.validate_constraints(&format!("{path}/DbtNtries"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/DbtNtries");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
         if let Some(ref val) = self.fcst_ind {
-            val.validate_constraints(&format!("{path}/FcstInd"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/FcstInd");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
-        self.bk_tx_cd
-            .validate_constraints(&format!("{path}/BkTxCd"), violations);
-        for (i, item) in self.avlbty.iter().enumerate() {
-            item.validate_constraints(&format!("{path}/Avlbty[{i}]"), violations);
+        {
+            let snap = violations.len();
+            self.bk_tx_cd.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/BkTxCd");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
+        }
+        for (idx, elem) in self.avlbty.iter().enumerate() {
+            let snap = violations.len();
+            elem.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/Avlbty[{idx}]");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
         if let Some(ref wrapper) = self.dt {
-            wrapper
-                .inner
-                .validate_constraints(&format!("{path}/Dt"), violations);
+            let snap = violations.len();
+            wrapper.inner.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/Dt");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
     }
 }
@@ -24176,10 +27230,25 @@ impl crate::common::validate::Validatable for TrackData1 {
         violations: &mut Vec<crate::common::validate::ConstraintViolation>,
     ) {
         if let Some(ref val) = self.trck_nb {
-            val.validate_constraints(&format!("{path}/TrckNb"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/TrckNb");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
-        self.trck_val
-            .validate_constraints(&format!("{path}/TrckVal"), violations);
+        {
+            let snap = violations.len();
+            self.trck_val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/TrckVal");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
+        }
     }
 }
 impl crate::common::validate::Validatable for TransactionAgents5 {
@@ -24189,40 +27258,124 @@ impl crate::common::validate::Validatable for TransactionAgents5 {
         violations: &mut Vec<crate::common::validate::ConstraintViolation>,
     ) {
         if let Some(ref val) = self.instg_agt {
-            val.validate_constraints(&format!("{path}/InstgAgt"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/InstgAgt");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
         if let Some(ref val) = self.instd_agt {
-            val.validate_constraints(&format!("{path}/InstdAgt"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/InstdAgt");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
         if let Some(ref val) = self.dbtr_agt {
-            val.validate_constraints(&format!("{path}/DbtrAgt"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/DbtrAgt");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
         if let Some(ref val) = self.cdtr_agt {
-            val.validate_constraints(&format!("{path}/CdtrAgt"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/CdtrAgt");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
         if let Some(ref val) = self.intrmy_agt1 {
-            val.validate_constraints(&format!("{path}/IntrmyAgt1"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/IntrmyAgt1");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
         if let Some(ref val) = self.intrmy_agt2 {
-            val.validate_constraints(&format!("{path}/IntrmyAgt2"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/IntrmyAgt2");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
         if let Some(ref val) = self.intrmy_agt3 {
-            val.validate_constraints(&format!("{path}/IntrmyAgt3"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/IntrmyAgt3");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
         if let Some(ref val) = self.rcvg_agt {
-            val.validate_constraints(&format!("{path}/RcvgAgt"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/RcvgAgt");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
         if let Some(ref val) = self.dlvrg_agt {
-            val.validate_constraints(&format!("{path}/DlvrgAgt"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/DlvrgAgt");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
         if let Some(ref val) = self.issg_agt {
-            val.validate_constraints(&format!("{path}/IssgAgt"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/IssgAgt");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
         if let Some(ref val) = self.sttlm_plc {
-            val.validate_constraints(&format!("{path}/SttlmPlc"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/SttlmPlc");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
-        for (i, item) in self.prtry.iter().enumerate() {
-            item.validate_constraints(&format!("{path}/Prtry[{i}]"), violations);
+        for (idx, elem) in self.prtry.iter().enumerate() {
+            let snap = violations.len();
+            elem.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/Prtry[{idx}]");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
     }
 }
@@ -24233,28 +27386,84 @@ impl crate::common::validate::Validatable for TransactionDates3 {
         violations: &mut Vec<crate::common::validate::ConstraintViolation>,
     ) {
         if let Some(ref val) = self.accptnc_dt_tm {
-            val.validate_constraints(&format!("{path}/AccptncDtTm"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/AccptncDtTm");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
         if let Some(ref val) = self.trad_actvty_ctrctl_sttlm_dt {
-            val.validate_constraints(&format!("{path}/TradActvtyCtrctlSttlmDt"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/TradActvtyCtrctlSttlmDt");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
         if let Some(ref val) = self.trad_dt {
-            val.validate_constraints(&format!("{path}/TradDt"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/TradDt");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
         if let Some(ref val) = self.intr_bk_sttlm_dt {
-            val.validate_constraints(&format!("{path}/IntrBkSttlmDt"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/IntrBkSttlmDt");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
         if let Some(ref val) = self.start_dt {
-            val.validate_constraints(&format!("{path}/StartDt"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/StartDt");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
         if let Some(ref val) = self.end_dt {
-            val.validate_constraints(&format!("{path}/EndDt"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/EndDt");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
         if let Some(ref val) = self.tx_dt_tm {
-            val.validate_constraints(&format!("{path}/TxDtTm"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/TxDtTm");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
-        for (i, item) in self.prtry.iter().enumerate() {
-            item.validate_constraints(&format!("{path}/Prtry[{i}]"), violations);
+        for (idx, elem) in self.prtry.iter().enumerate() {
+            let snap = violations.len();
+            elem.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/Prtry[{idx}]");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
     }
 }
@@ -24264,10 +27473,26 @@ impl crate::common::validate::Validatable for TransactionIdentifier1 {
         path: &str,
         violations: &mut Vec<crate::common::validate::ConstraintViolation>,
     ) {
-        self.tx_dt_tm
-            .validate_constraints(&format!("{path}/TxDtTm"), violations);
-        self.tx_ref
-            .validate_constraints(&format!("{path}/TxRef"), violations);
+        {
+            let snap = violations.len();
+            self.tx_dt_tm.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/TxDtTm");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
+        }
+        {
+            let snap = violations.len();
+            self.tx_ref.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/TxRef");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
+        }
     }
 }
 impl crate::common::validate::Validatable for TransactionInterest4 {
@@ -24277,10 +27502,24 @@ impl crate::common::validate::Validatable for TransactionInterest4 {
         violations: &mut Vec<crate::common::validate::ConstraintViolation>,
     ) {
         if let Some(ref val) = self.ttl_intrst_and_tax_amt {
-            val.validate_constraints(&format!("{path}/TtlIntrstAndTaxAmt"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/TtlIntrstAndTaxAmt");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
-        for (i, item) in self.rcrd.iter().enumerate() {
-            item.validate_constraints(&format!("{path}/Rcrd[{i}]"), violations);
+        for (idx, elem) in self.rcrd.iter().enumerate() {
+            let snap = violations.len();
+            elem.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/Rcrd[{idx}]");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
     }
 }
@@ -24291,43 +27530,94 @@ impl crate::common::validate::Validatable for TransactionParties9 {
         violations: &mut Vec<crate::common::validate::ConstraintViolation>,
     ) {
         if let Some(ref wrapper) = self.initg_pty {
-            wrapper
-                .inner
-                .validate_constraints(&format!("{path}/InitgPty"), violations);
+            let snap = violations.len();
+            wrapper.inner.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/InitgPty");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
         if let Some(ref wrapper) = self.dbtr {
-            wrapper
-                .inner
-                .validate_constraints(&format!("{path}/Dbtr"), violations);
+            let snap = violations.len();
+            wrapper.inner.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/Dbtr");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
         if let Some(ref val) = self.dbtr_acct {
-            val.validate_constraints(&format!("{path}/DbtrAcct"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/DbtrAcct");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
         if let Some(ref wrapper) = self.ultmt_dbtr {
-            wrapper
-                .inner
-                .validate_constraints(&format!("{path}/UltmtDbtr"), violations);
+            let snap = violations.len();
+            wrapper.inner.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/UltmtDbtr");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
         if let Some(ref wrapper) = self.cdtr {
-            wrapper
-                .inner
-                .validate_constraints(&format!("{path}/Cdtr"), violations);
+            let snap = violations.len();
+            wrapper.inner.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/Cdtr");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
         if let Some(ref val) = self.cdtr_acct {
-            val.validate_constraints(&format!("{path}/CdtrAcct"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/CdtrAcct");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
         if let Some(ref wrapper) = self.ultmt_cdtr {
-            wrapper
-                .inner
-                .validate_constraints(&format!("{path}/UltmtCdtr"), violations);
+            let snap = violations.len();
+            wrapper.inner.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/UltmtCdtr");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
         if let Some(ref wrapper) = self.tradg_pty {
-            wrapper
-                .inner
-                .validate_constraints(&format!("{path}/TradgPty"), violations);
+            let snap = violations.len();
+            wrapper.inner.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/TradgPty");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
-        for (i, item) in self.prtry.iter().enumerate() {
-            item.validate_constraints(&format!("{path}/Prtry[{i}]"), violations);
+        for (idx, elem) in self.prtry.iter().enumerate() {
+            let snap = violations.len();
+            elem.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/Prtry[{idx}]");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
     }
 }
@@ -24339,10 +27629,24 @@ impl crate::common::validate::Validatable for TransactionPrice4Choice {
     ) {
         match self {
             Self::DealPric(inner) => {
-                inner.validate_constraints(&format!("{path}/DealPric"), violations);
+                let snap = violations.len();
+                inner.validate_constraints("", violations);
+                if violations.len() > snap {
+                    let pfx = format!("{path}/DealPric");
+                    for v in &mut violations[snap..] {
+                        v.path.insert_str(0, &pfx);
+                    }
+                }
             }
             Self::Prtry(inner) => {
-                inner.validate_constraints(&format!("{path}/Prtry"), violations);
+                let snap = violations.len();
+                inner.validate_constraints("", violations);
+                if violations.len() > snap {
+                    let pfx = format!("{path}/Prtry");
+                    for v in &mut violations[snap..] {
+                        v.path.insert_str(0, &pfx);
+                    }
+                }
             }
         }
     }
@@ -24355,13 +27659,34 @@ impl crate::common::validate::Validatable for TransactionQuantities3Choice {
     ) {
         match self {
             Self::Qty(inner) => {
-                inner.validate_constraints(&format!("{path}/Qty"), violations);
+                let snap = violations.len();
+                inner.validate_constraints("", violations);
+                if violations.len() > snap {
+                    let pfx = format!("{path}/Qty");
+                    for v in &mut violations[snap..] {
+                        v.path.insert_str(0, &pfx);
+                    }
+                }
             }
             Self::OrgnlAndCurFaceAmt(inner) => {
-                inner.validate_constraints(&format!("{path}/OrgnlAndCurFaceAmt"), violations);
+                let snap = violations.len();
+                inner.validate_constraints("", violations);
+                if violations.len() > snap {
+                    let pfx = format!("{path}/OrgnlAndCurFaceAmt");
+                    for v in &mut violations[snap..] {
+                        v.path.insert_str(0, &pfx);
+                    }
+                }
             }
             Self::Prtry(inner) => {
-                inner.validate_constraints(&format!("{path}/Prtry"), violations);
+                let snap = violations.len();
+                inner.validate_constraints("", violations);
+                if violations.len() > snap {
+                    let pfx = format!("{path}/Prtry");
+                    for v in &mut violations[snap..] {
+                        v.path.insert_str(0, &pfx);
+                    }
+                }
             }
         }
     }
@@ -24373,49 +27698,154 @@ impl crate::common::validate::Validatable for TransactionReferences6 {
         violations: &mut Vec<crate::common::validate::ConstraintViolation>,
     ) {
         if let Some(ref val) = self.msg_id {
-            val.validate_constraints(&format!("{path}/MsgId"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/MsgId");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
         if let Some(ref val) = self.acct_svcr_ref {
-            val.validate_constraints(&format!("{path}/AcctSvcrRef"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/AcctSvcrRef");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
         if let Some(ref val) = self.pmt_inf_id {
-            val.validate_constraints(&format!("{path}/PmtInfId"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/PmtInfId");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
         if let Some(ref val) = self.instr_id {
-            val.validate_constraints(&format!("{path}/InstrId"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/InstrId");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
         if let Some(ref val) = self.end_to_end_id {
-            val.validate_constraints(&format!("{path}/EndToEndId"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/EndToEndId");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
         if let Some(ref val) = self.uetr {
-            val.validate_constraints(&format!("{path}/UETR"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/UETR");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
         if let Some(ref val) = self.tx_id {
-            val.validate_constraints(&format!("{path}/TxId"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/TxId");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
         if let Some(ref val) = self.mndt_id {
-            val.validate_constraints(&format!("{path}/MndtId"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/MndtId");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
         if let Some(ref val) = self.chq_nb {
-            val.validate_constraints(&format!("{path}/ChqNb"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/ChqNb");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
         if let Some(ref val) = self.clr_sys_ref {
-            val.validate_constraints(&format!("{path}/ClrSysRef"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/ClrSysRef");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
         if let Some(ref val) = self.acct_ownr_tx_id {
-            val.validate_constraints(&format!("{path}/AcctOwnrTxId"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/AcctOwnrTxId");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
         if let Some(ref val) = self.acct_svcr_tx_id {
-            val.validate_constraints(&format!("{path}/AcctSvcrTxId"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/AcctSvcrTxId");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
         if let Some(ref val) = self.mkt_infrstrctr_tx_id {
-            val.validate_constraints(&format!("{path}/MktInfrstrctrTxId"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/MktInfrstrctrTxId");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
         if let Some(ref val) = self.prcg_id {
-            val.validate_constraints(&format!("{path}/PrcgId"), violations);
+            let snap = violations.len();
+            val.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/PrcgId");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
-        for (i, item) in self.prtry.iter().enumerate() {
-            item.validate_constraints(&format!("{path}/Prtry[{i}]"), violations);
+        for (idx, elem) in self.prtry.iter().enumerate() {
+            let snap = violations.len();
+            elem.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}/Prtry[{idx}]");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
     }
 }
@@ -24427,10 +27857,24 @@ impl crate::common::validate::Validatable for YieldedOrValueType1Choice {
     ) {
         match self {
             Self::Yldd(inner) => {
-                inner.validate_constraints(&format!("{path}/Yldd"), violations);
+                let snap = violations.len();
+                inner.validate_constraints("", violations);
+                if violations.len() > snap {
+                    let pfx = format!("{path}/Yldd");
+                    for v in &mut violations[snap..] {
+                        v.path.insert_str(0, &pfx);
+                    }
+                }
             }
             Self::ValTp(inner) => {
-                inner.validate_constraints(&format!("{path}/ValTp"), violations);
+                let snap = violations.len();
+                inner.validate_constraints("", violations);
+                if violations.len() > snap {
+                    let pfx = format!("{path}/ValTp");
+                    for v in &mut violations[snap..] {
+                        v.path.insert_str(0, &pfx);
+                    }
+                }
             }
         }
     }

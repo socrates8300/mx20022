@@ -1,0 +1,80 @@
+{
+  "metadata": {
+    "task_short": "perf-analysis",
+    "agent_abbr": "perf",
+    "datetime_utc": "2026-03-03T00:00:00Z",
+    "filename": "2026-03-03T00-00-00Z__perf-analysis__perf.json",
+    "supersedes": null,
+    "version": "1.0"
+  },
+  "state": {
+    "objectives": [
+      "Analyze performance characteristics of the mx20022 Rust ISO 20022 library",
+      "Identify bottlenecks in parsing, validation, and code generation output",
+      "Provide ranked optimization recommendations with estimated impact"
+    ],
+    "constraints": [
+      "MSRV 1.75.0, no unsafe_code",
+      "Generated code in mx20022-model/src/generated/ is machine-written",
+      "quick-xml 0.37 with serialize feature, serde 1"
+    ],
+    "important_facts": [
+      "270K lines of generated code across 18 files, 31s compile time for model crate alone",
+      "6,826 format! path allocations in validate_constraints impls across generated code",
+      "4,036 .chars().count() calls in generated validation code (O(n) vs .len() which is O(1) for ASCII)",
+      "parse_pacs008: 9.4us, serialize: 4.0us, detect_message_type: 172ns",
+      "validate_iban: 550ns (allocates String for canonical form), validate_bic: 34ns (byte-level, zero-alloc)",
+      "fednow_validate_pacs008: 8.1us (xml_scan string scanning), sepa_validate_pacs008: 11us",
+      "mt103 roundtrip: 8.1us, mt103_to_pacs008: 2.1us, pacs008_to_mt103: 1.3us",
+      "rule_registry_with_defaults: 600ns (8 Box<dyn Rule> allocations)",
+      "All newtype structs use String (heap alloc) even for 3-char currency codes",
+      "ConstraintSet uses Vec<FieldConstraint> with linear scan for path lookups",
+      "SEPA charset check calls is_sepa_charset(&c.to_string()) per character (String alloc per char)",
+      "xml_scan extract functions allocate String via .to_owned() on every match"
+    ],
+    "decisions_made": [],
+    "artifacts": [],
+    "dependencies": [],
+    "risks_issues": [
+      "270K generated LoC drives 31s compile: may worsen as more schemas added",
+      "validate_constraints uses format! for every field path traversal even when no violations exist"
+    ]
+  },
+  "iteration": {
+    "summary": "Performed comprehensive performance analysis of the mx20022 workspace. Ran all three benchmark suites (parse, validate, translate). Identified critical issues in generated code (excessive format! allocations in validate_constraints, .chars().count() instead of .len()), validation code (IBAN allocates String for canonical form, SEPA charset check allocates String per character), and XML scan utilities (allocate on every extract). Compile time for model crate is 31s due to 270K lines of generated code.",
+    "inputs_consulted": [
+      "All source files in mx20022-parse/src/",
+      "All source files in mx20022-validate/src/",
+      "All benchmark files in */benches/",
+      "Generated model file pacs_008_001_13.rs (15,867 lines)",
+      "Common validate.rs, choice.rs, builder.rs",
+      "Workspace Cargo.toml"
+    ],
+    "outputs_produced": [
+      "Performance analysis report (this context + user-facing summary)"
+    ],
+    "next_actions": [
+      "Implement lazy path construction in validate_constraints (defer format! until violation found)",
+      "Replace .chars().count() with .len() for ASCII-only fields in codegen",
+      "Rewrite IBAN validation to avoid String allocation for canonical form",
+      "Add is_sepa_char(c: char) function to avoid per-character String allocation",
+      "Consider SmallString/ArrayString for short newtypes (currency codes, country codes)",
+      "Index ConstraintSet by path using HashMap instead of Vec linear scan",
+      "Evaluate feature-gating generated schemas to improve incremental compile"
+    ]
+  },
+  "cross_agent_notes": {
+    "mentions": [
+      {
+        "agent_abbr": "rust",
+        "filename": "2026-03-02T21-30-00Z__examples-benchmarks__rust.json",
+        "relevance_note": "Created the benchmark suites used in this analysis"
+      },
+      {
+        "agent_abbr": "rust",
+        "filename": "2026-03-02T23-45-48Z__mx20022-parse__rust.json",
+        "relevance_note": "Built parse crate; ChoiceWrapper adds indirection relevant to perf"
+      }
+    ]
+  }
+}

@@ -29,6 +29,8 @@ pub enum ValidateError {
     Parse(mx20022_parse::ParseError),
     /// An unknown scheme was specified with `--scheme`.
     UnknownScheme(String),
+    /// Validation completed but errors were found.
+    ValidationFailed { error_count: usize },
 }
 
 impl std::fmt::Display for ValidateError {
@@ -41,6 +43,9 @@ impl std::fmt::Display for ValidateError {
                     f,
                     "unknown scheme `{s}`; expected one of: fednow, sepa, cbpr"
                 )
+            }
+            ValidateError::ValidationFailed { error_count } => {
+                write!(f, "{error_count} validation error(s) found")
             }
         }
     }
@@ -63,7 +68,7 @@ impl std::error::Error for ValidateError {
         match self {
             ValidateError::Io(e) => Some(e),
             ValidateError::Parse(e) => Some(e),
-            ValidateError::UnknownScheme(_) => None,
+            ValidateError::UnknownScheme(_) | ValidateError::ValidationFailed { .. } => None,
         }
     }
 }
@@ -262,11 +267,7 @@ pub fn run(file: &Path, scheme: Option<&str>) -> Result<(), ValidateError> {
 
     if !result.is_valid() {
         // Signal failure to the caller which will call std::process::exit(1).
-        return Err(ValidateError::Parse(
-            mx20022_parse::ParseError::InvalidEnvelope(format!(
-                "{error_count} validation error(s) found"
-            )),
-        ));
+        return Err(ValidateError::ValidationFailed { error_count });
     }
 
     Ok(())
