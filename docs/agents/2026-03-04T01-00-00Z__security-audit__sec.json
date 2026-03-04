@@ -1,0 +1,70 @@
+{
+  "metadata": {
+    "task_short": "security-audit",
+    "agent_abbr": "sec",
+    "datetime_utc": "2026-03-04T01:00:00Z",
+    "filename": "2026-03-04T01-00-00Z__security-audit__sec.json",
+    "supersedes": "2026-03-03T00-00-00Z__security-audit__sec.json",
+    "version": "1.0"
+  },
+  "state": {
+    "objectives": [
+      "Comprehensive security audit of mx20022 ISO 20022 financial message library",
+      "Check OWASP Top 10, XXE, unsafe code, dependency vulnerabilities, input validation, financial arithmetic, CLI handling, error info leakage"
+    ],
+    "constraints": [
+      "Rust workspace with 7 crates",
+      "Financial message parsing library (ISO 20022, SWIFT MT)",
+      "MSRV 1.75.0, Edition 2021"
+    ],
+    "important_facts": [
+      "unsafe_code = forbid at workspace level - confirmed zero unsafe blocks",
+      "quick-xml 0.37.5 does not support external entity resolution - safe against XXE",
+      "SEPA validator uses f64 for amount boundary comparison (lines 186-227 in sepa.rs)",
+      "FedNow validator correctly uses integer-cent arithmetic via parse_amount_cents()",
+      "SEPA typed path also uses f64 (lines 443-484 in sepa.rs)",
+      "No input size limits on CLI file reads (std::fs::read_to_string unbounded)",
+      "Error messages include user-controlled values in validation errors",
+      "PatternRule accepts arbitrary regex patterns in new() - but only codegen-sourced",
+      "xml_scan uses string search not full XML parsing - correct for flat ISO 20022 structure",
+      "deny.toml properly configured: unknown-registry=deny, unknown-git=deny, source restrictions active",
+      "No secrets, credentials, or hardcoded keys found in codebase"
+    ],
+    "decisions_made": [],
+    "artifacts": [
+      "docs/agents/2026-03-04T01-00-00Z__security-audit__sec.json"
+    ],
+    "dependencies": [],
+    "risks_issues": [
+      "MEDIUM: SEPA f64 amount comparison could misclassify boundary amounts (sepa.rs:186-227, 443-484)",
+      "LOW: No file size limits in CLI commands - potential OOM with very large files (main.rs, validate.rs:146, inspect.rs:56, translate.rs:125)",
+      "LOW: Validation error messages echo user input values - minor info exposure for logs",
+      "LOW: xml_scan string-based parsing could be confused by XML comments/CDATA containing tag-like patterns",
+      "INFO: PatternRule::new() compiles arbitrary regex - safe because patterns come from XSD codegen, not runtime user input"
+    ]
+  },
+  "iteration": {
+    "summary": "Performed deep security audit of all 7 crates. Read and analyzed every source file in mx20022-parse, mx20022-validate, mx20022-cli, mx20022-translate, and key files in mx20022-model and mx20022-codegen. Confirmed workspace-level unsafe_code=forbid with zero violations. quick-xml 0.37.5 is safe against XXE. Main finding is SEPA validator f64 arithmetic for boundary amounts (FedNow correctly uses integer-cent math). CLI lacks file size limits. No critical vulnerabilities found. Codebase has strong security posture for a financial library.",
+    "inputs_consulted": [
+      "All .rs files in crates/mx20022-parse/src/",
+      "All .rs files in crates/mx20022-validate/src/",
+      "All .rs files in crates/mx20022-cli/src/",
+      "All .rs files in crates/mx20022-translate/src/",
+      "Key files in crates/mx20022-model/src/common/",
+      "Key files in crates/mx20022-codegen/src/emit/",
+      "crates/mx20022-codegen/src/xsd/parser.rs",
+      "Cargo.toml (workspace), deny.toml, Cargo.lock"
+    ],
+    "outputs_produced": [
+      "Security audit report with file:line references and severity ratings"
+    ],
+    "next_actions": [
+      "Fix SEPA f64 amount comparisons to use integer-cent arithmetic like FedNow",
+      "Add file size limits to CLI commands",
+      "Consider sanitizing user values in error messages for production logging"
+    ]
+  },
+  "cross_agent_notes": {
+    "mentions": []
+  }
+}

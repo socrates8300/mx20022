@@ -183,40 +183,43 @@ impl SchemeValidator for SepaValidator {
 
         // --- Amount range ---------------------------------------------------
         if let Some(amt_str) = extract_element(xml, "IntrBkSttlmAmt") {
-            match amt_str.parse::<f64>() {
-                Ok(amount) => {
-                    if amount < 0.01 {
+            // At most 2 decimal places.
+            let decimals = amt_str
+                .find('.')
+                .map_or(0, |dot| amt_str.len() - dot - 1);
+            if decimals > 2 {
+                errors.push(ValidationError::new(
+                    "/Document/FIToFICstmrCdtTrf/CdtTrfTxInf/IntrBkSttlmAmt",
+                    Severity::Error,
+                    "SEPA_AMOUNT_DECIMALS",
+                    format!(
+                        "SEPA amounts must have at most 2 decimal places; got \"{amt_str}\""
+                    ),
+                ));
+            }
+            // Range checks via integer-cent arithmetic (avoids f64 precision).
+            match super::fednow::parse_amount_cents_lenient(&amt_str) {
+                Some(cents) => {
+                    if cents < 1 {
                         errors.push(ValidationError::new(
                             "/Document/FIToFICstmrCdtTrf/CdtTrfTxInf/IntrBkSttlmAmt",
                             Severity::Error,
                             "SEPA_AMOUNT_MIN",
-                            format!("SEPA minimum amount is 0.01 EUR; got {amount:.2}"),
+                            format!("SEPA minimum amount is 0.01 EUR; got \"{amt_str}\""),
                         ));
                     }
-                    if amount > 999_999_999.99 {
+                    if cents > 99_999_999_999 {
                         errors.push(ValidationError::new(
                             "/Document/FIToFICstmrCdtTrf/CdtTrfTxInf/IntrBkSttlmAmt",
                             Severity::Error,
                             "SEPA_AMOUNT_MAX",
-                            format!("SEPA maximum amount is 999,999,999.99 EUR; got {amount:.2}"),
+                            format!(
+                                "SEPA maximum amount is 999,999,999.99 EUR; got \"{amt_str}\""
+                            ),
                         ));
                     }
-                    // At most 2 decimal places.
-                    if let Some(dot) = amt_str.find('.') {
-                        let decimals = amt_str.len() - dot - 1;
-                        if decimals > 2 {
-                            errors.push(ValidationError::new(
-                                "/Document/FIToFICstmrCdtTrf/CdtTrfTxInf/IntrBkSttlmAmt",
-                                Severity::Error,
-                                "SEPA_AMOUNT_DECIMALS",
-                                format!(
-                                    "SEPA amounts must have at most 2 decimal places; got \"{amt_str}\""
-                                ),
-                            ));
-                        }
-                    }
                 }
-                Err(_) => {
+                None => {
                     errors.push(ValidationError::new(
                         "/Document/FIToFICstmrCdtTrf/CdtTrfTxInf/IntrBkSttlmAmt",
                         Severity::Error,
@@ -439,41 +442,44 @@ impl SepaValidator {
             }
 
             // --- Amount range -----------------------------------------------
-            let amt_str = &tx.intr_bk_sttlm_amt.value.0;
-            match amt_str.parse::<f64>() {
-                Ok(amount) => {
-                    if amount < 0.01 {
+            let amt_str: &str = &tx.intr_bk_sttlm_amt.value.0;
+            // At most 2 decimal places.
+            let decimals = amt_str
+                .find('.')
+                .map_or(0, |dot| amt_str.len() - dot - 1);
+            if decimals > 2 {
+                errors.push(ValidationError::new(
+                    "/Document/FIToFICstmrCdtTrf/CdtTrfTxInf/IntrBkSttlmAmt",
+                    Severity::Error,
+                    "SEPA_AMOUNT_DECIMALS",
+                    format!(
+                        "SEPA amounts must have at most 2 decimal places; got \"{amt_str}\""
+                    ),
+                ));
+            }
+            // Range checks via integer-cent arithmetic (avoids f64 precision).
+            match super::fednow::parse_amount_cents_lenient(amt_str) {
+                Some(cents) => {
+                    if cents < 1 {
                         errors.push(ValidationError::new(
                             "/Document/FIToFICstmrCdtTrf/CdtTrfTxInf/IntrBkSttlmAmt",
                             Severity::Error,
                             "SEPA_AMOUNT_MIN",
-                            format!("SEPA minimum amount is 0.01 EUR; got {amount:.2}"),
+                            format!("SEPA minimum amount is 0.01 EUR; got \"{amt_str}\""),
                         ));
                     }
-                    if amount > 999_999_999.99 {
+                    if cents > 99_999_999_999 {
                         errors.push(ValidationError::new(
                             "/Document/FIToFICstmrCdtTrf/CdtTrfTxInf/IntrBkSttlmAmt",
                             Severity::Error,
                             "SEPA_AMOUNT_MAX",
-                            format!("SEPA maximum amount is 999,999,999.99 EUR; got {amount:.2}"),
+                            format!(
+                                "SEPA maximum amount is 999,999,999.99 EUR; got \"{amt_str}\""
+                            ),
                         ));
                     }
-                    // At most 2 decimal places.
-                    if let Some(dot) = amt_str.find('.') {
-                        let decimals = amt_str.len() - dot - 1;
-                        if decimals > 2 {
-                            errors.push(ValidationError::new(
-                                "/Document/FIToFICstmrCdtTrf/CdtTrfTxInf/IntrBkSttlmAmt",
-                                Severity::Error,
-                                "SEPA_AMOUNT_DECIMALS",
-                                format!(
-                                    "SEPA amounts must have at most 2 decimal places; got \"{amt_str}\""
-                                ),
-                            ));
-                        }
-                    }
                 }
-                Err(_) => {
+                None => {
                     errors.push(ValidationError::new(
                         "/Document/FIToFICstmrCdtTrf/CdtTrfTxInf/IntrBkSttlmAmt",
                         Severity::Error,
@@ -640,5 +646,83 @@ mod tests {
     #[test]
     fn sepa_charset_cyrillic_rejected() {
         assert!(!is_sepa_charset("Алиса")); // Cyrillic
+    }
+
+    /// Build a minimal pacs.008 XML with the given amount for SEPA validation.
+    fn sepa_xml_with_amount(amount: &str) -> String {
+        format!(
+            r#"<Document xmlns="urn:iso:std:iso:20022:tech:xsd:pacs.008.001.13">
+  <FIToFICstmrCdtTrf>
+    <GrpHdr><NbOfTxs>1</NbOfTxs><SttlmInf><SttlmMtd>CLRG</SttlmMtd></SttlmInf></GrpHdr>
+    <CdtTrfTxInf>
+      <IntrBkSttlmAmt Ccy="EUR">{amount}</IntrBkSttlmAmt>
+      <ChrgBr>SLEV</ChrgBr>
+      <Dbtr><Nm>Alice</Nm></Dbtr>
+      <Cdtr><Nm>Bob</Nm></Cdtr>
+      <DbtrAgt><FinInstnId><BICFI>BANKDEFF</BICFI></FinInstnId></DbtrAgt>
+      <CdtrAgt><FinInstnId><BICFI>BANKDEFF</BICFI></FinInstnId></CdtrAgt>
+      <DbtrAcct><Id><IBAN>DE89370400440532013000</IBAN></Id></DbtrAcct>
+      <CdtrAcct><Id><IBAN>DE89370400440532013000</IBAN></Id></CdtrAcct>
+    </CdtTrfTxInf>
+  </FIToFICstmrCdtTrf>
+</Document>"#
+        )
+    }
+
+    fn has_error(result: &ValidationResult, code: &str) -> bool {
+        result.errors.iter().any(|e| e.rule_id == code)
+    }
+
+    #[test]
+    fn sepa_amount_at_max_boundary() {
+        let v = SepaValidator::new();
+        let xml = sepa_xml_with_amount("999999999.99");
+        let result = v.validate(&xml, "pacs.008.001.13");
+        assert!(
+            !has_error(&result, "SEPA_AMOUNT_MAX"),
+            "999999999.99 should be within SEPA max; errors: {:?}",
+            result.errors
+        );
+    }
+
+    #[test]
+    fn sepa_amount_just_under_max() {
+        let v = SepaValidator::new();
+        let xml = sepa_xml_with_amount("999999999.98");
+        let result = v.validate(&xml, "pacs.008.001.13");
+        assert!(!has_error(&result, "SEPA_AMOUNT_MAX"));
+    }
+
+    #[test]
+    fn sepa_amount_exceeds_max() {
+        let v = SepaValidator::new();
+        let xml = sepa_xml_with_amount("1000000000.00");
+        let result = v.validate(&xml, "pacs.008.001.13");
+        assert!(
+            has_error(&result, "SEPA_AMOUNT_MAX"),
+            "1000000000.00 should exceed SEPA max"
+        );
+    }
+
+    #[test]
+    fn sepa_amount_at_min_boundary() {
+        let v = SepaValidator::new();
+        let xml = sepa_xml_with_amount("0.01");
+        let result = v.validate(&xml, "pacs.008.001.13");
+        assert!(
+            !has_error(&result, "SEPA_AMOUNT_MIN"),
+            "0.01 should be within SEPA min"
+        );
+    }
+
+    #[test]
+    fn sepa_amount_below_min() {
+        let v = SepaValidator::new();
+        let xml = sepa_xml_with_amount("0.00");
+        let result = v.validate(&xml, "pacs.008.001.13");
+        assert!(
+            has_error(&result, "SEPA_AMOUNT_MIN"),
+            "0.00 should be below SEPA min"
+        );
     }
 }

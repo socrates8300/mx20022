@@ -1,0 +1,101 @@
+{
+  "metadata": {
+    "task_short": "perf-analysis",
+    "agent_abbr": "perf",
+    "datetime_utc": "2026-03-04T01:00:00Z",
+    "filename": "2026-03-04T01-00-00Z__perf-analysis__perf.json",
+    "supersedes": "2026-03-03T00-00-00Z__perf-analysis__perf.json",
+    "version": "1.0"
+  },
+  "state": {
+    "objectives": [
+      "Deep performance analysis of mx20022 workspace across all crates",
+      "Identify and rank optimization opportunities by impact",
+      "Provide actionable recommendations with file:line references"
+    ],
+    "constraints": [
+      "MSRV 1.75.0, no unsafe_code (forbid)",
+      "Generated code in mx20022-model/src/generated/ is machine-written via codegen",
+      "quick-xml 0.37 with serialize feature, serde 1"
+    ],
+    "important_facts": [
+      "270,191 lines of generated code across 18 files",
+      "6,804 format!-based path allocations in validate_constraints across generated code",
+      "4,296 .chars().count() calls in generated code (O(n) per call for ASCII strings)",
+      "9,334 total format! calls in generated code (path construction + error messages)",
+      "Codegen emitter at emit/validate.rs:78-141 generates format! for every field traversal unconditionally",
+      "SEPA charset check at sepa.rs:256 calls is_sepa_charset(&c.to_string()) per character - String alloc per char",
+      "IBAN validation at iban.rs:51 allocates String for canonical form on every call",
+      "IBAN iban_to_numeric at iban.rs:96 allocates String and calls n.to_string() per letter",
+      "xml_scan extract functions allocate String via .to_owned() on every element match",
+      "MT parser extract_blocks at parser.rs:69 converts entire input to Vec<char>",
+      "MT block parsers use .chars().collect::<Vec<char>>() repeatedly (parser.rs:346)",
+      "ConstraintSet::for_path at constraints.rs:69-71 uses linear scan over Vec",
+      "RuleRegistry::with_defaults at rules/mod.rs:108-119 allocates 8 Box<dyn Rule>",
+      "MessageId fields are all String (envelope.rs:21-30) for 3-13 char values",
+      "All newtypes use pub String (heap alloc) even for 3-char currency codes",
+      "Remittance info chunking at mt103_to_pacs008.rs:147-151 collects to Vec<char> then re-collects",
+      "parse_tag_value_pairs at parser.rs:344-412 collects chars to Vec then re-collects subslices to String"
+    ],
+    "decisions_made": [],
+    "artifacts": [],
+    "dependencies": [],
+    "risks_issues": [
+      "270K generated LoC: compile time scales with schema count, no feature-gating",
+      "validate_constraints format! allocations are unconditional (even on valid messages with zero violations)"
+    ]
+  },
+  "iteration": {
+    "summary": "Performed deep source-level performance analysis of all mx20022 crates. Read all benchmark files, core parse/validate/translate source, codegen emitter, and generated code patterns. Confirmed and expanded prior findings: 6,804 unconditional format! allocations in validate_constraints, 4,296 .chars().count() calls, SEPA per-char String alloc, IBAN unnecessary alloc, MT parser Vec<char> copies, ConstraintSet linear scan. New findings include remittance info double-collect in translation, parse_tag_value_pairs char-by-char alloc pattern, and MessageId using String for tiny fixed-size fields.",
+    "inputs_consulted": [
+      "crates/mx20022-parse/src/de.rs",
+      "crates/mx20022-parse/src/ser.rs",
+      "crates/mx20022-parse/src/envelope.rs",
+      "crates/mx20022-validate/src/rules/iban.rs",
+      "crates/mx20022-validate/src/rules/bic.rs",
+      "crates/mx20022-validate/src/rules/mod.rs",
+      "crates/mx20022-validate/src/schema/constraints.rs",
+      "crates/mx20022-validate/src/schemes/xml_scan.rs",
+      "crates/mx20022-validate/src/schemes/sepa.rs",
+      "crates/mx20022-validate/src/schemes/fednow.rs",
+      "crates/mx20022-translate/src/mt/parser.rs",
+      "crates/mx20022-translate/src/mappings/mt103_to_pacs008.rs",
+      "crates/mx20022-translate/src/mappings/helpers.rs",
+      "crates/mx20022-model/src/common/validate.rs",
+      "crates/mx20022-model/src/common/choice.rs",
+      "crates/mx20022-model/src/generated/pacs/pacs_008_001_13.rs (first 200 + validate sections)",
+      "crates/mx20022-codegen/src/emit/validate.rs",
+      "crates/mx20022-parse/benches/parse_bench.rs",
+      "crates/mx20022-validate/benches/validate_bench.rs",
+      "crates/mx20022-translate/benches/translate_bench.rs",
+      "Cargo.toml (workspace root)"
+    ],
+    "outputs_produced": [
+      "Performance analysis report (this context + user-facing detailed report)"
+    ],
+    "next_actions": [
+      "Fix codegen to defer format! in validate_constraints until violation found",
+      "Replace .chars().count() with .len() in codegen for ASCII-only fields",
+      "Add is_sepa_char(c: char) -> bool to eliminate per-char String alloc",
+      "Rewrite IBAN canonical form to use stack buffer instead of String",
+      "Rewrite MT parser extract_blocks to use byte-level scanning instead of Vec<char>",
+      "Index ConstraintSet by path using HashMap",
+      "Consider feature-gating generated schema families",
+      "Add benchmarks for validate_constraints, large message parsing, memory usage"
+    ]
+  },
+  "cross_agent_notes": {
+    "mentions": [
+      {
+        "agent_abbr": "rust",
+        "filename": "2026-03-02T21-30-00Z__examples-benchmarks__rust.json",
+        "relevance_note": "Created the benchmark suites analyzed here"
+      },
+      {
+        "agent_abbr": "cr",
+        "filename": "2026-03-04T00-10-33Z__code-quality-review__cr.json",
+        "relevance_note": "Code quality review may overlap with perf-relevant code patterns"
+      }
+    ]
+  }
+}

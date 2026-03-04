@@ -1,0 +1,90 @@
+{
+  "metadata": {
+    "task_short": "code-quality-review",
+    "agent_abbr": "cr",
+    "datetime_utc": "2026-03-04T00:10:33Z",
+    "filename": "2026-03-04T00-10-33Z__code-quality-review__cr.json",
+    "supersedes": null,
+    "version": "1.0"
+  },
+  "state": {
+    "objectives": [
+      "Review hand-written Rust code across 7 crates for quality, maintainability, and correctness",
+      "Check clean code principles, SOLID, DRY, naming, error handling, documentation, and Rust idioms"
+    ],
+    "constraints": [
+      "Exclude generated/ directories from review scope",
+      "Focus on mx20022-validate, mx20022-translate, mx20022-parse, mx20022-model/common, mx20022-codegen, mx20022-cli"
+    ],
+    "important_facts": [
+      "Clippy passes cleanly with --all-features and -D warnings",
+      "All tests pass (workspace-level)",
+      "validate command error type misuses ParseError as a validation failure exit signal",
+      "extract_element/extract_all_elements duplicated between cli/validate.rs and schemes/xml_scan.rs",
+      "parse_year in datetime.rs allocates a Vec unnecessarily",
+      "ConstraintSet::for_path is O(n) linear scan - no index; acceptable at current scale",
+      "FedNow amount check logic is duplicated verbatim between xml-path and typed-path",
+      "mod97 function is duplicated between iban.rs and lei.rs",
+      "parse_amount_cents in fednow.rs has a debug_assert that fires in non-2-decimal inputs that already passed decimal_ok check",
+      "max_amount stored as f64 in FedNowValidator; multiplication by 100 is exact for whole-dollar amounts up to 2^53 but is a subtle footgun",
+      "ValidationError.errors field is pub Vec - allows external mutation bypassing merge semantics",
+      "helpers.rs comment says pacs.008 types but pacs.009 and camt.053 must duplicate them",
+      "RuleRegistry::validate_all has HashMap iteration order non-determinism (silently in error output)"
+    ],
+    "decisions_made": [
+      "No code changes made - review only",
+      "Severity classification: Critical=0, High=4, Suggestions=8"
+    ],
+    "artifacts": [
+      "crates/mx20022-validate/src/rules/iban.rs",
+      "crates/mx20022-validate/src/rules/lei.rs",
+      "crates/mx20022-validate/src/rules/amount.rs",
+      "crates/mx20022-validate/src/rules/datetime.rs",
+      "crates/mx20022-validate/src/schemes/fednow.rs",
+      "crates/mx20022-validate/src/schemes/xml_scan.rs",
+      "crates/mx20022-validate/src/schema/constraints.rs",
+      "crates/mx20022-cli/src/commands/validate.rs",
+      "crates/mx20022-translate/src/mappings/helpers.rs",
+      "crates/mx20022-translate/src/mt/parser.rs",
+      "crates/mx20022-translate/src/mt/fields/common.rs",
+      "crates/mx20022-model/src/common/validate.rs",
+      "crates/mx20022-model/src/common/choice.rs"
+    ],
+    "dependencies": [],
+    "risks_issues": [
+      "DRY violation: mod97 duplicated in iban.rs and lei.rs - low risk but maintenance burden",
+      "DRY violation: XML scan helpers duplicated in cli/validate.rs and schemes/xml_scan.rs",
+      "DRY violation: FedNow amount validation logic duplicated between XML and typed paths",
+      "API design: ValidateError::Parse used as exit-code signal - misleading semantics",
+      "API design: ValidationResult.errors is pub Vec allowing external bypass of merge",
+      "Latent bug: parse_year allocates Vec<u8> unnecessarily - trivial to fix",
+      "Portability risk: helpers.rs typed to pacs.008 types only - pacs.009 and camt.053 must copy-paste"
+    ]
+  },
+  "iteration": {
+    "summary": "Performed full code quality review of all hand-written Rust source files across the mx20022 workspace. Clippy is clean and all tests pass, indicating the codebase is already in good shape. The main quality issues are DRY violations (mod97 duplicated, xml scan helpers duplicated, FedNow validation logic duplicated), one misleading API (validate command exits via a ParseError wrapping a validation message), and some minor style/performance items. No critical issues found. Architecture is well-structured with clear crate boundaries, good documentation coverage, and consistent error handling using thiserror.",
+    "inputs_consulted": [
+      "crates/mx20022-validate/src/**/*.rs",
+      "crates/mx20022-translate/src/**/*.rs",
+      "crates/mx20022-parse/src/**/*.rs",
+      "crates/mx20022-model/src/common/**/*.rs",
+      "crates/mx20022-cli/src/**/*.rs",
+      "crates/mx20022-codegen/src/emit/newtypes.rs",
+      "crates/mx20022-codegen/src/ir/lower.rs"
+    ],
+    "outputs_produced": [
+      "Full code review report (in assistant response)",
+      "This context file"
+    ],
+    "next_actions": [
+      "Extract mod97 into a shared internal module in mx20022-validate",
+      "Remove duplicate extract_element/extract_all_elements from cli/validate.rs and re-export from xml_scan",
+      "Extract FedNow amount validation into a shared helper called by both xml and typed paths",
+      "Consider making ValidationResult.errors private with accessor methods",
+      "Fix parse_year to avoid Vec allocation"
+    ]
+  },
+  "cross_agent_notes": {
+    "mentions": []
+  }
+}

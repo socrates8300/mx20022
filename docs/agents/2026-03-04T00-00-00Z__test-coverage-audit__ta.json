@@ -1,0 +1,123 @@
+{
+  "metadata": {
+    "task_short": "test-coverage-audit",
+    "agent_abbr": "ta",
+    "datetime_utc": "2026-03-04T00:00:00Z",
+    "filename": "2026-03-04T00-00-00Z__test-coverage-audit__ta.json",
+    "supersedes": "2026-03-03T00-00-00Z__test-coverage-audit__ta.json",
+    "version": "1.0"
+  },
+  "state": {
+    "objectives": [
+      "Deep audit of test coverage across all 7 crates after newtype-construction-validation (items 221-226)",
+      "Identify new gaps introduced by pattern_codegen, emit/validate, and TryFrom generation",
+      "Evaluate quality of existing tests (smoke vs. meaningful assertions)",
+      "Surface property-based and fuzz testing opportunities",
+      "Assess integration test coverage for cross-crate interactions"
+    ],
+    "constraints": [
+      "Read-only assessment — no code changes",
+      "Covers all 7 crates: codegen, model, parse, validate, translate, cli, mx20022 umbrella"
+    ],
+    "important_facts": [
+      "Test count has grown since prior audit: codegen inline tests now include pattern_codegen (22 pattern tests + 5 structure tests + 5 parser unit tests) and emit/validate tests (16 tests) and emit/newtypes tests (11 tests)",
+      "TryFrom<String> + new() are now generated for all constrained newtypes in all 13 schemas — but ZERO tests exercise TryFrom/new() on actual generated model types",
+      "The pattern_codegen compiler has inline tests for Rust emission validity but NO semantic tests: does the emitted code actually ACCEPT valid values and REJECT invalid ones?",
+      "schemes.rs now has 30 tests (up from ~20) including typed validation path tests for FedNow, SEPA, CBPR+",
+      "validate/tests/schemes.rs has vec_index_in_validation_paths and typed_validate_constraints_integration tests (new)",
+      "pacs.002 (3 versions: 001.10, 001.12, 001.14) still has ZERO roundtrip or validation tests",
+      "head.001.001.02 still has no tests at all",
+      "pacs.008 versions 001.08 and 001.10 still have no tests",
+      "Codegen snapshot testing still covers only head.001.001.04 — 12 other schemas have no snapshots",
+      "Translation testdata fixtures (testdata/translation/) still have only input.txt, NO expected.xml output files",
+      "parse/tests/fixtures/ and codegen/tests/fixtures/xsd/multi_file/ still contain only .gitkeep placeholder files",
+      "Coverage CI job still commented out",
+      "No proptest/quickcheck anywhere in workspace dev-dependencies",
+      "No cargo-fuzz targets anywhere in workspace",
+      "MT940 roundtrip test is string-contains only (not structural field comparison)",
+      "amount.rs rule: zero amounts are rejected (> 0 required) — but there is no doc clarifying this as a business rule vs. a format rule",
+      "SEPA f64 amount comparison (item 140) is still not_started — float precision bug not yet fixed",
+      "Items 141-145 (Display/Error impls for ValidationResult) still not_started",
+      "The validate/src/typed.rs bridge function is tested in schemes.rs (typed_validate_bridge test)",
+      "Blanket Validatable impls for Option<T>, Vec<T>, String, bool, ChoiceWrapper<T> are tested only via the doc example (no_run) — no dedicated unit tests"
+    ],
+    "decisions_made": [
+      "Prioritize TryFrom/new() semantic tests above all else: the pattern compiler is untested end-to-end at runtime",
+      "Property-based testing for pattern_codegen and IBAN/BIC rules is highest ROI addition",
+      "Snapshot tests for pacs.008.001.13 and camt.053.001.11 should be next after TryFrom tests"
+    ],
+    "artifacts": [
+      "crates/mx20022-codegen/src/emit/pattern_codegen.rs (653 lines, 32 inline tests)",
+      "crates/mx20022-codegen/src/emit/validate.rs (769 lines, 14 inline tests)",
+      "crates/mx20022-codegen/src/emit/newtypes.rs (311 lines, 11 inline tests)",
+      "crates/mx20022-validate/tests/schemes.rs (841 lines, 30 tests including typed path)",
+      "crates/mx20022-model/src/common/validate.rs (ConstraintError/Validatable — 4 inline unit tests)",
+      "crates/mx20022-model/tests/builder_test.rs (7 tests — head.001 only)",
+      "testdata/ (27 fixture files — no expected.* translation outputs)"
+    ],
+    "dependencies": [
+      "item 140: SEPA f64 amount comparison fix (not_started) — affects SEPA_AMOUNT_MAX test correctness",
+      "item 166-169: real-world-test-corpus (not_started) — would provide authoritative validation fixtures",
+      "items 157-165: newtype-validation iteration (deferred) — TryFrom/new() testing is partially blocked on this"
+    ],
+    "risks_issues": [
+      "Pattern codegen generates code that is checked for Rust syntax validity (syn::parse_file) but NOT semantic correctness — a buggy pattern check could silently accept invalid values: CRITICAL gap",
+      "TryFrom<String>/new() on all 13 schemas generate code with no runtime tests — regression risk high",
+      "SEPA f64 amount comparison (item 140) could cause test failures in edge cases around EUR 999,999,999.99",
+      "Coverage CI still commented out — no objective coverage measurement",
+      "Translation testdata fixtures missing expected outputs — golden-file testing not possible",
+      "pacs.002 has 0 integration tests despite being the main payment status report message"
+    ]
+  },
+  "iteration": {
+    "summary": "Performed a full re-audit after newtype-construction-validation iteration (items 221-226). The biggest new gap is that the pattern_codegen compiler emits code that is only validated for Rust syntactic correctness via syn::parse_file — there are no semantic tests that actually run the emitted code to verify correct accept/reject behavior. All 13 regenerated schemas now have TryFrom<String>/new() but the model crate has zero tests exercising these constructors on real generated types. The typed validation path tests in schemes.rs are a meaningful addition and exercise the full parse->validate pipeline. However, pacs.002 (3 versions), head.001.001.02, and pacs.008 (v008, v010) remain completely untested end-to-end. Property-based testing and fuzz targets are still absent.",
+    "inputs_consulted": [
+      "crates/mx20022-codegen/src/emit/pattern_codegen.rs",
+      "crates/mx20022-codegen/src/emit/validate.rs",
+      "crates/mx20022-codegen/src/emit/newtypes.rs",
+      "crates/mx20022-validate/tests/schemes.rs",
+      "crates/mx20022-validate/tests/integration.rs",
+      "crates/mx20022-translate/tests/translation.rs",
+      "crates/mx20022-translate/tests/mt_parser.rs",
+      "crates/mx20022-parse/tests/roundtrip.rs",
+      "crates/mx20022-parse/tests/roundtrip_all.rs",
+      "crates/mx20022-model/tests/builder_test.rs",
+      "crates/mx20022-model/src/common/validate.rs",
+      "crates/mx20022-cli/tests/cli_integration.rs",
+      "crates/mx20022-codegen/tests/snapshots.rs",
+      "crates/mx20022-validate/src/rules/iban.rs",
+      "crates/mx20022-validate/src/rules/bic.rs",
+      "crates/mx20022-validate/src/rules/amount.rs",
+      "crates/mx20022-validate/Cargo.toml",
+      "crates/mx20022-parse/Cargo.toml",
+      "crates/mx20022-translate/Cargo.toml",
+      ".github/workflows/ci.yml",
+      "testdata/ (all 27 fixture files)",
+      "docs/agent_context.db (items table)"
+    ],
+    "outputs_produced": [
+      "This context file",
+      "Comprehensive test coverage report (in conversation)"
+    ],
+    "next_actions": [
+      "Add semantic tests for pattern_codegen: compile and execute generated check functions against known-valid and known-invalid values for each of the 22 patterns",
+      "Add TryFrom/new() tests in mx20022-model for real generated types: BICFIDec2014Identifier, IBAN2007Identifier, CountryCode, Max35Text at minimum",
+      "Add proptest to validate and codegen dev-deps; add property-based tests for IBAN/BIC rules and pattern_codegen",
+      "Add pacs.002 roundtrip test in parse/tests/roundtrip.rs (all 3 versions if possible)",
+      "Add codegen snapshot for pacs.008.001.13",
+      "Create expected.xml files in testdata/translation/ for golden-file diff testing",
+      "Uncomment coverage job in ci.yml",
+      "Fix MT940 roundtrip: parse the re-generated MT940 back into fields and compare structurally",
+      "Add XML malformed-input edge cases: truncated mid-element, BOM prefix, namespace collision, duplicate attributes"
+    ]
+  },
+  "cross_agent_notes": {
+    "mentions": [
+      {
+        "agent_abbr": "cr",
+        "filename": "2026-03-04T00-10-33Z__code-quality-review__cr.json",
+        "relevance_note": "Code quality review context — may have identified pattern_codegen edge cases or dead code worth testing"
+      }
+    ]
+  }
+}
