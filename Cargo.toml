@@ -13,7 +13,7 @@ members = [
 [workspace.package]
 edition = "2021"
 rust-version = "1.75.0"
-license = "Apache-2.0 OR MIT"
+license = "Apache-2.0"
 repository = "https://github.com/socrates8300/mx20022"
 keywords = ["iso20022", "swift", "payments", "financial", "xml"]
 categories = ["finance", "parser-implementations", "encoding"]

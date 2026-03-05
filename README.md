@@ -6,7 +6,7 @@ between SWIFT MT and ISO 20022 MX formats.
 [![Crates.io](https://img.shields.io/crates/v/mx20022.svg)](https://crates.io/crates/mx20022)
 [![docs.rs](https://docs.rs/mx20022/badge.svg)](https://docs.rs/mx20022)
 [![CI](https://github.com/socrates8300/mx20022/actions/workflows/ci.yml/badge.svg)](https://github.com/socrates8300/mx20022/actions/workflows/ci.yml)
-[![License: Apache-2.0 OR MIT](https://img.shields.io/badge/license-Apache--2.0%20OR%20MIT-blue.svg)](#license)
+[![License: Apache-2.0](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](#license)
 [![MSRV: 1.75.0](https://img.shields.io/badge/MSRV-1.75.0-orange.svg)](https://releases.rs/docs/1.75.0/)
 
 ## Features
@@ -268,11 +268,5 @@ and `cargo fmt --check` before merge. CI runs these on both stable and MSRV
 
 ## License
 
-Licensed under either of:
-
-- Apache License, Version 2.0 ([LICENSE-APACHE](LICENSE-APACHE) or
-  <https://www.apache.org/licenses/LICENSE-2.0>)
-- MIT License ([LICENSE-MIT](LICENSE-MIT) or
-  <https://opensource.org/licenses/MIT>)
-
-at your option.
+Licensed under the Apache License, Version 2.0 ([LICENSE-APACHE](LICENSE-APACHE)
+or <https://www.apache.org/licenses/LICENSE-2.0>).
