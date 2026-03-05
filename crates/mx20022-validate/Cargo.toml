@@ -1,13 +1,15 @@
 [package]
 name = "mx20022-validate"
-version = "0.1.0"
-description = "Schema and business rule validation for ISO 20022 messages"
+version = "0.1.1"
+description = "ISO 20022 message validation: XSD constraints, IBAN/BIC/LEI rules, FedNow, SEPA, and CBPR+ scheme checks"
 edition.workspace = true
 rust-version.workspace = true
 license.workspace = true
 repository.workspace = true
-keywords.workspace = true
-categories.workspace = true
+homepage.workspace = true
+documentation = "https://docs.rs/mx20022-validate"
+keywords = ["iso20022", "validation", "payments", "fednow", "sepa"]
+categories = ["encoding", "finance"]
 
 [dependencies]
 mx20022-model = { workspace = true, features = ["all"] }

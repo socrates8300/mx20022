@@ -1,13 +1,15 @@
 [package]
 name = "mx20022-translate"
-version = "0.1.0"
-description = "Bidirectional MT to MX translation for ISO 20022 messages"
+version = "0.1.1"
+description = "Bidirectional SWIFT MT↔ISO 20022 MX translation: MT103↔pacs.008, MT202↔pacs.009, MT940↔camt.053"
 edition.workspace = true
 rust-version.workspace = true
 license.workspace = true
 repository.workspace = true
-keywords.workspace = true
-categories.workspace = true
+homepage.workspace = true
+documentation = "https://docs.rs/mx20022-translate"
+keywords = ["iso20022", "swift", "mt103", "payments", "migration"]
+categories = ["encoding", "parser-implementations"]
 
 [dependencies]
 mx20022-model = { workspace = true, features = ["camt"] }

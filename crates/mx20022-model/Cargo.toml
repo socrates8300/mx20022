@@ -1,13 +1,15 @@
 [package]
 name = "mx20022-model"
-version = "0.1.0"
-description = "Generated and hand-written types for ISO 20022 financial messages"
+version = "0.1.1"
+description = "Strongly-typed ISO 20022 message models generated from official XSD schemas (pacs, pain, camt, head)"
 edition.workspace = true
 rust-version.workspace = true
 license.workspace = true
 repository.workspace = true
-keywords.workspace = true
-categories.workspace = true
+homepage.workspace = true
+documentation = "https://docs.rs/mx20022-model"
+keywords = ["iso20022", "payments", "finance", "serde", "xml"]
+categories = ["encoding", "data-structures"]
 
 [features]
 default = ["pacs"]

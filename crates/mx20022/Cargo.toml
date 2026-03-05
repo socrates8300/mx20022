@@ -1,11 +1,14 @@
 [package]
 name = "mx20022"
-version = "0.1.0"
-description = "ISO 20022 financial message library"
+version = "0.1.1"
+description = "Production-grade ISO 20022 toolkit: strongly-typed message models, FedNow/SEPA/CBPR+ validation, and bidirectional SWIFT MT↔MX translation"
 edition.workspace = true
 rust-version.workspace = true
 license.workspace = true
 repository.workspace = true
+homepage.workspace = true
+documentation.workspace = true
+readme.workspace = true
 keywords.workspace = true
 categories.workspace = true
 

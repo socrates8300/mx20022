@@ -15,8 +15,11 @@ edition = "2021"
 rust-version = "1.75.0"
 license = "Apache-2.0"
 repository = "https://github.com/socrates8300/mx20022"
-keywords = ["iso20022", "swift", "payments", "financial", "xml"]
-categories = ["finance", "parser-implementations", "encoding"]
+homepage = "https://github.com/socrates8300/mx20022"
+documentation = "https://docs.rs/mx20022"
+readme = "README.md"
+keywords = ["iso20022", "swift", "payments", "finance", "fintech"]
+categories = ["encoding", "parser-implementations", "finance"]
 
 [workspace.dependencies]
 # Serialization
@@ -41,13 +44,13 @@ pretty_assertions = "1"
 insta = { version = "1", features = ["yaml"] }
 criterion = { version = "0.5", features = ["html_reports"] }
 # Internal crates
-mx20022 = { path = "crates/mx20022", version = "0.1.0" }
-mx20022-model = { path = "crates/mx20022-model", version = "0.1.0" }
-mx20022-parse = { path = "crates/mx20022-parse", version = "0.1.0" }
-mx20022-validate = { path = "crates/mx20022-validate", version = "0.1.0" }
-mx20022-translate = { path = "crates/mx20022-translate", version = "0.1.0" }
-mx20022-codegen = { path = "crates/mx20022-codegen", version = "0.1.0" }
-mx20022-cli = { path = "crates/mx20022-cli", version = "0.1.0" }
+mx20022 = { path = "crates/mx20022", version = "0.1.1" }
+mx20022-model = { path = "crates/mx20022-model", version = "0.1.1" }
+mx20022-parse = { path = "crates/mx20022-parse", version = "0.1.1" }
+mx20022-validate = { path = "crates/mx20022-validate", version = "0.1.1" }
+mx20022-translate = { path = "crates/mx20022-translate", version = "0.1.1" }
+mx20022-codegen = { path = "crates/mx20022-codegen", version = "0.1.1" }
+mx20022-cli = { path = "crates/mx20022-cli", version = "0.1.1" }
 
 [workspace.lints.rust]
 unsafe_code = "forbid"

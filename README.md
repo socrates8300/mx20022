@@ -1,7 +1,9 @@
 # mx20022
 
-Rust library for ISO 20022 financial messages. Parse, validate, and translate
-between SWIFT MT and ISO 20022 MX formats.
+Production-grade ISO 20022 toolkit for Rust. Strongly-typed message models
+generated from official XSD schemas, with built-in validation for FedNow, SEPA,
+and CBPR+ payment rails and bidirectional SWIFT MT ↔ MX translation — everything
+you need to build, validate, and migrate financial messages in a single crate.
 
 [![Crates.io](https://img.shields.io/crates/v/mx20022.svg)](https://crates.io/crates/mx20022)
 [![docs.rs](https://docs.rs/mx20022/badge.svg)](https://docs.rs/mx20022)

@@ -1,13 +1,15 @@
 [package]
 name = "mx20022-parse"
-version = "0.1.0"
-description = "XML parsing and serialization for ISO 20022 messages"
+version = "0.1.1"
+description = "XML parsing and serialization for ISO 20022 MX financial messages via quick-xml and serde"
 edition.workspace = true
 rust-version.workspace = true
 license.workspace = true
 repository.workspace = true
-keywords.workspace = true
-categories.workspace = true
+homepage.workspace = true
+documentation = "https://docs.rs/mx20022-parse"
+keywords = ["iso20022", "xml", "payments", "parsing", "finance"]
+categories = ["encoding", "parser-implementations"]
 
 [dependencies]
 mx20022-model = { workspace = true, features = ["all"] }
