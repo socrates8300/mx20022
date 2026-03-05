@@ -1,0 +1,120 @@
+{
+  "metadata": {
+    "task_short": "test-coverage-audit",
+    "agent_abbr": "ta",
+    "datetime_utc": "2026-03-05T04:21:31Z",
+    "filename": "2026-03-05T04-21-31Z__test-coverage-audit__ta.json",
+    "supersedes": "2026-03-04T00-00-00Z__test-coverage-audit__ta.json",
+    "version": "1.0"
+  },
+  "state": {
+    "objectives": [
+      "Evaluate test coverage and quality for recently modified test files",
+      "Assess roundtrip parse coverage across all message types",
+      "Evaluate scheme validation negative test cases",
+      "Evaluate CLI error path coverage",
+      "Evaluate translation edge case coverage",
+      "Assess snapshot test maintenance burden",
+      "Identify gaps between testdata fixtures and what is actually tested"
+    ],
+    "constraints": [
+      "Read-only assessment — no code changes",
+      "Focus on: cli_integration.rs, snapshots.rs, roundtrip_all.rs, translation.rs, cbpr.rs, fednow.rs, sepa.rs, validate.rs inline tests"
+    ],
+    "important_facts": [
+      "13 generated schemas total: head x2, pacs x7, pain x3, camt x4",
+      "roundtrip_all.rs covers 10 schemas with identity roundtrip tests: pacs.002.001.14, pacs.004.001.11, pacs.009.001.10, pacs.028.001.05, pain.001.001.11, pain.002.001.13, pain.013.001.09, camt.053.001.11, camt.054.001.11, camt.056.001.11, camt.029.001.12",
+      "ZERO roundtrip tests for: head.001.001.02, head.001.001.04, pacs.008.001.08, pacs.008.001.10, pacs.008.001.13",
+      "pacs.008.001.13 is the primary schema (FedNow/SEPA/CBPR+ all target it) but has no roundtrip identity test",
+      "roundtrip_all.rs fixture parse tests cover all 11 xml/testdata fixtures except head and pacs.008 variants",
+      "MT940 roundtrip upgraded: now does field-level comparison (reference, account_id, statement_number, balances, statement_lines) — previous concern resolved",
+      "snapshot tests now cover 3 schemas: head.001.001.04, pacs.008.001.13, camt.053.001.11 (up from 1)",
+      "10 schemas still have no snapshot: head.001.001.02, pacs.002 x3, pacs.004, pacs.008.001.08, pacs.008.001.10, pacs.009, pacs.028, pain.001, pain.002, pain.013, camt.054, camt.056, camt.029",
+      "CLI tests have zero coverage of: --scheme flag, translate command, validate with SEPA/FedNow/CBPR+ scheme, malformed XML input, invalid scheme name",
+      "schemes.rs external tests have 38 total tests; typed path coverage is good for FedNow+SEPA+CBPR+ on pacs.008",
+      "NO typed path tests for pacs.002, pacs.004, pacs.009, or any pain/camt messages",
+      "sepa.rs inline tests cover amount boundary conditions well (at-max, just-under-max, exceeds-max, at-min, below-min)",
+      "fednow.rs inline tests cover UETR validity, amount parsing, custom max amount",
+      "cbpr.rs inline tests cover only: name check, supports_pacs008, unsupported_message, control_character, allowed_whitespace — missing: actual field-level negative tests inline",
+      "Translation testdata/translation/ still only has input.txt files — NO expected.xml or expected output files for golden-file testing",
+      "testdata/schemes/ has 7 fixture files but NO invalid fixtures for: SEPA missing names, FedNow zero amount, CBPR control chars, etc.",
+      "pacs_002_001_14_minimal.xml was NEWLY ADDED (in git status) — pacs.002 fixtures now exist",
+      "camt.053 roundtrip in roundtrip_all.rs uses empty stmt vec — no statement/entry/balance fields tested",
+      "camt.054 roundtrip uses empty ntfctn vec — no notification entries tested",
+      "validate.rs (CLI command) has no unit tests on resolve_scheme() function despite branching logic",
+      "helpers.rs has inline tests for iso_date_to_yymmdd, charges_to_code, party_to_party_id, account_to_cash_account",
+      "translation.rs covers: MT103->pacs008, MT202->pacs009, MT940->camt053 (both directions), warnings test, multi-tx warning, missing required fields error",
+      "No test for translation with optional fields absent (e.g., MT103 without :50K:, without :59:, without :70:)"
+    ],
+    "decisions_made": [
+      "MT940 roundtrip concern from prior audit is now resolved — field-level comparison implemented",
+      "Snapshot coverage is now acceptable for the 3 most important schemas; remaining 10 have low priority",
+      "pacs.008.001.13 roundtrip identity test gap is highest priority: it is the primary validated message type"
+    ],
+    "artifacts": [
+      "crates/mx20022-cli/tests/cli_integration.rs (15 tests; no --scheme, no translate, no invalid-scheme)",
+      "crates/mx20022-parse/tests/roundtrip_all.rs (22 tests: 11 roundtrip + 11 fixture parse)",
+      "crates/mx20022-translate/tests/translation.rs (13 tests)",
+      "crates/mx20022-validate/src/schemes/cbpr.rs (5 inline tests)",
+      "crates/mx20022-validate/src/schemes/fednow.rs (13 inline tests)",
+      "crates/mx20022-validate/src/schemes/sepa.rs (12 inline tests)",
+      "crates/mx20022-validate/tests/schemes.rs (38 tests including 10 typed-path tests)",
+      "crates/mx20022-model/src/common/validate.rs (13 inline tests)",
+      "testdata/schemes/: 7 fixtures (3 valid + 4 invalid); no SEPA-name-missing, FedNow-zero-amount, CBPR-control-char fixtures",
+      "testdata/translation/: 3 input.txt only; no expected outputs"
+    ],
+    "dependencies": [],
+    "risks_issues": [
+      "pacs.008.001.13 has no roundtrip identity test despite being the primary schema for all 3 scheme validators: moderate regression risk",
+      "CLI --scheme flag has zero integration test coverage: if resolve_scheme() logic changes, no test catches it",
+      "translate command has zero CLI integration test coverage",
+      "camt.053/camt.054 roundtrip tests use empty collections — structural serialization of statement/notification entries is untested",
+      "testdata/translation/ has no expected outputs — translation golden-file testing still impossible",
+      "10 schemas have no snapshot: codegen changes could silently alter their output"
+    ]
+  },
+  "iteration": {
+    "summary": "Performed a full read of all 8 recently-modified test files plus supporting fixtures and validate source. The test suite has matured substantially since prior audits: MT940 roundtrip now does field-level comparison, snapshot coverage expanded to 3 schemas, pacs.002 fixtures were added, and typed validation path coverage is solid for the 3 scheme validators on pacs.008.001.13. However, pacs.008.001.13 itself has no roundtrip identity test in roundtrip_all.rs. The CLI test file has no coverage of --scheme, translate command, or invalid scheme names. Translation tests cover warnings and errors but miss optional-field-absent edge cases. All camt/pain roundtrip stubs use empty collection fields, providing minimal confidence in complex structure serialization.",
+    "inputs_consulted": [
+      "crates/mx20022-cli/tests/cli_integration.rs",
+      "crates/mx20022-parse/tests/roundtrip_all.rs",
+      "crates/mx20022-translate/tests/translation.rs",
+      "crates/mx20022-validate/src/schemes/cbpr.rs",
+      "crates/mx20022-validate/src/schemes/fednow.rs",
+      "crates/mx20022-validate/src/schemes/sepa.rs",
+      "crates/mx20022-validate/src/schemes/xml_scan.rs",
+      "crates/mx20022-model/src/common/validate.rs",
+      "crates/mx20022-codegen/tests/snapshots.rs",
+      "crates/mx20022-validate/tests/schemes.rs",
+      "crates/mx20022-validate/tests/integration.rs",
+      "crates/mx20022-cli/src/commands/validate.rs",
+      "crates/mx20022-translate/src/mappings/helpers.rs",
+      "docs/agents/2026-03-04T00-00-00Z__test-coverage-audit__ta.json",
+      "testdata/ (all fixture files)"
+    ],
+    "outputs_produced": [
+      "This context file",
+      "Full test coverage assessment report delivered in conversation"
+    ],
+    "next_actions": [
+      "Add pacs.008.001.13 roundtrip identity test to roundtrip_all.rs (highest priority — primary schema has no roundtrip test)",
+      "Add CLI integration tests for: validate --scheme fednow/sepa/cbpr, validate with invalid scheme name (UnknownScheme error path), translate command smoke test",
+      "Add camt.053 roundtrip with actual statement/entry/balance fields populated",
+      "Add camt.054 roundtrip with at least one notification entry",
+      "Add translation tests for absent optional fields: MT103 without :50K:, without :59: (bare beneficiary), without :70: (no remittance)",
+      "Create expected output files in testdata/translation/ for golden-file diff testing",
+      "Add SEPA negative fixture: missing-names (SEPA_DBTR_NM / SEPA_CDTR_NM)",
+      "Add FedNow negative fixture: zero-amount (FEDNOW_AMOUNT_MIN)",
+      "Add cbpr.rs inline tests for field-level negative cases (missing UETR inline, missing debtor name inline)"
+    ]
+  },
+  "cross_agent_notes": {
+    "mentions": [
+      {
+        "agent_abbr": "cr",
+        "filename": "2026-03-04T00-10-33Z__code-quality-review__cr.json",
+        "relevance_note": "Code quality review noted xml_scan heuristics and helper duplication — relevant to whether xml-path tests are trustworthy"
+      }
+    ]
+  }
+}

@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Document xmlns="urn:iso:std:iso:20022:tech:xsd:pacs.002.001.14">
+  <FIToFIPmtStsRpt>
+    <GrpHdr>
+      <MsgId>PACS002-20240101-001</MsgId>
+      <CreDtTm>2024-01-01T12:00:00Z</CreDtTm>
+    </GrpHdr>
+    <OrgnlGrpInfAndSts>
+      <OrgnlMsgId>PACS008-20231215-001</OrgnlMsgId>
+      <OrgnlMsgNmId>pacs.008.001.13</OrgnlMsgNmId>
+    </OrgnlGrpInfAndSts>
+  </FIToFIPmtStsRpt>
+</Document>

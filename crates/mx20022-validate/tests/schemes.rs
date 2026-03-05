@@ -838,3 +838,254 @@ fn typed_validate_bridge() {
         result.error_count()
     );
 }
+
+// ---------------------------------------------------------------------------
+// Negative tests for untested scheme rules
+// ---------------------------------------------------------------------------
+
+/// Minimal FedNow-valid pacs.008 XML template. Callers replace specific
+/// elements to create invalid variants.
+fn fednow_base_xml() -> String {
+    r#"<?xml version="1.0" encoding="UTF-8"?>
+<Document xmlns="urn:iso:std:iso:20022:tech:xsd:pacs.008.001.13">
+  <FIToFICstmrCdtTrf>
+    <GrpHdr>
+      <MsgId>NEG-TEST-001</MsgId>
+      <CreDtTm>2024-01-01T12:00:00Z</CreDtTm>
+      <NbOfTxs>1</NbOfTxs>
+      <SttlmInf><SttlmMtd>CLRG</SttlmMtd></SttlmInf>
+    </GrpHdr>
+    <CdtTrfTxInf>
+      <PmtId>
+        <EndToEndId>E2E-NEG-TEST</EndToEndId>
+        <UETR>97ed4827-7b6f-4491-a06f-b548d5a7512d</UETR>
+      </PmtId>
+      <IntrBkSttlmAmt Ccy="USD">{amount}</IntrBkSttlmAmt>
+      <IntrBkSttlmDt>2024-01-01</IntrBkSttlmDt>
+      <ChrgBr>SLEV</ChrgBr>
+      <Dbtr><Nm>Alice</Nm></Dbtr>
+      <DbtrAgt><FinInstnId><BICFI>AAAAGB2LXXX</BICFI></FinInstnId></DbtrAgt>
+      <CdtrAgt><FinInstnId><BICFI>BBBBUS33XXX</BICFI></FinInstnId></CdtrAgt>
+      <Cdtr><Nm>Bob</Nm></Cdtr>
+    </CdtTrfTxInf>
+  </FIToFICstmrCdtTrf>
+</Document>"#
+        .to_string()
+}
+
+#[test]
+fn fednow_rejects_zero_amount() {
+    let xml = fednow_base_xml().replace("{amount}", "0.00");
+    let v = FedNowValidator::new();
+    let result = v.validate(&xml, "pacs.008.001.13");
+    assert!(
+        has_error_with_rule(&result, "FEDNOW_AMOUNT_MIN"),
+        "Expected FEDNOW_AMOUNT_MIN for 0.00 USD; got: {:?}",
+        result.errors
+    );
+}
+
+#[test]
+fn fednow_rejects_long_e2e_id() {
+    let long_e2e = "A".repeat(36); // 36 > 35 max
+    let xml = fednow_base_xml()
+        .replace("{amount}", "100.00")
+        .replace("E2E-NEG-TEST", &long_e2e);
+    let v = FedNowValidator::new();
+    let result = v.validate(&xml, "pacs.008.001.13");
+    assert!(
+        has_error_with_rule(&result, "FEDNOW_E2E_LENGTH"),
+        "Expected FEDNOW_E2E_LENGTH for 36-char EndToEndId; got: {:?}",
+        result.errors
+    );
+}
+
+#[test]
+fn sepa_rejects_missing_debtor_name() {
+    let xml = r#"<?xml version="1.0" encoding="UTF-8"?>
+<Document xmlns="urn:iso:std:iso:20022:tech:xsd:pacs.008.001.13">
+  <FIToFICstmrCdtTrf>
+    <GrpHdr>
+      <MsgId>SEPA-NO-DBTR-NM</MsgId>
+      <CreDtTm>2024-01-01T09:00:00Z</CreDtTm>
+      <NbOfTxs>1</NbOfTxs>
+      <SttlmInf><SttlmMtd>CLRG</SttlmMtd></SttlmInf>
+    </GrpHdr>
+    <CdtTrfTxInf>
+      <PmtId><EndToEndId>E2E-001</EndToEndId></PmtId>
+      <IntrBkSttlmAmt Ccy="EUR">100.00</IntrBkSttlmAmt>
+      <ChrgBr>SLEV</ChrgBr>
+      <Dbtr>
+        <Id><OrgId><AnyBIC>BANKDEFF</AnyBIC></OrgId></Id>
+      </Dbtr>
+      <DbtrAcct><Id><IBAN>DE89370400440532013000</IBAN></Id></DbtrAcct>
+      <Cdtr><Nm>Bob</Nm></Cdtr>
+      <CdtrAcct><Id><IBAN>FR7630006000011234567890189</IBAN></Id></CdtrAcct>
+    </CdtTrfTxInf>
+  </FIToFICstmrCdtTrf>
+</Document>"#;
+    let v = SepaValidator::new();
+    let result = v.validate(xml, "pacs.008.001.13");
+    assert!(
+        has_error_with_rule(&result, "SEPA_DBTR_NM"),
+        "Expected SEPA_DBTR_NM for missing debtor name; got: {:?}",
+        result.errors
+    );
+}
+
+#[test]
+fn sepa_rejects_missing_creditor_name() {
+    let xml = r#"<?xml version="1.0" encoding="UTF-8"?>
+<Document xmlns="urn:iso:std:iso:20022:tech:xsd:pacs.008.001.13">
+  <FIToFICstmrCdtTrf>
+    <GrpHdr>
+      <MsgId>SEPA-NO-CDTR-NM</MsgId>
+      <CreDtTm>2024-01-01T09:00:00Z</CreDtTm>
+      <NbOfTxs>1</NbOfTxs>
+      <SttlmInf><SttlmMtd>CLRG</SttlmMtd></SttlmInf>
+    </GrpHdr>
+    <CdtTrfTxInf>
+      <PmtId><EndToEndId>E2E-001</EndToEndId></PmtId>
+      <IntrBkSttlmAmt Ccy="EUR">100.00</IntrBkSttlmAmt>
+      <ChrgBr>SLEV</ChrgBr>
+      <Dbtr><Nm>Alice</Nm></Dbtr>
+      <DbtrAcct><Id><IBAN>DE89370400440532013000</IBAN></Id></DbtrAcct>
+      <Cdtr>
+        <Id><OrgId><AnyBIC>BANKDEFF</AnyBIC></OrgId></Id>
+      </Cdtr>
+      <CdtrAcct><Id><IBAN>FR7630006000011234567890189</IBAN></Id></CdtrAcct>
+    </CdtTrfTxInf>
+  </FIToFICstmrCdtTrf>
+</Document>"#;
+    let v = SepaValidator::new();
+    let result = v.validate(xml, "pacs.008.001.13");
+    assert!(
+        has_error_with_rule(&result, "SEPA_CDTR_NM"),
+        "Expected SEPA_CDTR_NM for missing creditor name; got: {:?}",
+        result.errors
+    );
+}
+
+#[test]
+fn cbpr_rejects_missing_chrgbr() {
+    let xml = r#"<?xml version="1.0" encoding="UTF-8"?>
+<BizMsgEnvlp>
+  <AppHdr><BizMsgIdr>BAH-001</BizMsgIdr></AppHdr>
+  <Document xmlns="urn:iso:std:iso:20022:tech:xsd:pacs.008.001.13">
+    <FIToFICstmrCdtTrf>
+      <GrpHdr>
+        <MsgId>CBPR-NO-CHRGBR</MsgId>
+        <CreDtTm>2024-01-01T12:00:00Z</CreDtTm>
+        <NbOfTxs>1</NbOfTxs>
+        <SttlmInf><SttlmMtd>INGA</SttlmMtd></SttlmInf>
+        <InstgAgt><FinInstnId><BICFI>AAAAGB2LXXX</BICFI></FinInstnId></InstgAgt>
+        <InstdAgt><FinInstnId><BICFI>BBBBUS33XXX</BICFI></FinInstnId></InstdAgt>
+      </GrpHdr>
+      <CdtTrfTxInf>
+        <PmtId>
+          <EndToEndId>E2E-001</EndToEndId>
+          <UETR>97ed4827-7b6f-4491-a06f-b548d5a7512d</UETR>
+        </PmtId>
+        <IntrBkSttlmAmt Ccy="USD">100.00</IntrBkSttlmAmt>
+        <IntrBkSttlmDt>2024-01-01</IntrBkSttlmDt>
+        <Dbtr><Nm>Alice</Nm></Dbtr>
+        <DbtrAgt><FinInstnId><BICFI>AAAAGB2LXXX</BICFI></FinInstnId></DbtrAgt>
+        <CdtrAgt><FinInstnId><BICFI>BBBBUS33XXX</BICFI></FinInstnId></CdtrAgt>
+        <Cdtr><Nm>Bob</Nm></Cdtr>
+      </CdtTrfTxInf>
+    </FIToFICstmrCdtTrf>
+  </Document>
+</BizMsgEnvlp>"#;
+    let v = CbprPlusValidator::new();
+    let result = v.validate(xml, "pacs.008.001.13");
+    assert!(
+        has_error_with_rule(&result, "CBPR_CHRGBR_REQUIRED"),
+        "Expected CBPR_CHRGBR_REQUIRED; got: {:?}",
+        result.errors
+    );
+}
+
+#[test]
+fn cbpr_rejects_invalid_chrgbr_value() {
+    let xml = r#"<?xml version="1.0" encoding="UTF-8"?>
+<BizMsgEnvlp>
+  <AppHdr><BizMsgIdr>BAH-001</BizMsgIdr></AppHdr>
+  <Document xmlns="urn:iso:std:iso:20022:tech:xsd:pacs.008.001.13">
+    <FIToFICstmrCdtTrf>
+      <GrpHdr>
+        <MsgId>CBPR-BAD-CHRGBR</MsgId>
+        <CreDtTm>2024-01-01T12:00:00Z</CreDtTm>
+        <NbOfTxs>1</NbOfTxs>
+        <SttlmInf><SttlmMtd>INGA</SttlmMtd></SttlmInf>
+        <InstgAgt><FinInstnId><BICFI>AAAAGB2LXXX</BICFI></FinInstnId></InstgAgt>
+        <InstdAgt><FinInstnId><BICFI>BBBBUS33XXX</BICFI></FinInstnId></InstdAgt>
+      </GrpHdr>
+      <CdtTrfTxInf>
+        <PmtId>
+          <EndToEndId>E2E-001</EndToEndId>
+          <UETR>97ed4827-7b6f-4491-a06f-b548d5a7512d</UETR>
+        </PmtId>
+        <IntrBkSttlmAmt Ccy="USD">100.00</IntrBkSttlmAmt>
+        <IntrBkSttlmDt>2024-01-01</IntrBkSttlmDt>
+        <ChrgBr>XXXX</ChrgBr>
+        <Dbtr><Nm>Alice</Nm></Dbtr>
+        <DbtrAgt><FinInstnId><BICFI>AAAAGB2LXXX</BICFI></FinInstnId></DbtrAgt>
+        <CdtrAgt><FinInstnId><BICFI>BBBBUS33XXX</BICFI></FinInstnId></CdtrAgt>
+        <Cdtr><Nm>Bob</Nm></Cdtr>
+      </CdtTrfTxInf>
+    </FIToFICstmrCdtTrf>
+  </Document>
+</BizMsgEnvlp>"#;
+    let v = CbprPlusValidator::new();
+    let result = v.validate(xml, "pacs.008.001.13");
+    assert!(
+        has_error_with_rule(&result, "CBPR_CHRGBR_VALUE"),
+        "Expected CBPR_CHRGBR_VALUE for ChrgBr=XXXX; got: {:?}",
+        result.errors
+    );
+}
+
+#[test]
+fn cbpr_rejects_unclosed_parent_tag() {
+    // The <Dbtr> tag is intentionally unclosed — should produce an error
+    // instead of silently passing (verifies fix from item 1).
+    let xml = r#"<?xml version="1.0" encoding="UTF-8"?>
+<BizMsgEnvlp>
+  <AppHdr><BizMsgIdr>BAH-001</BizMsgIdr></AppHdr>
+  <Document xmlns="urn:iso:std:iso:20022:tech:xsd:pacs.008.001.13">
+    <FIToFICstmrCdtTrf>
+      <GrpHdr>
+        <MsgId>CBPR-UNCLOSED</MsgId>
+        <CreDtTm>2024-01-01T12:00:00Z</CreDtTm>
+        <NbOfTxs>1</NbOfTxs>
+        <SttlmInf><SttlmMtd>INGA</SttlmMtd></SttlmInf>
+        <InstgAgt><FinInstnId><BICFI>AAAAGB2LXXX</BICFI></FinInstnId></InstgAgt>
+        <InstdAgt><FinInstnId><BICFI>BBBBUS33XXX</BICFI></FinInstnId></InstdAgt>
+      </GrpHdr>
+      <CdtTrfTxInf>
+        <PmtId>
+          <EndToEndId>E2E-001</EndToEndId>
+          <UETR>97ed4827-7b6f-4491-a06f-b548d5a7512d</UETR>
+        </PmtId>
+        <IntrBkSttlmAmt Ccy="USD">100.00</IntrBkSttlmAmt>
+        <IntrBkSttlmDt>2024-01-01</IntrBkSttlmDt>
+        <ChrgBr>SHAR</ChrgBr>
+        <Dbtr><Nm>Alice</Nm>
+        <Cdtr><Nm>Bob</Nm></Cdtr>
+      </CdtTrfTxInf>
+    </FIToFICstmrCdtTrf>
+  </Document>
+</BizMsgEnvlp>"#;
+    let v = CbprPlusValidator::new();
+    let result = v.validate(xml, "pacs.008.001.13");
+    // Should detect unclosed Dbtr tag rather than silently passing.
+    let has_unclosed_error = result
+        .errors
+        .iter()
+        .any(|e| e.message.contains("unclosed") || e.rule_id.contains("DBTR_NM"));
+    assert!(
+        has_unclosed_error,
+        "Expected an error about unclosed Dbtr or missing Dbtr/Nm; got: {:?}",
+        result.errors
+    );
+}

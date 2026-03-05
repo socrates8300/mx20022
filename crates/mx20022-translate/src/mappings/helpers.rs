@@ -245,7 +245,7 @@ pub fn format_mt_message(
 }
 
 /// Pad or truncate a BIC to a 12-character LT address.
-fn pad_lt_address(bic: &str) -> String {
+pub(crate) fn pad_lt_address(bic: &str) -> String {
     // LT address = BIC8 (4+2+2) + LT letter (X) + branch (XXX) = 12 chars
     let clean: String = bic.chars().filter(char::is_ascii_alphanumeric).collect();
     match clean.len() {

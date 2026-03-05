@@ -143,7 +143,7 @@ impl SchemeValidator for CbprPlusValidator {
 
         // --- ChrgBr required and must be valid ------------------------------
         if let Some(chrg_br) = extract_element(xml, "ChrgBr") {
-            if !VALID_CHRGBR.contains(&chrg_br.as_str()) {
+            if !VALID_CHRGBR.contains(&chrg_br) {
                 errors.push(ValidationError::new(
                     "/Document/FIToFICstmrCdtTrf/CdtTrfTxInf/ChrgBr",
                     Severity::Error,
@@ -353,6 +353,30 @@ impl CbprPlusValidator {
     }
 }
 
+/// Check that a `BICFI` element exists inside a parent block (XML scan).
+fn check_bic_in_parent(
+    xml: &str,
+    parent_tag: &str,
+    path: &str,
+    rule_id: &str,
+    errors: &mut Vec<ValidationError>,
+) {
+    super::common::check_bic_in_parent(xml, parent_tag, path, rule_id, "CBPR+", errors);
+}
+
+/// Check that a `Nm` element exists inside a parent block (XML scan).
+fn check_name_required(
+    xml: &str,
+    parent_tag: &str,
+    rule_id: &str,
+    errors: &mut Vec<ValidationError>,
+) {
+    let path = format!("/Document/FIToFICstmrCdtTrf/CdtTrfTxInf/{parent_tag}");
+    super::common::check_name_in_parent(
+        xml, parent_tag, None, &path, rule_id, "CBPR+", errors, true,
+    );
+}
+
 /// Check that a BIC is present in an optional agent struct (typed).
 fn check_bic_typed(
     agent: Option<
@@ -405,73 +429,6 @@ fn check_control_characters(xml: &str, errors: &mut Vec<ValidationError>) {
             // Report only the first occurrence to avoid noise.
             break;
         }
-    }
-}
-
-/// Check that a `BICFI` element exists inside a parent block.
-fn check_bic_in_parent(
-    xml: &str,
-    parent_tag: &str,
-    path: &str,
-    rule_id: &str,
-    errors: &mut Vec<ValidationError>,
-) {
-    let open = format!("<{parent_tag}>");
-    let close = format!("</{parent_tag}>");
-    let Some(start) = xml.find(&open) else {
-        errors.push(ValidationError::new(
-            path,
-            Severity::Error,
-            rule_id,
-            format!("{parent_tag}/FinInstnId/BICFI is required for CBPR+ but the parent element is missing"),
-        ));
-        return;
-    };
-    let after = start + open.len();
-    let Some(end) = xml[after..].find(&close) else {
-        return;
-    };
-    let block = &xml[after..after + end];
-    if !has_element(block, "BICFI") {
-        errors.push(ValidationError::new(
-            path,
-            Severity::Error,
-            rule_id,
-            format!("{parent_tag}/FinInstnId/BICFI is required for CBPR+"),
-        ));
-    }
-}
-
-/// Check that a `Nm` element exists inside a parent block.
-fn check_name_required(
-    xml: &str,
-    parent_tag: &str,
-    rule_id: &str,
-    errors: &mut Vec<ValidationError>,
-) {
-    let open = format!("<{parent_tag}>");
-    let close = format!("</{parent_tag}>");
-    let Some(start) = xml.find(&open) else {
-        errors.push(ValidationError::new(
-            format!("/Document/FIToFICstmrCdtTrf/CdtTrfTxInf/{parent_tag}/Nm"),
-            Severity::Error,
-            rule_id,
-            format!("{parent_tag}/Nm is required for CBPR+ but {parent_tag} element is missing"),
-        ));
-        return;
-    };
-    let after = start + open.len();
-    let Some(end) = xml[after..].find(&close) else {
-        return;
-    };
-    let block = &xml[after..after + end];
-    if !has_element(block, "Nm") && super::xml_scan::extract_element(block, "Nm").is_none() {
-        errors.push(ValidationError::new(
-            format!("/Document/FIToFICstmrCdtTrf/CdtTrfTxInf/{parent_tag}/Nm"),
-            Severity::Error,
-            rule_id,
-            format!("{parent_tag}/Nm is required for CBPR+"),
-        ));
     }
 }
 

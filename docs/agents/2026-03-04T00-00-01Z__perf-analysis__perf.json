@@ -1,0 +1,58 @@
+{
+  "metadata": {
+    "task_short": "perf-analysis",
+    "agent_abbr": "perf",
+    "datetime_utc": "2026-03-04T00:00:01Z",
+    "filename": "2026-03-04T00-00-01Z__perf-analysis__perf.json",
+    "supersedes": null,
+    "version": "1.0"
+  },
+  "state": {
+    "objectives": [
+      "Analyze performance characteristics of mx20022 library",
+      "Identify hot-path allocations, regex caching, cloning patterns",
+      "Assess benchmark coverage"
+    ],
+    "constraints": [],
+    "important_facts": [
+      "Pattern validation uses compile-time codegen (no regex at runtime for newtypes)",
+      "FedNow UETR regex uses OnceLock correctly for caching",
+      "XML scanning uses string search, not full XML parsing (intentional design)",
+      "Benchmark coverage exists for parse, validate, and translate crates",
+      "Generated types use inline byte-level checks, no regex dependency in model crate"
+    ],
+    "decisions_made": [],
+    "artifacts": [],
+    "dependencies": [],
+    "risks_issues": [
+      "xml_scan format! allocations on every extract_element call: medium impact",
+      "Vec Validatable blanket impl allocates format! per index: low-medium impact on large messages",
+      "Translation pipeline clones strings that could borrow: low impact (translation is not hot-path)",
+      "Generated .to_string() on pattern violation messages: only on error path, acceptable"
+    ]
+  },
+  "iteration": {
+    "summary": "Completed full performance analysis of mx20022. Found that the architecture is well-designed from a performance standpoint: codegen emits inline byte-level pattern checks avoiding runtime regex, FedNow UETR regex uses OnceLock caching, parse/serialize delegates to quick-xml+serde. Main findings: xml_scan functions allocate format strings per call, Vec validation allocates per-index format strings, and the translation pipeline does unnecessary string cloning. Benchmark coverage is solid across all three key crates.",
+    "inputs_consulted": [
+      "crates/mx20022-model/src/common/validate.rs",
+      "crates/mx20022-codegen/src/emit/pattern_codegen.rs",
+      "crates/mx20022-validate/src/schemes/xml_scan.rs",
+      "crates/mx20022-validate/src/schemes/fednow.rs",
+      "crates/mx20022-validate/src/schemes/sepa.rs",
+      "crates/mx20022-validate/src/schemes/cbpr.rs",
+      "crates/mx20022-validate/src/rules/pattern.rs",
+      "crates/mx20022-validate/src/rules/mod.rs",
+      "crates/mx20022-translate/src/mappings/helpers.rs",
+      "crates/mx20022-translate/src/mappings/camt053_to_mt940.rs",
+      "crates/mx20022-parse/src/de.rs",
+      "crates/mx20022-parse/src/ser.rs",
+      "crates/mx20022-parse/src/envelope.rs",
+      "benches/ (all three crates)"
+    ],
+    "outputs_produced": ["Performance analysis report"],
+    "next_actions": []
+  },
+  "cross_agent_notes": {
+    "mentions": []
+  }
+}

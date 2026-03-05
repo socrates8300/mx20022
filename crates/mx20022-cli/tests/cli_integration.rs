@@ -68,6 +68,22 @@ fn inspect_pacs_008_xml_prints_message_type() {
 }
 
 #[test]
+fn inspect_pacs_002_xml_prints_message_type() {
+    let output = Command::new(bin_path())
+        .args([
+            "inspect",
+            &testdata("xml/pacs/pacs_002_001_14_minimal.xml").to_string_lossy(),
+        ])
+        .output()
+        .expect("failed to run mx20022-cli");
+
+    assert!(output.status.success());
+
+    let stdout = String::from_utf8_lossy(&output.stdout);
+    assert!(stdout.contains("pacs.002.001.14"), "stdout: {stdout}");
+}
+
+#[test]
 fn inspect_nonexistent_file_exits_nonzero() {
     let output = Command::new(bin_path())
         .args(["inspect", "/nonexistent/path/message.xml"])
@@ -97,6 +113,30 @@ fn validate_valid_pacs_exits_zero() {
     assert!(
         output.status.success(),
         "validate on valid message should exit 0, stderr: {}\nstdout: {}",
+        String::from_utf8_lossy(&output.stderr),
+        String::from_utf8_lossy(&output.stdout)
+    );
+
+    let stdout = String::from_utf8_lossy(&output.stdout);
+    assert!(
+        stdout.contains("OK"),
+        "expected OK in output, got:\n{stdout}"
+    );
+}
+
+#[test]
+fn validate_valid_pacs_002_exits_zero() {
+    let output = Command::new(bin_path())
+        .args([
+            "validate",
+            &testdata("xml/pacs/pacs_002_001_14_minimal.xml").to_string_lossy(),
+        ])
+        .output()
+        .expect("failed to run mx20022-cli");
+
+    assert!(
+        output.status.success(),
+        "validate on valid pacs.002 should exit 0, stderr: {}\nstdout: {}",
         String::from_utf8_lossy(&output.stderr),
         String::from_utf8_lossy(&output.stdout)
     );
@@ -231,4 +271,167 @@ fn codegen_nonexistent_xsd_exits_nonzero() {
         .expect("failed to run mx20022-cli");
 
     assert!(!output.status.success());
+}
+
+// ---------------------------------------------------------------------------
+// validate --scheme
+// ---------------------------------------------------------------------------
+
+fn scheme_testdata(rel: &str) -> PathBuf {
+    let crate_root = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
+    crate_root
+        .join("../../testdata/schemes")
+        .join(rel)
+        .canonicalize()
+        .unwrap_or_else(|_| panic!("scheme testdata path not found: {rel}"))
+}
+
+#[test]
+fn validate_with_scheme_fednow_valid_exits_zero() {
+    let output = Command::new(bin_path())
+        .args([
+            "validate",
+            &scheme_testdata("fednow/valid_pacs008.xml").to_string_lossy(),
+            "--scheme",
+            "fednow",
+        ])
+        .output()
+        .expect("failed to run mx20022-cli");
+
+    assert!(
+        output.status.success(),
+        "validate --scheme fednow should exit 0 for valid input, stderr: {}\nstdout: {}",
+        String::from_utf8_lossy(&output.stderr),
+        String::from_utf8_lossy(&output.stdout)
+    );
+}
+
+#[test]
+fn validate_with_scheme_sepa_valid_exits_zero() {
+    let output = Command::new(bin_path())
+        .args([
+            "validate",
+            &scheme_testdata("sepa/valid_pacs008.xml").to_string_lossy(),
+            "--scheme",
+            "sepa",
+        ])
+        .output()
+        .expect("failed to run mx20022-cli");
+
+    assert!(
+        output.status.success(),
+        "validate --scheme sepa should exit 0 for valid input, stderr: {}\nstdout: {}",
+        String::from_utf8_lossy(&output.stderr),
+        String::from_utf8_lossy(&output.stdout)
+    );
+}
+
+#[test]
+fn validate_with_scheme_cbpr_valid_exits_zero() {
+    let output = Command::new(bin_path())
+        .args([
+            "validate",
+            &scheme_testdata("cbpr/valid_pacs008.xml").to_string_lossy(),
+            "--scheme",
+            "cbpr",
+        ])
+        .output()
+        .expect("failed to run mx20022-cli");
+
+    assert!(
+        output.status.success(),
+        "validate --scheme cbpr should exit 0 for valid input, stderr: {}\nstdout: {}",
+        String::from_utf8_lossy(&output.stderr),
+        String::from_utf8_lossy(&output.stdout)
+    );
+}
+
+#[test]
+fn validate_with_scheme_fednow_invalid_catches_error() {
+    let output = Command::new(bin_path())
+        .args([
+            "validate",
+            &scheme_testdata("fednow/invalid_eur.xml").to_string_lossy(),
+            "--scheme",
+            "fednow",
+        ])
+        .output()
+        .expect("failed to run mx20022-cli");
+
+    assert!(
+        !output.status.success(),
+        "validate --scheme fednow should exit non-zero for invalid input"
+    );
+
+    let stdout = String::from_utf8_lossy(&output.stdout);
+    assert!(
+        stdout.contains("FEDNOW_CURRENCY"),
+        "expected FEDNOW_CURRENCY in output, got:\n{stdout}"
+    );
+}
+
+#[test]
+fn validate_with_unknown_scheme_exits_nonzero() {
+    let output = Command::new(bin_path())
+        .args([
+            "validate",
+            &testdata("xml/pacs/pacs_008_001_13_minimal.xml").to_string_lossy(),
+            "--scheme",
+            "nonexistent",
+        ])
+        .output()
+        .expect("failed to run mx20022-cli");
+
+    assert!(
+        !output.status.success(),
+        "validate with unknown scheme should exit non-zero"
+    );
+}
+
+// ---------------------------------------------------------------------------
+// translate
+// ---------------------------------------------------------------------------
+
+#[test]
+fn translate_mt103_to_pacs008_exits_zero() {
+    let output = Command::new(bin_path())
+        .args([
+            "translate",
+            &testdata("mt/mt103.txt").to_string_lossy(),
+            "--to",
+            "pacs008",
+        ])
+        .output()
+        .expect("failed to run mx20022-cli");
+
+    assert!(
+        output.status.success(),
+        "translate mt103 -> pacs008 should exit 0, stderr: {}\nstdout: {}",
+        String::from_utf8_lossy(&output.stderr),
+        String::from_utf8_lossy(&output.stdout)
+    );
+
+    let stdout = String::from_utf8_lossy(&output.stdout);
+    assert!(
+        stdout.contains("FIToFICstmrCdtTrf") || stdout.contains("pacs.008"),
+        "expected pacs.008 content in output, got:\n{stdout}"
+    );
+}
+
+#[test]
+fn translate_nonexistent_file_exits_nonzero() {
+    let output = Command::new(bin_path())
+        .args([
+            "translate",
+            "/nonexistent/path/message.txt",
+            "--to",
+            "pacs008",
+        ])
+        .output()
+        .expect("failed to run mx20022-cli");
+
+    assert!(
+        !output.status.success(),
+        "translate on missing file should exit non-zero"
+    );
 }

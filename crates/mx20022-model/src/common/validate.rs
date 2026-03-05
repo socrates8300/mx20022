@@ -211,4 +211,73 @@ mod tests {
         };
         let _: &dyn std::error::Error = &err;
     }
+
+    // ── Blanket impl tests ───────────────────────────────────────────────
+
+    /// Test helper: a type that always produces one violation.
+    struct AlwaysViolates;
+    impl Validatable for AlwaysViolates {
+        fn validate_constraints(&self, path: &str, violations: &mut Vec<ConstraintViolation>) {
+            violations.push(ConstraintViolation {
+                path: path.to_string(),
+                message: "always fails".to_string(),
+                kind: ConstraintKind::Pattern,
+            });
+        }
+    }
+
+    #[test]
+    fn option_none_produces_no_violations() {
+        let val: Option<AlwaysViolates> = None;
+        let mut v = vec![];
+        val.validate_constraints("/root", &mut v);
+        assert!(v.is_empty());
+    }
+
+    #[test]
+    fn option_some_delegates_with_path() {
+        let val: Option<AlwaysViolates> = Some(AlwaysViolates);
+        let mut v = vec![];
+        val.validate_constraints("/root/field", &mut v);
+        assert_eq!(v.len(), 1);
+        assert_eq!(v[0].path, "/root/field");
+    }
+
+    #[test]
+    fn vec_empty_produces_no_violations() {
+        let val: Vec<AlwaysViolates> = vec![];
+        let mut v = vec![];
+        val.validate_constraints("/root", &mut v);
+        assert!(v.is_empty());
+    }
+
+    #[test]
+    fn vec_indexes_path_correctly() {
+        let val = vec![AlwaysViolates, AlwaysViolates, AlwaysViolates];
+        let mut v = vec![];
+        val.validate_constraints("/root/items", &mut v);
+        assert_eq!(v.len(), 3);
+        assert_eq!(v[0].path, "/root/items[0]");
+        assert_eq!(v[1].path, "/root/items[1]");
+        assert_eq!(v[2].path, "/root/items[2]");
+    }
+
+    #[test]
+    fn choice_wrapper_delegates_with_same_path() {
+        let val = super::super::ChoiceWrapper {
+            inner: AlwaysViolates,
+        };
+        let mut v = vec![];
+        val.validate_constraints("/root/choice", &mut v);
+        assert_eq!(v.len(), 1);
+        assert_eq!(v[0].path, "/root/choice");
+    }
+
+    #[test]
+    fn string_produces_no_violations() {
+        let val = "hello".to_string();
+        let mut v = vec![];
+        val.validate_constraints("/root", &mut v);
+        assert!(v.is_empty());
+    }
 }

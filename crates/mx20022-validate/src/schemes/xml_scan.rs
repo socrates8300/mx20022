@@ -31,10 +31,10 @@
 /// use mx20022_validate::schemes::xml_scan::extract_element;
 ///
 /// let xml = "<Doc><NbOfTxs>1</NbOfTxs></Doc>";
-/// assert_eq!(extract_element(xml, "NbOfTxs").as_deref(), Some("1"));
+/// assert_eq!(extract_element(xml, "NbOfTxs"), Some("1"));
 /// assert_eq!(extract_element(xml, "Missing"), None);
 /// ```
-pub fn extract_element(xml: &str, tag: &str) -> Option<String> {
+pub fn extract_element<'a>(xml: &'a str, tag: &str) -> Option<&'a str> {
     // Match both `<Tag>` and `<Tag attr="val">` by searching for the tag prefix
     // and then finding the `>` that ends the opening tag.
     let close = format!("</{tag}>");
@@ -51,7 +51,7 @@ pub fn extract_element(xml: &str, tag: &str) -> Option<String> {
     let content_start = tag_start + gt + 1;
 
     let end = xml[content_start..].find(&close)?;
-    Some(xml[content_start..content_start + end].trim().to_owned())
+    Some(xml[content_start..content_start + end].trim())
 }
 
 /// Extract the text content of every `<tag>value</tag>` in `xml`.
@@ -67,7 +67,7 @@ pub fn extract_element(xml: &str, tag: &str) -> Option<String> {
 /// let names = extract_all_elements(xml, "Nm");
 /// assert_eq!(names, vec!["Alice", "Bob"]);
 /// ```
-pub fn extract_all_elements(xml: &str, tag: &str) -> Vec<String> {
+pub fn extract_all_elements<'a>(xml: &'a str, tag: &str) -> Vec<&'a str> {
     let close = format!("</{tag}>");
     let prefix_bare = format!("<{tag}>");
     let prefix_attr = format!("<{tag} ");
@@ -90,7 +90,7 @@ pub fn extract_all_elements(xml: &str, tag: &str) -> Vec<String> {
         let content_start = tag_start + gt + 1;
         let tail = &remaining[content_start..];
         if let Some(end_pos) = tail.find(&close) {
-            results.push(tail[..end_pos].trim().to_owned());
+            results.push(tail[..end_pos].trim());
             remaining = &tail[end_pos + close.len()..];
         } else {
             break;
@@ -111,11 +111,11 @@ pub fn extract_all_elements(xml: &str, tag: &str) -> Vec<String> {
 ///
 /// let xml = r#"<IntrBkSttlmAmt Ccy="USD">1000.00</IntrBkSttlmAmt>"#;
 /// assert_eq!(
-///     extract_attribute(xml, "IntrBkSttlmAmt", "Ccy").as_deref(),
+///     extract_attribute(xml, "IntrBkSttlmAmt", "Ccy"),
 ///     Some("USD")
 /// );
 /// ```
-pub fn extract_attribute(xml: &str, tag: &str, attr: &str) -> Option<String> {
+pub fn extract_attribute<'a>(xml: &'a str, tag: &str, attr: &str) -> Option<&'a str> {
     // Find `<tag ` (must have a space after the tag name for attributes).
     let prefix = format!("<{tag} ");
     let tag_start = xml.find(&prefix)?;
@@ -128,7 +128,37 @@ pub fn extract_attribute(xml: &str, tag: &str, attr: &str) -> Option<String> {
     let attr_start = attrs_str.find(&attr_prefix)?;
     let value_start = attr_start + attr_prefix.len();
     let value_end = attrs_str[value_start..].find('"')?;
-    Some(attrs_str[value_start..value_start + value_end].to_owned())
+    Some(&attrs_str[value_start..value_start + value_end])
+}
+
+/// Extract all values of a named XML attribute (e.g. `Ccy="USD"`) from `xml`.
+///
+/// Scans for every occurrence of `attr_name="value"` and returns the values.
+/// Handles both regular (`>`) and self-closing (`/>`) element forms.
+///
+/// # Examples
+///
+/// ```
+/// use mx20022_validate::schemes::xml_scan::extract_all_attributes;
+///
+/// let xml = r#"<A Ccy="USD">1</A><B Ccy="EUR">2</B>"#;
+/// assert_eq!(extract_all_attributes(xml, "Ccy"), vec!["USD", "EUR"]);
+/// ```
+pub fn extract_all_attributes<'a>(xml: &'a str, attr_name: &str) -> Vec<&'a str> {
+    let needle = format!("{attr_name}=\"");
+    let mut results = Vec::new();
+    let mut remaining = xml;
+    while let Some(pos) = remaining.find(&needle) {
+        let after_eq = pos + needle.len();
+        let tail = &remaining[after_eq..];
+        if let Some(end_pos) = tail.find('"') {
+            results.push(tail[..end_pos].trim());
+            remaining = &tail[end_pos + 1..];
+        } else {
+            break;
+        }
+    }
+    results
 }
 
 /// Return `true` if the given tag appears anywhere in `xml`.
@@ -168,13 +198,13 @@ mod tests {
     #[test]
     fn extract_element_simple() {
         let xml = "<Root><MsgId>ABC123</MsgId></Root>";
-        assert_eq!(extract_element(xml, "MsgId").as_deref(), Some("ABC123"));
+        assert_eq!(extract_element(xml, "MsgId"), Some("ABC123"));
     }
 
     #[test]
     fn extract_element_trims_whitespace() {
         let xml = "<Root><MsgId>  ABC123  </MsgId></Root>";
-        assert_eq!(extract_element(xml, "MsgId").as_deref(), Some("ABC123"));
+        assert_eq!(extract_element(xml, "MsgId"), Some("ABC123"));
     }
 
     #[test]
@@ -186,7 +216,7 @@ mod tests {
     #[test]
     fn extract_element_returns_first_match() {
         let xml = "<Root><Nm>Alice</Nm><Nm>Bob</Nm></Root>";
-        assert_eq!(extract_element(xml, "Nm").as_deref(), Some("Alice"));
+        assert_eq!(extract_element(xml, "Nm"), Some("Alice"));
     }
 
     #[test]
@@ -206,16 +236,13 @@ mod tests {
     #[test]
     fn extract_attribute_finds_value() {
         let xml = r#"<Amount Ccy="USD">100.00</Amount>"#;
-        assert_eq!(
-            extract_attribute(xml, "Amount", "Ccy").as_deref(),
-            Some("USD")
-        );
+        assert_eq!(extract_attribute(xml, "Amount", "Ccy"), Some("USD"));
     }
 
     #[test]
     fn extract_attribute_self_closing() {
         let xml = r#"<Amt Ccy="EUR"/>"#;
-        assert_eq!(extract_attribute(xml, "Amt", "Ccy").as_deref(), Some("EUR"));
+        assert_eq!(extract_attribute(xml, "Amt", "Ccy"), Some("EUR"));
     }
 
     #[test]

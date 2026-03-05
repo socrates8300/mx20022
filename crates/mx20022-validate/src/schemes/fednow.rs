@@ -49,7 +49,15 @@ impl FedNowValidator {
 
     /// Create a validator with a custom maximum amount (e.g. 25,000,000 USD for
     /// high-value participants).
+    ///
+    /// # Panics
+    ///
+    /// Panics if `max_amount` is not positive or not finite.
     pub fn with_max_amount(max_amount: f64) -> Self {
+        assert!(
+            max_amount > 0.0 && max_amount.is_finite(),
+            "max_amount must be positive and finite"
+        );
         Self { max_amount }
     }
 }
@@ -170,7 +178,7 @@ impl SchemeValidator for FedNowValidator {
         // --- Amount range ---------------------------------------------------
         if let Some(amt_str) = extract_element(xml, "IntrBkSttlmAmt") {
             self.validate_amount(
-                &amt_str,
+                amt_str,
                 "/Document/FIToFICstmrCdtTrf/CdtTrfTxInf/IntrBkSttlmAmt",
                 &mut errors,
             );
@@ -178,7 +186,7 @@ impl SchemeValidator for FedNowValidator {
 
         // --- UETR is required and must be UUID v4 ---------------------------
         if let Some(uetr) = extract_element(xml, "UETR") {
-            if !is_valid_uetr(&uetr) {
+            if !is_valid_uetr(uetr) {
                 errors.push(ValidationError::new(
                     "/Document/FIToFICstmrCdtTrf/CdtTrfTxInf/PmtId/UETR",
                     Severity::Error,
@@ -293,6 +301,8 @@ impl FedNowValidator {
                         format!("FedNow minimum amount is 0.01 USD; got \"{amt_str}\""),
                     ));
                 }
+                // Safety: max_amount is validated as positive+finite in constructor,
+                // so this cast is safe for any realistic USD amount.
                 #[allow(clippy::cast_possible_truncation, clippy::cast_sign_loss)]
                 let max_cents = (self.max_amount * 100.0) as u64;
                 if cents > max_cents {
@@ -476,56 +486,8 @@ impl FedNowValidator {
     }
 }
 
-/// Parse a decimal amount string like `"1000.50"` into integer cents (`100050`).
-///
-/// # Contract
-///
-/// The input **must** contain exactly one `.` followed by exactly **2** decimal
-/// digits (e.g. `"100.50"`, `"0.01"`). This matches the format enforced by the
-/// XSD `ActiveCurrencyAndAmount` type that all callers validate against before
-/// reaching this function.
-///
-/// Returns `None` for non-conforming input:
-/// - No decimal point (e.g. `"100"`)
-/// - Integer or fractional part fails `u64` parsing (e.g. `"abc.50"`, `"100.ab"`)
-///
-/// A `debug_assert!` fires in test/dev builds if the fractional part is not
-/// exactly 2 digits, catching misuse early without penalising release builds.
-pub(crate) fn parse_amount_cents(s: &str) -> Option<u64> {
-    let dot = s.find('.')?;
-    let integer: u64 = s[..dot].parse().ok()?;
-    let frac_str = &s[dot + 1..];
-    debug_assert!(
-        frac_str.len() == 2,
-        "parse_amount_cents expects exactly 2 decimal digits, got {frac_str:?}"
-    );
-    let frac: u64 = frac_str.parse().ok()?;
-    Some(integer * 100 + frac)
-}
-
-/// Like [`parse_amount_cents`], but accepts 0–2 decimal digits.
-///
-/// - `"1000"` → `Some(100_000)`
-/// - `"1000.5"` → `Some(100_050)`
-/// - `"1000.50"` → `Some(100_050)`
-/// - `"1000.500"` → `None` (>2 decimal digits)
-/// - `"abc"` → `None`
-pub(crate) fn parse_amount_cents_lenient(s: &str) -> Option<u64> {
-    if let Some(dot) = s.find('.') {
-        let integer: u64 = s[..dot].parse().ok()?;
-        let frac_str = &s[dot + 1..];
-        let frac: u64 = match frac_str.len() {
-            0 => 0,
-            1 => frac_str.parse::<u64>().ok()? * 10,
-            2 => frac_str.parse().ok()?,
-            _ => return None,
-        };
-        Some(integer * 100 + frac)
-    } else {
-        let integer: u64 = s.parse().ok()?;
-        Some(integer * 100)
-    }
-}
+// Amount parsing functions are defined in `super::common`.
+use super::common::parse_amount_cents;
 
 /// Check that the `<Nm>` child inside `<parent_tag>` does not exceed 140 chars.
 fn check_name_length(
@@ -534,28 +496,17 @@ fn check_name_length(
     errors: &mut Vec<ValidationError>,
     rule_id: &str,
 ) {
-    // Find the parent element, then look for a Nm within its content.
-    let open = format!("<{parent_tag}>");
-    let close = format!("</{parent_tag}>");
-    let Some(start) = xml.find(&open) else { return };
-    let after = start + open.len();
-    let Some(end) = xml[after..].find(&close) else {
-        return;
-    };
-    let block = &xml[after..after + end];
-    if let Some(nm) = extract_element(block, "Nm") {
-        if nm.len() > 140 {
-            errors.push(ValidationError::new(
-                format!("/Document/FIToFICstmrCdtTrf/CdtTrfTxInf/{parent_tag}/Nm"),
-                Severity::Error,
-                rule_id,
-                format!(
-                    "{parent_tag}/Nm must be at most 140 characters; got {} characters",
-                    nm.len()
-                ),
-            ));
-        }
-    }
+    let path = format!("/Document/FIToFICstmrCdtTrf/CdtTrfTxInf/{parent_tag}");
+    super::common::check_name_in_parent(
+        xml,
+        parent_tag,
+        Some(140),
+        &path,
+        rule_id,
+        "FedNow",
+        errors,
+        false, // FedNow doesn't require names, only limits length
+    );
 }
 
 #[cfg(test)]

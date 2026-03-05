@@ -1,0 +1,61 @@
+{
+  "metadata": {
+    "task_short": "mt940-block2-fix",
+    "agent_abbr": "gtg",
+    "datetime_utc": "2026-03-04T00:00:00Z",
+    "filename": "2026-03-04T00-00-00Z__mt940-block2-fix__gtg.json",
+    "supersedes": null,
+    "version": "1.0"
+  },
+  "state": {
+    "objectives": [
+      "Grade the MT940 Block 2 Output Header fix in camt053_to_mt940.rs",
+      "Verify correctness of the format string per SWIFT spec",
+      "Verify test adequacy after workaround removal"
+    ],
+    "constraints": [
+      "Block 2 Output must be exactly 47 chars: O(1)+msg_type(3)+input_time(4)+MIR(28)+output_date(6)+output_time(4)+priority(1)",
+      "MIR is 28 chars: date(6)+LT(12)+session(4)+sequence(6)"
+    ],
+    "important_facts": [
+      "The new format string produces 49 chars instead of the required 47 - has 2 extra zeros after the sender_lt in the post-MIR section",
+      "The parser still accepts the output because it only requires >= 45 chars after O and slices fixed positions, but priority at [45] reads '0' instead of 'N'",
+      "Priority '0' doesn't match S|N|U filter so becomes None instead of Some('N')",
+      "The roundtrip test passes because parse_mt940 only validates block4 fields, not block2 structure",
+      "pad_lt_address is duplicated between camt053_to_mt940.rs and helpers.rs",
+      "_receiver_lt computed but unused - dead code"
+    ],
+    "decisions_made": [
+      "FAILED: format string has 2 extra zero characters, producing non-spec-compliant Block 2 output"
+    ],
+    "artifacts": [
+      "crates/mx20022-translate/src/mappings/camt053_to_mt940.rs:151"
+    ],
+    "dependencies": [],
+    "risks_issues": [
+      "Block 2 non-compliance: any downstream system parsing the generated MT940 would get wrong priority or fail stricter validation",
+      "No test validates block 2 structure of generated output"
+    ]
+  },
+  "iteration": {
+    "summary": "Graded the MT940 Block 2 fix. The fix improved the old format (39 chars, too short to parse) to a new format that parses, but introduced 2 extra zero characters making the output 49 chars instead of the spec-required 47. The priority field is silently lost. Tests pass only because they don't validate block 2 correctness. Score: 6/10 FAILED.",
+    "inputs_consulted": [
+      "crates/mx20022-translate/src/mappings/camt053_to_mt940.rs",
+      "crates/mx20022-translate/tests/translation.rs",
+      "crates/mx20022-translate/src/mt/parser.rs",
+      "crates/mx20022-translate/src/mappings/helpers.rs"
+    ],
+    "outputs_produced": [
+      "Grading report"
+    ],
+    "next_actions": [
+      "Fix format string to remove 2 extra zeros",
+      "Add test that validates block 2 length and priority of generated output",
+      "Consider extracting pad_lt_address to shared module",
+      "Consider removing _receiver_lt dead code"
+    ]
+  },
+  "cross_agent_notes": {
+    "mentions": []
+  }
+}

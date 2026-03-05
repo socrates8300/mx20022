@@ -112,68 +112,40 @@ fn parse_pattern(pattern: &str) -> Option<Vec<Segment>> {
     Some(segments)
 }
 
+/// Read a single byte from `bytes` at `*pos`, handling `\`-escapes.
+/// Advances `*pos` past the consumed byte(s). Returns `None` on EOF.
+fn read_char_or_escape(bytes: &[u8], pos: &mut usize) -> Option<u8> {
+    if *pos >= bytes.len() {
+        return None;
+    }
+    if bytes[*pos] == b'\\' {
+        *pos += 1;
+        if *pos >= bytes.len() {
+            return None;
+        }
+    }
+    let ch = bytes[*pos];
+    *pos += 1;
+    Some(ch)
+}
+
 fn parse_char_class(bytes: &[u8], start: usize) -> Option<(Vec<CharRange>, usize)> {
     debug_assert_eq!(bytes[start], b'[');
     let mut pos = start + 1;
     let mut ranges = Vec::new();
 
     while pos < bytes.len() && bytes[pos] != b']' {
-        if bytes[pos] == b'\\' {
-            pos += 1;
-            if pos >= bytes.len() {
-                return None;
-            }
-            let ch = bytes[pos];
-            pos += 1;
-            if pos < bytes.len()
-                && bytes[pos] == b'-'
-                && pos + 1 < bytes.len()
-                && bytes[pos + 1] != b']'
-            {
-                pos += 1; // skip '-'
-                let end_ch = if bytes[pos] == b'\\' {
-                    pos += 1;
-                    if pos >= bytes.len() {
-                        return None;
-                    }
-                    let c = bytes[pos];
-                    pos += 1;
-                    c
-                } else {
-                    let c = bytes[pos];
-                    pos += 1;
-                    c
-                };
-                ranges.push(CharRange::Range(ch, end_ch));
-            } else {
-                ranges.push(CharRange::Single(ch));
-            }
+        let ch = read_char_or_escape(bytes, &mut pos)?;
+        if pos < bytes.len()
+            && bytes[pos] == b'-'
+            && pos + 1 < bytes.len()
+            && bytes[pos + 1] != b']'
+        {
+            pos += 1; // skip '-'
+            let end_ch = read_char_or_escape(bytes, &mut pos)?;
+            ranges.push(CharRange::Range(ch, end_ch));
         } else {
-            let ch = bytes[pos];
-            pos += 1;
-            if pos < bytes.len()
-                && bytes[pos] == b'-'
-                && pos + 1 < bytes.len()
-                && bytes[pos + 1] != b']'
-            {
-                pos += 1; // skip '-'
-                let end_ch = if bytes[pos] == b'\\' {
-                    pos += 1;
-                    if pos >= bytes.len() {
-                        return None;
-                    }
-                    let c = bytes[pos];
-                    pos += 1;
-                    c
-                } else {
-                    let c = bytes[pos];
-                    pos += 1;
-                    c
-                };
-                ranges.push(CharRange::Range(ch, end_ch));
-            } else {
-                ranges.push(CharRange::Single(ch));
-            }
+            ranges.push(CharRange::Single(ch));
         }
     }
 

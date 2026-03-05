@@ -228,17 +228,44 @@ fn test_mt940_roundtrip() {
     let result = camt053_to_mt940(&doc).unwrap();
     let mt_text = result.message;
 
-    // The roundtripped MT940 should contain the transaction reference and account ID.
-    assert!(
-        mt_text.contains(":20:STMT-REF-001"),
-        "roundtrip: {}",
-        mt_text
+    let reparsed_msg = parse(&mt_text).unwrap();
+    let reparsed = parse_mt940(&reparsed_msg.block4).unwrap();
+
+    // Field-level comparison
+    assert_eq!(reparsed.transaction_reference, mt940.transaction_reference);
+    assert_eq!(reparsed.account_id, mt940.account_id);
+    assert_eq!(reparsed.statement_number, mt940.statement_number);
+    // Balances
+    assert_eq!(
+        reparsed.opening_balance.amount,
+        mt940.opening_balance.amount
     );
-    assert!(
-        mt_text.contains(":25:NL91ABNA0417164300"),
-        "roundtrip: {}",
-        mt_text
+    assert_eq!(
+        reparsed.opening_balance.currency,
+        mt940.opening_balance.currency
     );
+    assert_eq!(
+        reparsed.opening_balance.dc_indicator,
+        mt940.opening_balance.dc_indicator
+    );
+    assert_eq!(
+        reparsed.closing_balance.amount,
+        mt940.closing_balance.amount
+    );
+    assert_eq!(
+        reparsed.closing_balance.currency,
+        mt940.closing_balance.currency
+    );
+    // Statement lines
+    assert_eq!(reparsed.statement_lines.len(), mt940.statement_lines.len());
+    if let (Some(orig), Some(rp)) = (
+        mt940.statement_lines.first(),
+        reparsed.statement_lines.first(),
+    ) {
+        assert_eq!(rp.amount, orig.amount);
+        assert_eq!(rp.dc_mark, orig.dc_mark);
+        assert_eq!(rp.value_date, orig.value_date);
+    }
 }
 
 // ---------------------------------------------------------------------------
