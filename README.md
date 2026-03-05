@@ -1,10 +1,14 @@
 # mx20022
 
-Rust library for ISO 20022 financial messages. Parse, validate, and translate
-between SWIFT MT and ISO 20022 MX formats.
+Production-grade ISO 20022 toolkit for Rust. Strongly-typed message models
+generated from official XSD schemas, with built-in validation for FedNow, SEPA,
+and CBPR+ payment rails and bidirectional SWIFT MT ↔ MX translation — everything
+you need to build, validate, and migrate financial messages in a single crate.
 
+[![Crates.io](https://img.shields.io/crates/v/mx20022.svg)](https://crates.io/crates/mx20022)
+[![docs.rs](https://docs.rs/mx20022/badge.svg)](https://docs.rs/mx20022)
 [![CI](https://github.com/socrates8300/mx20022/actions/workflows/ci.yml/badge.svg)](https://github.com/socrates8300/mx20022/actions/workflows/ci.yml)
-[![License: Apache-2.0 OR MIT](https://img.shields.io/badge/license-Apache--2.0%20OR%20MIT-blue.svg)](#license)
+[![License: Apache-2.0](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](#license)
 [![MSRV: 1.75.0](https://img.shields.io/badge/MSRV-1.75.0-orange.svg)](https://releases.rs/docs/1.75.0/)
 
 ## Features
@@ -27,31 +31,36 @@ between SWIFT MT and ISO 20022 MX formats.
   full message trees via the `Validatable` trait
 - **Code generation** — XSD → intermediate representation → Rust source
 
-## Workspace Crates
+## Installation
 
-| Crate | Description |
-|-------|-------------|
-| `mx20022` | Umbrella re-export (use this as your dependency) |
-| `mx20022-model` | Generated types + hand-written common types |
-| `mx20022-parse` | XML deserialization and serialization |
-| `mx20022-validate` | Schema rules, business rules, scheme validators |
-| `mx20022-translate` | MT ↔ MX bidirectional translation |
-| `mx20022-codegen` | XSD → Rust code generator |
-| `mx20022-cli` | Command-line tool |
+### Umbrella crate (recommended)
 
-## Quick Start
+The easiest way to get started — re-exports model, parse, validate, and translate
+with all message families enabled:
 
-### Requirements
-
-- Rust 1.75.0 or later (stable)
-- [just](https://github.com/casey/just) (optional, for task runner shortcuts)
-
-### Add the dependency
-
-```toml
-[dependencies]
-mx20022 = "0.1"
+```bash
+cargo add mx20022
 ```
+
+### Individual crates
+
+Pick only what you need for smaller compile times and dependency footprint:
+
+```bash
+cargo add mx20022-model    # Generated types + common types
+cargo add mx20022-parse    # XML parsing and serialization
+cargo add mx20022-validate # Schema, business rule, and scheme validation
+cargo add mx20022-translate # MT ↔ MX bidirectional translation
+cargo add mx20022-codegen  # XSD → Rust code generator
+```
+
+### CLI tool
+
+```bash
+cargo install mx20022-cli
+```
+
+### Feature flags
 
 Feature flags on `mx20022-model` control which message families are compiled.
 The umbrella crate enables all of them.
@@ -63,6 +72,8 @@ The umbrella crate enables all of them.
 | `camt` | camt.029, camt.053, camt.054, camt.056 | no |
 | `head` | head.001 | no |
 | `all` | all of the above | no |
+
+## Usage
 
 ### Parse an ISO 20022 message
 
@@ -143,12 +154,6 @@ println!("{xml}");
 ```
 
 ## CLI
-
-Build and install the CLI:
-
-```bash
-cargo install --path crates/mx20022-cli
-```
 
 ### Commands
 
@@ -265,11 +270,5 @@ and `cargo fmt --check` before merge. CI runs these on both stable and MSRV
 
 ## License
 
-Licensed under either of:
-
-- Apache License, Version 2.0 ([LICENSE-APACHE](LICENSE-APACHE) or
-  <https://www.apache.org/licenses/LICENSE-2.0>)
-- MIT License ([LICENSE-MIT](LICENSE-MIT) or
-  <https://opensource.org/licenses/MIT>)
-
-at your option.
+Licensed under the Apache License, Version 2.0 ([LICENSE-APACHE](LICENSE-APACHE)
+or <https://www.apache.org/licenses/LICENSE-2.0>).

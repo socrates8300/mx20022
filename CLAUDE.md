@@ -17,7 +17,7 @@ Rust ISO 20022 financial message library. Cargo workspace with 7 crates.
 - **Test:** `cargo test --workspace --all-features`
 - **Lint:** `cargo clippy --workspace --all-features -- -D warnings`
 - **Format:** `cargo fmt --all -- --check`
-- **Edition:** 2021, MSRV 1.75.0, License: Apache-2.0 OR MIT
+- **Edition:** 2021, MSRV 1.75.0, License: Apache-2.0
 
 ## Workspace Layout
 

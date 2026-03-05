@@ -289,7 +289,7 @@ Minimize dependencies. Prefer well-maintained, audited crates.'),
 
 Edition: 2021
 MSRV: 1.75.0 (for stable async traits, C-string literals)
-License: Apache-2.0 OR MIT (Rust ecosystem convention)
+License: Apache-2.0
 Linting: clippy::pedantic with targeted allows
 Formatting: rustfmt with default settings + imports_granularity = "Crate"'),
 

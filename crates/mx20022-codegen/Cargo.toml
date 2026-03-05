@@ -1,13 +1,15 @@
 [package]
 name = "mx20022-codegen"
-version = "0.1.0"
-description = "XSD to Rust code generator for ISO 20022 message types"
+version = "0.1.1"
+description = "XSD-to-Rust code generator for ISO 20022 message types with constraint validation"
 edition.workspace = true
 rust-version.workspace = true
 license.workspace = true
 repository.workspace = true
-keywords.workspace = true
-categories.workspace = true
+homepage.workspace = true
+documentation = "https://docs.rs/mx20022-codegen"
+keywords = ["iso20022", "xsd", "codegen", "payments", "finance"]
+categories = ["development-tools", "encoding"]
 
 [[bin]]
 name = "mx20022-codegen"

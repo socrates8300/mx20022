@@ -15,7 +15,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Cargo workspace with 7 crates and shared configuration
 - CI pipeline: check, test, clippy, fmt, cargo-deny on stable + MSRV 1.75.0
 - Development tooling: justfile task runner, pre-commit hooks, devcontainer
-- Dual license: Apache-2.0 OR MIT
+- License: Apache-2.0
 - `rust-toolchain.toml`, `deny.toml`, `.cargo/config.toml`
 - Dependabot for Cargo and GitHub Actions
 
