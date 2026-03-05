@@ -1,0 +1,111 @@
+{
+  "metadata": {
+    "task_short": "code-quality-review",
+    "agent_abbr": "cr",
+    "datetime_utc": "2026-03-05T08:17:05Z",
+    "filename": "2026-03-05T08-17-05Z__code-quality-review__cr.json",
+    "supersedes": "2026-03-05T04-22-43Z__code-quality-review__cr.json",
+    "version": "1.0"
+  },
+  "state": {
+    "objectives": [
+      "Review hand-written Rust code across 7 crates for quality, maintainability, and correctness",
+      "Check clean code principles, SOLID, DRY, naming, error handling, documentation, and Rust idioms",
+      "Cover all new files since last review (commits 355124b through e8b15ec)"
+    ],
+    "constraints": [
+      "Exclude generated/ directories from review scope",
+      "Focus on new/changed hand-written source files in this diff"
+    ],
+    "important_facts": [
+      "PRIOR ISSUE RESOLVED: mod97 duplication across iban.rs and lei.rs — now extracted to checkdigit.rs and imported via super::checkdigit::mod97 in both files",
+      "PRIOR ISSUE RESOLVED: RuleRegistry::validate_all non-deterministic ordering — rules moved from HashMap to BTreeMap in mod.rs line 87; validate_all now deterministic",
+      "PRIOR ISSUE RESOLVED: cbpr.rs check_name_required() behavioral bug (silent pass on missing closing tag) — now delegates to common::check_name_in_parent which reports unclosed element error via extract_parent_block",
+      "PRIOR ISSUE RESOLVED: cbpr.rs line 468 redundant has_element + extract_element — check_name_required() now delegates entirely to common::check_name_in_parent, no double-check",
+      "PRIOR ISSUE STILL OPEN: camt053_to_mt940.rs — DateAndDateTime2Choice match duplicated in extract_balance_date() (lines 196-201) and entry_to_mt61() inline closure (lines 219-224); same 5-line logic, no shared helper extracted",
+      "PRIOR ISSUE STILL OPEN: sepa.rs validate_pacs008_typed() — charset check on dbtr.nm and cdtr.nm (lines 477-503) is structurally identical copy-paste block; extractable to a closure or fn",
+      "PRIOR ISSUE STILL OPEN: roundtrip_all.rs make_fi() duplicated across 4+ test submodules (lines 103, 344, 536, 763); make_fi_agent variants at 966, 1042 are different types",
+      "NEW DESIGN ISSUE: sepa.rs validate_pacs008_typed() amount range (lines 436-474) is a near-verbatim copy of the XML-path amount logic (sepa.rs lines 188-228) — both blocks compute decimals, call parse_amount_cents_lenient, check < 1 and > 99_999_999_999; a shared fn validate_sepa_amount_cents() accepting (amt_str, path, errors) would eliminate ~35 lines",
+      "NEW DESIGN ISSUE: fednow.rs validate_pacs008_typed() amount validation is properly extracted to self.validate_amount() method (line 282) shared by both XML and typed paths — this is the correct pattern; SEPA should follow suit",
+      "CONFIRMED: emit_variable_length() IIFE in pattern_codegen.rs still not reviewed in this pass (not in diff for this iteration)",
+      "CONFIRMED: common.rs extract_parent_block() now correctly reports 'unclosed element' error when closing tag is absent — resolves the cbpr behavioral bug",
+      "DESIGN NOTE: validate.rs (CLI) MAX_FILE_SIZE doc comment (line 115) appears AFTER the constant it documents (the fn doc above it, the const is on line 116) — minor rustdoc ordering issue",
+      "DESIGN NOTE: translate.rs creation_time defaults to '2000-01-01T00:00:00' at line 145 — the silent default is a footgun for callers that omit it for MT->MX conversions"
+    ],
+    "decisions_made": [
+      "No code changes made — review only",
+      "Severity classification this iteration: High=1 (sepa.rs amount block duplication between XML and typed paths), Medium=2 (camt053_to_mt940.rs date extraction DRY still open, sepa.rs name charset DRY still open), Suggestions=3",
+      "Cumulative across all reviews: Critical=0, High=9, Suggestions=18"
+    ],
+    "artifacts": [
+      "crates/mx20022-validate/src/rules/checkdigit.rs",
+      "crates/mx20022-validate/src/rules/iban.rs",
+      "crates/mx20022-validate/src/rules/lei.rs",
+      "crates/mx20022-validate/src/rules/mod.rs",
+      "crates/mx20022-validate/src/schemes/cbpr.rs",
+      "crates/mx20022-validate/src/schemes/common.rs",
+      "crates/mx20022-validate/src/schemes/fednow.rs",
+      "crates/mx20022-validate/src/schemes/sepa.rs",
+      "crates/mx20022-validate/src/schemes/mod.rs",
+      "crates/mx20022-codegen/src/emit/newtypes.rs",
+      "crates/mx20022-codegen/src/emit/validate.rs",
+      "crates/mx20022-model/src/common/validate.rs",
+      "crates/mx20022-model/tests/newtype_validation.rs",
+      "crates/mx20022-cli/src/commands/validate.rs",
+      "crates/mx20022-cli/src/commands/translate.rs",
+      "crates/mx20022-translate/src/mappings/camt053_to_mt940.rs"
+    ],
+    "dependencies": [],
+    "risks_issues": [
+      "DRY: sepa.rs validate_pacs008_typed() amount block (lines 436-474) is a near-copy of validate() XML path amount block (lines 188-228); ~35 lines duplicated across the two validation paths",
+      "DRY: camt053_to_mt940.rs DateAndDateTime2Choice match duplicated in extract_balance_date() and entry_to_mt61() (prior finding, still open)",
+      "DRY: sepa.rs charset check on dbtr.nm / cdtr.nm (prior finding, still open)",
+      "DRY: roundtrip_all.rs make_fi() duplicated across 4 test submodules (prior finding, still open)",
+      "FOOTGUN: translate.rs line 145 effective_ts defaults to '2000-01-01T00:00:00' silently for MT->MX conversions when creation_time is None — callers may not notice",
+      "MINOR DOC: validate.rs MAX_FILE_SIZE doc comment appears after the fn signature docstring instead of immediately above the constant"
+    ]
+  },
+  "iteration": {
+    "summary": "Fourth full-pass code quality review covering all new hand-written files in commits 355124b..e8b15ec. Two major prior issues are now resolved: mod97 is extracted to a single checkdigit.rs (imported by both iban.rs and lei.rs), and RuleRegistry now uses BTreeMap giving deterministic validate_all ordering. The cbpr.rs behavioral bug (silent pass on unclosed element) is fully resolved via common.rs extract_parent_block() which reports an 'unclosed element' error. The new codegen files (newtypes.rs, validate.rs emit module) are well-structured with proper separation of ConstraintCheckParts, correct TryFrom/new()/From emission, and strong test coverage. The main new finding is that sepa.rs validate_pacs008_typed() duplicates the ~35-line amount validation block from the XML path; fednow.rs correctly solves this with a shared validate_amount() method. Two prior DRY issues remain open (camt053_to_mt940 date extraction, sepa.rs name charset blocks). The translate.rs silent default for creation_time is a latent footgun worth documenting.",
+    "inputs_consulted": [
+      "crates/mx20022-validate/src/rules/checkdigit.rs",
+      "crates/mx20022-validate/src/rules/iban.rs",
+      "crates/mx20022-validate/src/rules/lei.rs",
+      "crates/mx20022-validate/src/rules/mod.rs",
+      "crates/mx20022-validate/src/schemes/cbpr.rs",
+      "crates/mx20022-validate/src/schemes/common.rs",
+      "crates/mx20022-validate/src/schemes/fednow.rs",
+      "crates/mx20022-validate/src/schemes/sepa.rs",
+      "crates/mx20022-validate/src/schemes/mod.rs",
+      "crates/mx20022-codegen/src/emit/newtypes.rs",
+      "crates/mx20022-codegen/src/emit/validate.rs",
+      "crates/mx20022-model/src/common/validate.rs",
+      "crates/mx20022-model/tests/newtype_validation.rs",
+      "crates/mx20022-cli/src/commands/validate.rs",
+      "crates/mx20022-cli/src/commands/translate.rs",
+      "crates/mx20022-translate/src/mappings/camt053_to_mt940.rs",
+      "docs/agents/2026-03-05T04-22-43Z__code-quality-review__cr.json"
+    ],
+    "outputs_produced": [
+      "Full code review report (in assistant response)",
+      "Updated context file superseding prior review"
+    ],
+    "next_actions": [
+      "Extract SEPA amount validation in sepa.rs into a shared fn validate_sepa_amount(amt_str, path, errors) following the fednow.rs validate_amount() pattern",
+      "Extract shared fn extract_date_from_choice(v: &DateAndDateTime2Choice) -> String in camt053_to_mt940.rs (lines 196-201 and 219-224)",
+      "Extract sepa.rs charset check on names into a closure or private fn check_sepa_name_charset(nm: Option<&Max140Text>, path, errors)",
+      "Extract make_fi() into a shared test helper module in roundtrip_all.rs",
+      "Add doc comment to translate.rs line 145 noting the '2000-01-01T00:00:00' default is a stub that callers should override for production MT->MX conversions",
+      "Move validate.rs MAX_FILE_SIZE doc comment (line 115) to immediately above the constant rather than inside the fn docstring block"
+    ]
+  },
+  "cross_agent_notes": {
+    "mentions": [
+      {
+        "agent_abbr": "sec",
+        "filename": "2026-03-04T01-00-00Z__security-audit__sec.json",
+        "relevance_note": "cbpr.rs behavioral bug (silent pass on unclosed element) was also flagged as a security concern -- now resolved via common.rs extract_parent_block()"
+      }
+    ]
+  }
+}

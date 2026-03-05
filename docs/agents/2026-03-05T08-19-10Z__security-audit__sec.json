@@ -1,0 +1,67 @@
+{
+  "metadata": {
+    "task_short": "security-audit",
+    "agent_abbr": "sec",
+    "datetime_utc": "2026-03-05T08:19:10Z",
+    "filename": "2026-03-05T08-19-10Z__security-audit__sec.json",
+    "supersedes": null,
+    "version": "1.0"
+  },
+  "state": {
+    "objectives": [
+      "Perform comprehensive security audit of mx20022 Rust ISO 20022 library",
+      "Check OWASP Top 10 compliance for XML processing and file handling",
+      "Identify vulnerabilities in input validation, file handling, and dependency chain"
+    ],
+    "constraints": [
+      "Library crate (no auth/network surface), CLI tool is primary attack surface",
+      "unsafe_code = forbid at workspace level (no unsafe Rust)"
+    ],
+    "important_facts": [
+      "quick-xml 0.37.5 does NOT process DTDs or external entities (safe by default)",
+      "unsafe_code is forbidden workspace-wide via lints",
+      "cargo audit reports 0 known vulnerabilities in 131 crate dependencies",
+      "validate and translate commands enforce 10MB file size limit",
+      "inspect and codegen commands have NO file size limit",
+      "xml_scan module uses naive string scanning instead of proper XML parsing",
+      "Pattern validation in error messages echoes user input verbatim",
+      "FedNow amount validation uses f64 for max_amount boundary, risking precision"
+    ],
+    "decisions_made": [],
+    "artifacts": [
+      "docs/agents/2026-03-05T08-19-10Z__security-audit__sec.json"
+    ],
+    "dependencies": [],
+    "risks_issues": [
+      "MEDIUM: inspect and codegen CLI commands lack file size limits (DoS vector)",
+      "LOW: xml_scan string scanning can be confused by XML comments/CDATA",
+      "LOW: Error messages echo raw user input values (minor info leak)",
+      "INFO: No authentication/authorization surface (library only)",
+      "INFO: f64 usage in FedNow amount boundary comparison"
+    ]
+  },
+  "iteration": {
+    "summary": "Completed full security audit of the mx20022 Rust ISO 20022 library. Reviewed all source files in mx20022-parse, mx20022-validate, mx20022-cli, and mx20022-codegen. Checked dependency chain via cargo audit (clean). Identified 2 medium findings, 3 low findings, and several informational items. The codebase has strong security fundamentals: unsafe_code is forbidden, no DTD/XXE exposure, file size guards on most CLI commands, proper error types, and good dependency governance via deny.toml.",
+    "inputs_consulted": [
+      "crates/mx20022-parse/src/*.rs",
+      "crates/mx20022-validate/src/**/*.rs",
+      "crates/mx20022-cli/src/**/*.rs",
+      "crates/mx20022-codegen/src/xsd/parser.rs",
+      "crates/mx20022-codegen/src/emit/pattern_codegen.rs",
+      "crates/mx20022-model/src/common/validate.rs",
+      "Cargo.toml",
+      "Cargo.lock",
+      "deny.toml",
+      "scripts/download-schemas.sh"
+    ],
+    "outputs_produced": [
+      "Security audit report (in conversation)"
+    ],
+    "next_actions": [
+      "Optionally fix identified issues per severity priority"
+    ]
+  },
+  "cross_agent_notes": {
+    "mentions": []
+  }
+}

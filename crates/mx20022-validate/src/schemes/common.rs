@@ -85,7 +85,7 @@ pub(crate) fn check_name_in_parent(
                 format!("{parent_tag}/Nm is required for {scheme_name}"),
             ));
         }
-        Some(nm) if max_len.is_some_and(|max| nm.len() > max) => {
+        Some(nm) if max_len.is_some_and(|max| nm.chars().count() > max) => {
             let max = max_len.unwrap();
             errors.push(ValidationError::new(
                 format!("{path_prefix}/Nm"),
@@ -93,7 +93,7 @@ pub(crate) fn check_name_in_parent(
                 rule_id,
                 format!(
                     "{parent_tag}/Nm must be at most {max} characters; got {} characters",
-                    nm.len()
+                    nm.chars().count()
                 ),
             ));
         }

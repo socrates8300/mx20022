@@ -1,0 +1,97 @@
+{
+  "metadata": {
+    "task_short": "perf-analysis",
+    "agent_abbr": "perf",
+    "datetime_utc": "2026-03-05T00:00:00Z",
+    "filename": "2026-03-05T00-00-00Z__perf-analysis__perf.json",
+    "supersedes": "2026-03-04T01-00-00Z__perf-analysis__perf.json",
+    "version": "1.0"
+  },
+  "state": {
+    "objectives": [
+      "Deep performance analysis of mx20022 workspace with file:line references",
+      "Rank optimization opportunities by impact",
+      "Identify benchmark coverage gaps"
+    ],
+    "constraints": [
+      "MSRV 1.75.0, no unsafe_code (forbid)",
+      "Generated code is machine-written via codegen -- changes go to emit/ files",
+      "Feature gates exist for pacs/pain/camt/head families"
+    ],
+    "important_facts": [
+      "304,904 lines of generated code across 18 files",
+      "9,334 format! calls in generated code (path construction + error messages)",
+      "6,826 insert_str calls (deferred path pattern in struct validation)",
+      "1,611 .chars().count() calls in generated code",
+      "1,470 path.to_string() calls in generated code (violation push only on error)",
+      "Codegen already uses deferred path pattern: format! only on violations (snap/insert_str)",
+      "Pattern codegen compiles XSD patterns to byte-level checks -- no runtime regex in model crate",
+      "ASCII-only pattern detection already optimizes .len() vs .chars().count()",
+      "SEPA validator already has is_sepa_char(c: char) -> bool (no per-char String alloc)",
+      "IBAN validate_iban line 51 allocates String canonical form per call",
+      "IBAN iban_to_numeric line 104 uses n.to_string() per letter",
+      "MT parser extract_blocks line 69 converts entire input to Vec<char>",
+      "MT parser parse_tag_value_pairs line 346 collects to Vec<char>",
+      "Vec<T> blanket Validatable impl line 143 allocates format! per element",
+      "Remittance info chunking at mt103_to_pacs008.rs:147-148 double-collects chars",
+      "pad_lt_address at helpers.rs:250 allocates String via .filter().collect()",
+      "No benchmark for validate_constraints / validate_message",
+      "Benchmark suite exists but is minimal (3 parse, 5 validate, 5 translate)"
+    ],
+    "decisions_made": [],
+    "artifacts": [],
+    "dependencies": [],
+    "risks_issues": [
+      "Biggest wins are in codegen (format! deferred but Vec blanket impl still allocates per element)",
+      "IBAN String alloc on every validation call even for valid IBANs",
+      "MT parser Vec<char> copy of entire input is O(n) memory waste"
+    ]
+  },
+  "iteration": {
+    "summary": "Third iteration of deep performance analysis. Verified that several issues from prior analysis have been resolved: SEPA charset now uses is_sepa_char(char), codegen uses deferred path pattern with snap/insert_str to avoid unconditional format! allocation, and pattern codegen compiles to byte-level inline checks. Remaining issues: IBAN String allocation per call, Vec<T> blanket impl format! per element, MT parser Vec<char> copies, remittance double-collect, and missing validate_constraints benchmarks. The codebase is in better shape than the prior report suggested -- the major codegen format! issue is largely fixed via the deferred path approach.",
+    "inputs_consulted": [
+      "crates/mx20022-codegen/src/emit/validate.rs",
+      "crates/mx20022-codegen/src/emit/newtypes.rs",
+      "crates/mx20022-codegen/src/emit/pattern_codegen.rs",
+      "crates/mx20022-model/src/common/validate.rs",
+      "crates/mx20022-model/src/generated/pacs/pacs_008_001_13.rs (samples)",
+      "crates/mx20022-parse/src/de.rs",
+      "crates/mx20022-parse/src/ser.rs",
+      "crates/mx20022-parse/src/envelope.rs",
+      "crates/mx20022-validate/src/rules/pattern.rs",
+      "crates/mx20022-validate/src/rules/iban.rs",
+      "crates/mx20022-validate/src/rules/mod.rs",
+      "crates/mx20022-validate/src/schema/constraints.rs",
+      "crates/mx20022-validate/src/schemes/xml_scan.rs",
+      "crates/mx20022-validate/src/schemes/sepa.rs",
+      "crates/mx20022-translate/src/mt/parser.rs",
+      "crates/mx20022-translate/src/mappings/mt103_to_pacs008.rs",
+      "crates/mx20022-translate/src/mappings/helpers.rs",
+      "crates/mx20022-parse/benches/parse_bench.rs",
+      "crates/mx20022-validate/benches/validate_bench.rs",
+      "crates/mx20022-translate/benches/translate_bench.rs",
+      "crates/mx20022-model/Cargo.toml"
+    ],
+    "outputs_produced": [
+      "Performance analysis report with file:line references",
+      "Context file for cross-agent visibility"
+    ],
+    "next_actions": [
+      "Fix IBAN canonical form to use stack buffer",
+      "Fix Vec<T> blanket Validatable impl to avoid format! per element",
+      "Fix MT parser to use byte-level scanning instead of Vec<char>",
+      "Fix remittance info double-collect",
+      "Add validate_constraints / validate_message benchmarks",
+      "Consider ConstraintSet HashMap index if constraint count grows"
+    ]
+  },
+  "cross_agent_notes": {
+    "mentions": [
+      {
+        "agent_abbr": "rust",
+        "filename": "2026-03-02T21-30-00Z__examples-benchmarks__rust.json",
+        "relevance_note": "Created the benchmark suites analyzed here"
+      }
+    ]
+  }
+}

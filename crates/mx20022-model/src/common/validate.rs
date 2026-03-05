@@ -140,7 +140,14 @@ impl<T: Validatable> Validatable for Option<T> {
 impl<T: Validatable> Validatable for Vec<T> {
     fn validate_constraints(&self, path: &str, violations: &mut Vec<ConstraintViolation>) {
         for (i, item) in self.iter().enumerate() {
-            item.validate_constraints(&format!("{path}[{i}]"), violations);
+            let snap = violations.len();
+            item.validate_constraints("", violations);
+            if violations.len() > snap {
+                let pfx = format!("{path}[{i}]");
+                for v in &mut violations[snap..] {
+                    v.path.insert_str(0, &pfx);
+                }
+            }
         }
     }
 }

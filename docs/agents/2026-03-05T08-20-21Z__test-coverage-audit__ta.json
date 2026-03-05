@@ -1,0 +1,110 @@
+{
+  "metadata": {
+    "task_short": "test-coverage-audit",
+    "agent_abbr": "ta",
+    "datetime_utc": "2026-03-05T08:20:21Z",
+    "filename": "2026-03-05T08-20-21Z__test-coverage-audit__ta.json",
+    "supersedes": "2026-03-05T04-21-31Z__test-coverage-audit__ta.json",
+    "version": "1.0"
+  },
+  "state": {
+    "objectives": [
+      "Evaluate test coverage and quality for mx20022 workspace",
+      "Assess unit tests, integration tests, and identify coverage gaps",
+      "Focus on: test organization, critical path coverage, edge cases, fixture quality, maintainability"
+    ],
+    "constraints": [
+      "Read-only assessment — no code changes"
+    ],
+    "important_facts": [
+      "Total test count: 715 (all passing as of commit e8b15ec)",
+      "Per-crate unit test distribution: codegen=174, validate-inline=155, validate-schemes-external=45, validate-integration=15, roundtrip_all=39, translate-mt-parser=39, translate-translation=16, cli-integration=18, model-newtype=33, model-builder=7, codegen-snapshots=4, parse-roundtrip=9",
+      "Doc-tests contribute: codegen=7, model=7, parse=4, translate=7 (1 ignored), validate=31",
+      "pacs.008.001.13 NOW HAS a roundtrip identity test (added in commit 082d5ef) — prior audit gap RESOLVED",
+      "CLI integration tests now cover: validate --scheme fednow/sepa/cbpr (3), validate invalid scheme (1), translate mt103->pacs008 (1), translate nonexistent file (1) — 7 new tests",
+      "schemes.rs now has 45 tests including 7 new negative tests: fednow_rejects_zero_amount, fednow_rejects_long_e2e_id, sepa_rejects_missing_debtor_name, sepa_rejects_missing_creditor_name, cbpr_rejects_missing_chrgbr, cbpr_rejects_invalid_chrgbr_value, cbpr_rejects_unclosed_parent_tag",
+      "common.rs (shared scheme helpers) has 13 inline tests covering parse_amount_cents and extract_parent_block",
+      "newtype_validation.rs has 33 tests covering ActiveCurrencyCode, CountryCode, BICFIDec2014Identifier, IBAN2007Identifier, Max35Text, UUIDv4Identifier with boundary conditions",
+      "Pattern codegen has 4 semantic compile-and-run tests: semantic_three_uppercase, semantic_date_with_dashes, semantic_iban_pattern, semantic_bic_with_optional_suffix",
+      "Snapshots now cover 3 schemas: head.001.001.04, pacs.008.001.13, camt.053.001.11",
+      "camt.053 and camt.054 roundtrip stubs STILL use empty stmt/ntfctn vecs — structural serialization of entries untested",
+      "testdata/translation/ still only has input.txt files — NO expected.xml output files for golden-file testing",
+      "File size guard (10MB) has ZERO test coverage in CLI integration tests",
+      "with_max_amount(0.0) / negative / NaN / infinity edge cases for FedNow validator have no test (only assert, no test that assert fires)",
+      "Translate CLI: only mt103->pacs008 smoke test; no mt202->pacs009 or mt940->camt053 CLI tests",
+      "No CLI tests for validate with SEPA/CBPR/FedNow invalid fixtures (only fednow_invalid_catches_error exists)",
+      "head.001.001.02, pacs.008.001.08, pacs.008.001.10 still have no roundtrip or fixture-parse tests",
+      "Typed validation path (validate_typed) has 10 tests for FedNow+SEPA+CBPR+ — cbpr_typed_missing_bic uses loose `.contains(\"_BIC\")` assertion rather than specific rule ID",
+      "RuleRegistry inline tests: 83 inline tests across all rules/*.rs modules"
+    ],
+    "decisions_made": [
+      "pacs.008.001.13 roundtrip gap from prior audit is now fully resolved",
+      "CLI --scheme and translate smoke test gaps from prior audit are now resolved",
+      "Highest remaining risks: camt.053/054 empty-collection stubs, file-size-guard untested, translation golden-file absent"
+    ],
+    "artifacts": [
+      "crates/mx20022-cli/tests/cli_integration.rs (18 tests)",
+      "crates/mx20022-parse/tests/roundtrip_all.rs (39 tests: 11 modules x roundtrip+envelope_detect, pacs.008 adds fixture_parses, 5 fixture-parse fns at bottom)",
+      "crates/mx20022-translate/tests/translation.rs (16 tests)",
+      "crates/mx20022-translate/tests/mt_parser.rs (39 tests)",
+      "crates/mx20022-validate/tests/schemes.rs (45 tests including 10 typed-path tests + 7 new negatives)",
+      "crates/mx20022-validate/tests/integration.rs (15 tests)",
+      "crates/mx20022-validate/src/schemes/common.rs (13 inline tests)",
+      "crates/mx20022-model/tests/newtype_validation.rs (33 tests)",
+      "crates/mx20022-codegen/tests/snapshots.rs (4 tests: 3 snapshots + 1 structural)"
+    ],
+    "dependencies": [],
+    "risks_issues": [
+      "camt.053 and camt.054 roundtrip use empty stmt/ntfctn: statement entries and notification entries serialization untested: OPEN",
+      "File size guard (10MB) in validate and translate CLI commands has no integration test: OPEN",
+      "testdata/translation/ has no expected output files: golden-file translation testing impossible: OPEN",
+      "head.001.001.02, pacs.008.001.08, pacs.008.001.10 have no parse or roundtrip test: low priority but non-zero regression risk: OPEN",
+      "with_max_amount assert fires on 0.0/negative/NaN but no #[should_panic] test documents expected behavior: OPEN",
+      "cbpr_typed_missing_bic uses `.contains(\"_BIC\")` rather than exact rule ID: fragile assertion: LOW"
+    ]
+  },
+  "iteration": {
+    "summary": "Performed full re-audit against commit e8b15ec (HEAD). The suite has grown from roughly 530 tests to 715 and all three major gaps from the prior audit have been closed: pacs.008.001.13 roundtrip identity test exists, CLI --scheme and translate smoke tests exist, and 7 new negative scheme tests were added. The primary remaining structural gap is camt.053/camt.054 roundtrip tests still use empty collections, so statement/entry/balance serialization is untested. The 10MB file size guard has no integration test coverage. Translation golden-file testing remains impossible due to missing expected output files in testdata/translation/. The test suite is well-organized with clear separation between unit, inline, and integration layers.",
+    "inputs_consulted": [
+      "crates/mx20022-cli/tests/cli_integration.rs",
+      "crates/mx20022-parse/tests/roundtrip_all.rs",
+      "crates/mx20022-translate/tests/translation.rs",
+      "crates/mx20022-translate/tests/mt_parser.rs",
+      "crates/mx20022-validate/tests/schemes.rs",
+      "crates/mx20022-validate/tests/integration.rs",
+      "crates/mx20022-validate/src/schemes/common.rs",
+      "crates/mx20022-validate/src/schemes/fednow.rs (fn signatures + inline tests)",
+      "crates/mx20022-validate/src/schemes/cbpr.rs (fn signatures + inline tests)",
+      "crates/mx20022-model/tests/newtype_validation.rs",
+      "crates/mx20022-model/src/common/validate.rs",
+      "crates/mx20022-codegen/tests/snapshots.rs",
+      "docs/agents/2026-03-05T04-21-31Z__test-coverage-audit__ta.json",
+      "git log --oneline -10",
+      "cargo test --workspace --all-features 2>&1 summary"
+    ],
+    "outputs_produced": [
+      "This context file",
+      "Full structured test coverage assessment delivered in conversation"
+    ],
+    "next_actions": [
+      "Add camt.053 roundtrip with at least one AccountStatement14 entry (with balances and one Entry15 entry)",
+      "Add camt.054 roundtrip with at least one GroupHeader114 ntfctn entry",
+      "Add CLI integration test for validate over a file > 10MB (validate_oversized_file_exits_nonzero)",
+      "Add CLI integration test for translate over a file > 10MB",
+      "Create testdata/translation/{mt103_pacs008,mt202_pacs009,mt940_camt053}/expected.xml for golden-file diff",
+      "Add #[should_panic] test for FedNowValidator::with_max_amount(0.0) and with_max_amount(f64::NAN)",
+      "Add CLI integration test: validate --scheme sepa on sepa/invalid_usd.xml exits nonzero and contains SEPA_CURRENCY",
+      "Add CLI integration test: validate --scheme cbpr on cbpr/missing_bic.xml exits nonzero",
+      "Fix cbpr_typed_missing_bic to assert exact rule_id rather than .contains(\"_BIC\")"
+    ]
+  },
+  "cross_agent_notes": {
+    "mentions": [
+      {
+        "agent_abbr": "cr",
+        "filename": "2026-03-05T04-22-43Z__code-quality-review__cr.json",
+        "relevance_note": "Code quality review is current — may have observations on cbpr.rs assertion quality or common.rs coverage"
+      }
+    ]
+  }
+}

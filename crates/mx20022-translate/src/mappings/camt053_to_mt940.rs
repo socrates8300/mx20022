@@ -191,14 +191,19 @@ fn balance_to_mt(bal: &camt053::CashBalance8) -> Result<String, TranslationError
     Ok(format!("{dc}{date_swift}{ccy}{amt_swift}"))
 }
 
-/// Extract the ISO date string from a `CashBalance8`.
-fn extract_balance_date(bal: &camt053::CashBalance8) -> String {
-    match &bal.dt.inner {
+/// Extract the ISO date portion from a `DateAndDateTime2Choice`.
+fn date_from_choice(choice: &camt053::DateAndDateTime2Choice) -> String {
+    match choice {
         camt053::DateAndDateTime2Choice::Dt(d) => d.0.clone(),
         camt053::DateAndDateTime2Choice::DtTm(dt) => {
             dt.0.split('T').next().unwrap_or("").to_string()
         }
     }
+}
+
+/// Extract the ISO date string from a `CashBalance8`.
+fn extract_balance_date(bal: &camt053::CashBalance8) -> String {
+    date_from_choice(&bal.dt.inner)
 }
 
 /// Convert a `ReportEntry13` to a MT940 `:61:` field value string.
@@ -214,15 +219,10 @@ fn entry_to_mt61(entry: &camt053::ReportEntry13) -> Result<String, TranslationEr
         camt053::CreditDebitCode::Dbit => 'D',
     };
 
-    let val_date_iso = entry.val_dt.as_ref().map_or_else(
-        || "0001-01-01".to_string(),
-        |v| match &v.inner {
-            camt053::DateAndDateTime2Choice::Dt(d) => d.0.clone(),
-            camt053::DateAndDateTime2Choice::DtTm(dt) => {
-                dt.0.split('T').next().unwrap_or("").to_string()
-            }
-        },
-    );
+    let val_date_iso = entry
+        .val_dt
+        .as_ref()
+        .map_or_else(|| "0001-01-01".to_string(), |v| date_from_choice(&v.inner));
 
     let date_swift = iso_date_to_yymmdd(&val_date_iso)?;
     let amt_swift = entry.amt.value.0.replace('.', ",");

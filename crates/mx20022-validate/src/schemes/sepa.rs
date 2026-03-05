@@ -155,14 +155,14 @@ impl SchemeValidator for SepaValidator {
 
         // --- End-to-end ID max 35 chars -------------------------------------
         if let Some(e2e) = extract_element(xml, "EndToEndId") {
-            if e2e.len() > 35 {
+            if e2e.chars().count() > 35 {
                 errors.push(ValidationError::new(
                     "/Document/FIToFICstmrCdtTrf/CdtTrfTxInf/PmtId/EndToEndId",
                     Severity::Error,
                     "SEPA_E2E_LENGTH",
                     format!(
                         "EndToEndId must be at most 35 characters; got {} characters",
-                        e2e.len()
+                        e2e.chars().count()
                     ),
                 ));
             }
@@ -171,7 +171,7 @@ impl SchemeValidator for SepaValidator {
         // --- Ustrd total length max 140 chars --------------------------------
         let ustrd_total: usize = extract_all_elements(xml, "Ustrd")
             .iter()
-            .map(|s| s.len())
+            .map(|s| s.chars().count())
             .sum();
         if ustrd_total > 140 {
             errors.push(ValidationError::new(
@@ -186,45 +186,11 @@ impl SchemeValidator for SepaValidator {
 
         // --- Amount range ---------------------------------------------------
         if let Some(amt_str) = extract_element(xml, "IntrBkSttlmAmt") {
-            // At most 2 decimal places.
-            let decimals = amt_str.find('.').map_or(0, |dot| amt_str.len() - dot - 1);
-            if decimals > 2 {
-                errors.push(ValidationError::new(
-                    "/Document/FIToFICstmrCdtTrf/CdtTrfTxInf/IntrBkSttlmAmt",
-                    Severity::Error,
-                    "SEPA_AMOUNT_DECIMALS",
-                    format!("SEPA amounts must have at most 2 decimal places; got \"{amt_str}\""),
-                ));
-            }
-            // Range checks via integer-cent arithmetic (avoids f64 precision).
-            match super::common::parse_amount_cents_lenient(amt_str) {
-                Some(cents) => {
-                    if cents < 1 {
-                        errors.push(ValidationError::new(
-                            "/Document/FIToFICstmrCdtTrf/CdtTrfTxInf/IntrBkSttlmAmt",
-                            Severity::Error,
-                            "SEPA_AMOUNT_MIN",
-                            format!("SEPA minimum amount is 0.01 EUR; got \"{amt_str}\""),
-                        ));
-                    }
-                    if cents > 99_999_999_999 {
-                        errors.push(ValidationError::new(
-                            "/Document/FIToFICstmrCdtTrf/CdtTrfTxInf/IntrBkSttlmAmt",
-                            Severity::Error,
-                            "SEPA_AMOUNT_MAX",
-                            format!("SEPA maximum amount is 999,999,999.99 EUR; got \"{amt_str}\""),
-                        ));
-                    }
-                }
-                None => {
-                    errors.push(ValidationError::new(
-                        "/Document/FIToFICstmrCdtTrf/CdtTrfTxInf/IntrBkSttlmAmt",
-                        Severity::Error,
-                        "SEPA_AMOUNT_FORMAT",
-                        format!("Cannot parse amount as a number: \"{amt_str}\""),
-                    ));
-                }
-            }
+            Self::validate_sepa_amount(
+                amt_str,
+                "/Document/FIToFICstmrCdtTrf/CdtTrfTxInf/IntrBkSttlmAmt",
+                &mut errors,
+            );
         }
 
         // --- IBAN required for debtor and creditor --------------------------
@@ -287,6 +253,63 @@ impl SchemeValidator for SepaValidator {
 }
 
 impl SepaValidator {
+    /// Validate a SEPA amount string: decimal places, min, max.
+    fn validate_sepa_amount(amt_str: &str, path: &str, errors: &mut Vec<ValidationError>) {
+        let decimals = amt_str.find('.').map_or(0, |dot| amt_str.len() - dot - 1);
+        if decimals > 2 {
+            errors.push(ValidationError::new(
+                path,
+                Severity::Error,
+                "SEPA_AMOUNT_DECIMALS",
+                format!("SEPA amounts must have at most 2 decimal places; got \"{amt_str}\""),
+            ));
+        }
+        match super::common::parse_amount_cents_lenient(amt_str) {
+            Some(cents) => {
+                if cents < 1 {
+                    errors.push(ValidationError::new(
+                        path,
+                        Severity::Error,
+                        "SEPA_AMOUNT_MIN",
+                        format!("SEPA minimum amount is 0.01 EUR; got \"{amt_str}\""),
+                    ));
+                }
+                if cents > 99_999_999_999 {
+                    errors.push(ValidationError::new(
+                        path,
+                        Severity::Error,
+                        "SEPA_AMOUNT_MAX",
+                        format!("SEPA maximum amount is 999,999,999.99 EUR; got \"{amt_str}\""),
+                    ));
+                }
+            }
+            None => {
+                errors.push(ValidationError::new(
+                    path,
+                    Severity::Error,
+                    "SEPA_AMOUNT_FORMAT",
+                    format!("Cannot parse amount as a number: \"{amt_str}\""),
+                ));
+            }
+        }
+    }
+
+    /// Check that a name string conforms to the SEPA restricted Latin character set.
+    fn check_sepa_name(name: &str, errors: &mut Vec<ValidationError>) {
+        if !is_sepa_charset(name) {
+            let bad: String = name.chars().filter(|&c| !is_sepa_char(c)).collect();
+            errors.push(ValidationError::new(
+                "//Nm",
+                Severity::Error,
+                "SEPA_CHARSET",
+                format!(
+                    "Field <Nm> contains characters outside the SEPA restricted \
+                     Latin character set: {bad:?}"
+                ),
+            ));
+        }
+    }
+
     /// Typed validation for pacs.008 messages under SEPA SCT rules.
     #[allow(clippy::unused_self)]
     fn validate_pacs008_typed(
@@ -358,14 +381,14 @@ impl SepaValidator {
                         "Dbtr/Nm is required for SEPA",
                     ));
                 }
-                Some(nm) if nm.0.len() > 70 => {
+                Some(nm) if nm.0.chars().count() > 70 => {
                     errors.push(ValidationError::new(
                         "/Document/FIToFICstmrCdtTrf/CdtTrfTxInf/Dbtr/Nm",
                         Severity::Error,
                         "SEPA_DBTR_NM",
                         format!(
                             "Dbtr/Nm must be at most 70 characters; got {} characters",
-                            nm.0.len()
+                            nm.0.chars().count()
                         ),
                     ));
                 }
@@ -382,14 +405,14 @@ impl SepaValidator {
                         "Cdtr/Nm is required for SEPA",
                     ));
                 }
-                Some(nm) if nm.0.len() > 70 => {
+                Some(nm) if nm.0.chars().count() > 70 => {
                     errors.push(ValidationError::new(
                         "/Document/FIToFICstmrCdtTrf/CdtTrfTxInf/Cdtr/Nm",
                         Severity::Error,
                         "SEPA_CDTR_NM",
                         format!(
                             "Cdtr/Nm must be at most 70 characters; got {} characters",
-                            nm.0.len()
+                            nm.0.chars().count()
                         ),
                     ));
                 }
@@ -402,7 +425,7 @@ impl SepaValidator {
 
             // --- Ustrd total length max 140 chars ---------------------------
             if let Some(rmt_inf) = &tx.rmt_inf {
-                let ustrd_total: usize = rmt_inf.ustrd.iter().map(|u| u.0.len()).sum();
+                let ustrd_total: usize = rmt_inf.ustrd.iter().map(|u| u.0.chars().count()).sum();
                 if ustrd_total > 140 {
                     errors.push(ValidationError::new(
                         "/Document/FIToFICstmrCdtTrf/CdtTrfTxInf/RmtInf/Ustrd",
@@ -433,74 +456,18 @@ impl SepaValidator {
 
             // --- Amount range -----------------------------------------------
             let amt_str: &str = &tx.intr_bk_sttlm_amt.value.0;
-            // At most 2 decimal places.
-            let decimals = amt_str.find('.').map_or(0, |dot| amt_str.len() - dot - 1);
-            if decimals > 2 {
-                errors.push(ValidationError::new(
-                    "/Document/FIToFICstmrCdtTrf/CdtTrfTxInf/IntrBkSttlmAmt",
-                    Severity::Error,
-                    "SEPA_AMOUNT_DECIMALS",
-                    format!("SEPA amounts must have at most 2 decimal places; got \"{amt_str}\""),
-                ));
-            }
-            // Range checks via integer-cent arithmetic (avoids f64 precision).
-            match super::common::parse_amount_cents_lenient(amt_str) {
-                Some(cents) => {
-                    if cents < 1 {
-                        errors.push(ValidationError::new(
-                            "/Document/FIToFICstmrCdtTrf/CdtTrfTxInf/IntrBkSttlmAmt",
-                            Severity::Error,
-                            "SEPA_AMOUNT_MIN",
-                            format!("SEPA minimum amount is 0.01 EUR; got \"{amt_str}\""),
-                        ));
-                    }
-                    if cents > 99_999_999_999 {
-                        errors.push(ValidationError::new(
-                            "/Document/FIToFICstmrCdtTrf/CdtTrfTxInf/IntrBkSttlmAmt",
-                            Severity::Error,
-                            "SEPA_AMOUNT_MAX",
-                            format!("SEPA maximum amount is 999,999,999.99 EUR; got \"{amt_str}\""),
-                        ));
-                    }
-                }
-                None => {
-                    errors.push(ValidationError::new(
-                        "/Document/FIToFICstmrCdtTrf/CdtTrfTxInf/IntrBkSttlmAmt",
-                        Severity::Error,
-                        "SEPA_AMOUNT_FORMAT",
-                        format!("Cannot parse amount as a number: \"{amt_str}\""),
-                    ));
-                }
-            }
+            Self::validate_sepa_amount(
+                amt_str,
+                "/Document/FIToFICstmrCdtTrf/CdtTrfTxInf/IntrBkSttlmAmt",
+                &mut errors,
+            );
 
             // --- SEPA character set check on names --------------------------
             if let Some(nm) = &tx.dbtr.nm {
-                if !is_sepa_charset(&nm.0) {
-                    let bad: String = nm.0.chars().filter(|&c| !is_sepa_char(c)).collect();
-                    errors.push(ValidationError::new(
-                        "//Nm",
-                        Severity::Error,
-                        "SEPA_CHARSET",
-                        format!(
-                            "Field <Nm> contains characters outside the SEPA restricted \
-                             Latin character set: {bad:?}"
-                        ),
-                    ));
-                }
+                Self::check_sepa_name(&nm.0, &mut errors);
             }
             if let Some(nm) = &tx.cdtr.nm {
-                if !is_sepa_charset(&nm.0) {
-                    let bad: String = nm.0.chars().filter(|&c| !is_sepa_char(c)).collect();
-                    errors.push(ValidationError::new(
-                        "//Nm",
-                        Severity::Error,
-                        "SEPA_CHARSET",
-                        format!(
-                            "Field <Nm> contains characters outside the SEPA restricted \
-                             Latin character set: {bad:?}"
-                        ),
-                    ));
-                }
+                Self::check_sepa_name(&nm.0, &mut errors);
             }
 
             // --- IBAN required for debtor and creditor accounts ---
