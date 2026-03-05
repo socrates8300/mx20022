@@ -22,6 +22,9 @@ between SWIFT MT and ISO 20022 MX formats.
   MT940 ↔ camt.053
 - **Validation** — IBAN, BIC, LEI, currency, amount format, plus scheme-level
   rules for FedNow, SEPA, and CBPR+
+- **XSD constraint validation** — every generated newtype validates pattern,
+  length, and range constraints at construction (`TryFrom<String>`) and on
+  full message trees via the `Validatable` trait
 - **Code generation** — XSD → intermediate representation → Rust source
 
 ## Workspace Crates
@@ -97,6 +100,26 @@ if result.is_valid() {
 }
 ```
 
+### Validate XSD constraints on a message
+
+```rust
+use mx20022::model::common::validate::IsoMessage;
+use mx20022::model::generated::pacs::pacs_008_001_13::Document;
+use mx20022::parse::de;
+
+let xml = std::fs::read_to_string("message.xml")?;
+let doc: Document = de::from_str(&xml)?;
+let violations = doc.validate_message();
+
+if violations.is_empty() {
+    println!("All XSD constraints satisfied");
+} else {
+    for v in &violations {
+        println!("[{:?}] {} — {}", v.kind, v.path, v.message);
+    }
+}
+```
+
 ### Translate MT103 → pacs.008
 
 ```rust
@@ -149,6 +172,8 @@ Supported `--to` targets: `pacs008`, `mt103`, `pacs009`, `mt202`, `camt053`, `mt
 
 Supported `--scheme` values: `fednow`, `sepa`, `cbpr`.
 
+The CLI rejects input files larger than 10 MB to prevent out-of-memory conditions.
+
 ## Development
 
 ```bash
@@ -194,6 +219,9 @@ mx20022/
 **Key boundary:** Files under `crates/mx20022-model/src/generated/` are
 machine-written by the codegen tool. Do not hand-edit them — modify the code
 generator instead.
+
+See [ARCHITECTURE.md](ARCHITECTURE.md) for a detailed design walkthrough of
+each crate, the code generation pipeline, and key architectural decisions.
 
 ### Running Examples
 
