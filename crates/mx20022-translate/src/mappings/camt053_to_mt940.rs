@@ -5,7 +5,7 @@ use std::fmt::Write as _;
 use mx20022_model::generated::camt::camt_053_001_11 as camt053;
 
 use crate::mappings::error::{TranslationError, TranslationResult, TranslationWarnings};
-use crate::mappings::helpers::iso_date_to_yymmdd;
+use crate::mappings::helpers::{iso_date_to_yymmdd, pad_lt_address};
 
 /// Translate a `camt.053.001.11` `Document` to an MT940 message string.
 ///
@@ -76,11 +76,9 @@ pub fn camt053_to_mt940(
         "sender/receiver BIC not available in camt.053; using placeholder",
     );
     let sender_bic = "UNKNOWNXXXXX";
-    let receiver_bic = "UNKNOWNXXXXX";
 
     let mt_text = format_mt940(
         sender_bic,
-        receiver_bic,
         &stmt_ref,
         &account_id,
         &seq_number,
@@ -101,7 +99,6 @@ pub fn camt053_to_mt940(
 #[allow(clippy::too_many_arguments)]
 fn format_mt940(
     sender_bic: &str,
-    receiver_bic: &str,
     stmt_ref: &str,
     account_id: &str,
     seq_number: &str,
@@ -112,7 +109,6 @@ fn format_mt940(
     warnings: &mut crate::mappings::error::TranslationWarnings,
 ) -> String {
     let sender_lt = pad_lt_address(sender_bic);
-    let receiver_lt = pad_lt_address(receiver_bic);
 
     let mut body = String::new();
     let _ = writeln!(body, ":20:{stmt_ref}");
@@ -148,7 +144,7 @@ fn format_mt940(
     }
 
     format!(
-        "{{1:F01{sender_lt}0000000000}}{{2:O940{receiver_lt}0000000000002306151200N}}{{4:\n{body}-}}{{5:{{CHK:000000000000}}}}"
+        "{{1:F01{sender_lt}0000000000}}{{2:O9400000000000{sender_lt}00000000000000000000N}}{{4:\n{body}-}}{{5:{{CHK:000000000000}}}}"
     )
 }
 
@@ -242,18 +238,6 @@ fn entry_to_mt61(entry: &camt053::ReportEntry13) -> Result<String, TranslationEr
     Ok(format!("{date_swift}{dc}{amt_swift}{tx_code}{ref_str}"))
 }
 
-/// Pad or truncate a BIC string to a 12-character LT address.
-fn pad_lt_address(bic: &str) -> String {
-    let clean: String = bic.chars().filter(char::is_ascii_alphanumeric).collect();
-    match clean.len() {
-        8 => format!("{clean}XXXX"),
-        11 => format!("{clean}X"),
-        12 => clean,
-        n if n < 8 => format!("{clean:X<12}"),
-        _ => clean[..12].to_string(),
-    }
-}
-
 // ---------------------------------------------------------------------------
 // Unit tests
 // ---------------------------------------------------------------------------
@@ -335,5 +319,44 @@ mod tests {
         };
         let err = camt053_to_mt940(&doc).unwrap_err();
         assert!(matches!(err, TranslationError::MissingField { .. }));
+    }
+
+    #[test]
+    fn test_block2_output_header_length_and_parsability() {
+        let doc = roundtrip_doc();
+        let result = camt053_to_mt940(&doc).unwrap();
+
+        // Extract block 2 content between {2: and }
+        let b2_start = result.message.find("{2:").expect("block 2 must exist") + 3;
+        let b2_end = result.message[b2_start..]
+            .find('}')
+            .expect("block 2 closing brace")
+            + b2_start;
+        let block2 = &result.message[b2_start..b2_end];
+
+        // Block 2 Output must be exactly 47 chars: O(1) + msg_type(3) + input_time(4)
+        // + MIR(28) + output_date(6) + output_time(4) + priority(1)
+        assert_eq!(
+            block2.len(),
+            47,
+            "block 2 output header must be 47 chars, got {}: '{block2}'",
+            block2.len()
+        );
+        assert!(block2.starts_with('O'), "block 2 must start with 'O'");
+        assert!(
+            block2.ends_with('N'),
+            "block 2 priority must be 'N', got last char '{}'",
+            block2.chars().last().unwrap()
+        );
+
+        // The full message must re-parse successfully with correct block 2 variant
+        let reparsed = parse(&result.message).expect("generated MT940 must parse");
+        match reparsed.block2.as_ref().expect("block 2 must be present") {
+            crate::mt::types::Block2::Output(out) => {
+                assert_eq!(out.message_type, "940");
+                assert_eq!(out.priority, Some('N'));
+            }
+            other => panic!("expected Block2::Output, got {other:?}"),
+        }
     }
 }

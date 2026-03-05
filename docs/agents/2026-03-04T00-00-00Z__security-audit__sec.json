@@ -1,0 +1,47 @@
+{
+  "metadata": {
+    "task_short": "security-audit",
+    "agent_abbr": "sec",
+    "datetime_utc": "2026-03-04T00:00:00Z",
+    "filename": "2026-03-04T00-00-00Z__security-audit__sec.json",
+    "supersedes": null,
+    "version": "1.0"
+  },
+  "state": {
+    "objectives": ["Security audit of mx20022 Rust ISO 20022 financial message library"],
+    "constraints": ["Read-only audit, no code changes"],
+    "important_facts": [
+      "unsafe_code = forbid at workspace level",
+      "quick-xml 0.37.5 used for XML parsing (no DTD/entity expansion by default)",
+      "cargo-deny configured with source restrictions",
+      "Financial amounts use integer-cent arithmetic in scheme validators",
+      "f64 used in FedNow max_amount threshold conversion"
+    ],
+    "decisions_made": [],
+    "artifacts": ["docs/agents/2026-03-04T00-00-00Z__security-audit__sec.json"],
+    "dependencies": [],
+    "risks_issues": [
+      "SEC-01: f64 to u64 cast in FedNow max_amount conversion",
+      "SEC-02: No file size limit on CLI file reads",
+      "SEC-03: User-controlled XML reflected in error messages",
+      "SEC-04: parse_amount_cents integer overflow on extreme values",
+      "SEC-05: xml_scan string scanning bypasses XML semantics"
+    ]
+  },
+  "iteration": {
+    "summary": "Completed full security audit of mx20022 codebase covering XML parsing, pattern codegen, scheme validators, CLI, and translation. Found several medium/low severity issues. No critical vulnerabilities. The codebase has strong foundations: unsafe forbidden, cargo-deny, integer arithmetic for amounts.",
+    "inputs_consulted": [
+      "Cargo.toml", "deny.toml", "crates/mx20022-parse/src/*.rs",
+      "crates/mx20022-codegen/src/emit/pattern_codegen.rs",
+      "crates/mx20022-model/src/common/validate.rs",
+      "crates/mx20022-validate/src/schemes/*.rs",
+      "crates/mx20022-cli/src/commands/validate.rs",
+      "crates/mx20022-translate/src/mappings/*.rs"
+    ],
+    "outputs_produced": ["Security audit report"],
+    "next_actions": ["Address identified findings"]
+  },
+  "cross_agent_notes": {
+    "mentions": []
+  }
+}

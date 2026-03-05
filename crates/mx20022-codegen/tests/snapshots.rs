@@ -24,6 +24,44 @@ fn snapshot_head_001_001_04() {
     insta::assert_snapshot!("head_001_001_04_emit", code);
 }
 
+/// Parse the pacs.008.001.13 XSD and snapshot the emitted Rust source.
+#[test]
+fn snapshot_pacs_008_001_13() {
+    let xsd_path = concat!(
+        env!("CARGO_MANIFEST_DIR"),
+        "/../../schemas/pacs/pacs.008.001.13.xsd"
+    );
+
+    let file = std::fs::File::open(xsd_path).expect("pacs.008.001.13.xsd not found");
+    let schema = xsd::parse(std::io::BufReader::new(file)).expect("XSD parse failed");
+    let graph = ir::lower(&schema).unwrap();
+    let code = emit::emit(&graph);
+
+    // Verify it is valid Rust.
+    syn::parse_file(&code).expect("generated code must be valid Rust");
+
+    insta::assert_snapshot!("pacs_008_001_13_emit", code);
+}
+
+/// Parse the camt.053.001.11 XSD and snapshot the emitted Rust source.
+#[test]
+fn snapshot_camt_053_001_11() {
+    let xsd_path = concat!(
+        env!("CARGO_MANIFEST_DIR"),
+        "/../../schemas/camt/camt.053.001.11.xsd"
+    );
+
+    let file = std::fs::File::open(xsd_path).expect("camt.053.001.11.xsd not found");
+    let schema = xsd::parse(std::io::BufReader::new(file)).expect("XSD parse failed");
+    let graph = ir::lower(&schema).unwrap();
+    let code = emit::emit(&graph);
+
+    // Verify it is valid Rust.
+    syn::parse_file(&code).expect("generated code must be valid Rust");
+
+    insta::assert_snapshot!("camt_053_001_11_emit", code);
+}
+
 /// Verify specific structural properties of the head.001.001.04 emission.
 #[test]
 fn head_001_emits_expected_types() {

@@ -16,7 +16,11 @@ use std::path::Path;
 
 use mx20022_parse::envelope::detect_message_type;
 use mx20022_validate::schemes::{
-    cbpr::CbprPlusValidator, fednow::FedNowValidator, sepa::SepaValidator, SchemeValidator,
+    cbpr::CbprPlusValidator,
+    fednow::FedNowValidator,
+    sepa::SepaValidator,
+    xml_scan::{extract_all_attributes, extract_all_elements, extract_element},
+    SchemeValidator,
 };
 use mx20022_validate::{RuleRegistry, Severity, ValidationResult};
 
@@ -27,6 +31,8 @@ pub enum ValidateError {
     Io(std::io::Error),
     /// The XML does not contain a valid ISO 20022 envelope.
     Parse(mx20022_parse::ParseError),
+    /// The file exceeds the maximum allowed size.
+    FileTooLarge { size: u64, max: u64 },
     /// An unknown scheme was specified with `--scheme`.
     UnknownScheme(String),
     /// Validation completed but errors were found.
@@ -38,6 +44,12 @@ impl std::fmt::Display for ValidateError {
         match self {
             ValidateError::Io(e) => write!(f, "I/O error: {e}"),
             ValidateError::Parse(e) => write!(f, "parse error: {e}"),
+            ValidateError::FileTooLarge { size, max } => {
+                write!(
+                    f,
+                    "file is too large ({size} bytes); maximum allowed is {max} bytes"
+                )
+            }
             ValidateError::UnknownScheme(s) => {
                 write!(
                     f,
@@ -68,58 +80,11 @@ impl std::error::Error for ValidateError {
         match self {
             ValidateError::Io(e) => Some(e),
             ValidateError::Parse(e) => Some(e),
-            ValidateError::UnknownScheme(_) | ValidateError::ValidationFailed { .. } => None,
+            ValidateError::FileTooLarge { .. }
+            | ValidateError::UnknownScheme(_)
+            | ValidateError::ValidationFailed { .. } => None,
         }
     }
-}
-
-/// Extract the text content of the first occurrence of `<tag>...</tag>` in
-/// `xml` (case-sensitive, no namespace handling).
-fn extract_element<'a>(xml: &'a str, tag: &str) -> Option<&'a str> {
-    let open = format!("<{tag}>");
-    let close = format!("</{tag}>");
-    let start = xml.find(&open)? + open.len();
-    let end = xml[start..].find(&close)?;
-    Some(xml[start..start + end].trim())
-}
-
-/// Extract all occurrences of `<tag>...</tag>` text content.
-fn extract_all_elements<'a>(xml: &'a str, tag: &str) -> Vec<&'a str> {
-    let open = format!("<{tag}>");
-    let close = format!("</{tag}>");
-    let mut results = Vec::new();
-    let mut remaining = xml;
-    while let Some(start_pos) = remaining.find(&open) {
-        let after_open = start_pos + open.len();
-        let tail = &remaining[after_open..];
-        if let Some(end_pos) = tail.find(&close) {
-            results.push(tail[..end_pos].trim());
-            remaining = &tail[end_pos + close.len()..];
-        } else {
-            break;
-        }
-    }
-    results
-}
-
-/// Extract all values of an XML attribute named `attr_name` (e.g. `Ccy="USD"`).
-///
-/// Handles both `<Tag Attr="val">` and `<Tag Attr="val"/>` forms.
-fn extract_all_attributes<'a>(xml: &'a str, attr_name: &str) -> Vec<&'a str> {
-    let needle = format!("{attr_name}=\"");
-    let mut results = Vec::new();
-    let mut remaining = xml;
-    while let Some(pos) = remaining.find(&needle) {
-        let after_eq = pos + needle.len();
-        let tail = &remaining[after_eq..];
-        if let Some(end_pos) = tail.find('"') {
-            results.push(tail[..end_pos].trim());
-            remaining = &tail[end_pos + 1..];
-        } else {
-            break;
-        }
-    }
-    results
 }
 
 /// Resolve a scheme name string to a boxed `SchemeValidator`.
@@ -147,7 +112,17 @@ fn resolve_scheme(scheme: Option<&str>) -> Result<Option<Box<dyn SchemeValidator
 ///
 /// Returns an error if the file cannot be read, has no recognisable ISO 20022
 /// namespace, or an unknown scheme is requested.
+/// Maximum file size accepted by the validate command (10 MB).
+const MAX_FILE_SIZE: u64 = 10 * 1024 * 1024;
+
 pub fn run(file: &Path, scheme: Option<&str>) -> Result<(), ValidateError> {
+    let meta = std::fs::metadata(file)?;
+    if meta.len() > MAX_FILE_SIZE {
+        return Err(ValidateError::FileTooLarge {
+            size: meta.len(),
+            max: MAX_FILE_SIZE,
+        });
+    }
     let xml = std::fs::read_to_string(file)?;
 
     let msg_id = detect_message_type(&xml)?;

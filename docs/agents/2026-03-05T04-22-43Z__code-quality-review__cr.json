@@ -1,0 +1,113 @@
+{
+  "metadata": {
+    "task_short": "code-quality-review",
+    "agent_abbr": "cr",
+    "datetime_utc": "2026-03-05T04:22:43Z",
+    "filename": "2026-03-05T04-22-43Z__code-quality-review__cr.json",
+    "supersedes": "2026-03-04T12-00-00Z__code-quality-review__cr.json",
+    "version": "1.0"
+  },
+  "state": {
+    "objectives": [
+      "Review hand-written Rust code across 7 crates for quality, maintainability, and correctness",
+      "Check clean code principles, SOLID, DRY, naming, error handling, documentation, and Rust idioms",
+      "Cover all files modified since the last review (git status diff)"
+    ],
+    "constraints": [
+      "Exclude generated/ directories from review scope",
+      "Focus on validate.rs (CLI), pattern_codegen.rs (codegen), common/validate.rs (model), xml_scan.rs, cbpr.rs, fednow.rs, sepa.rs, helpers.rs, camt053_to_mt940.rs, and all test files"
+    ],
+    "important_facts": [
+      "PRIOR ISSUES RESOLVED: ValidateError::ValidationFailed variant now correctly separates from Parse; cli/validate.rs now imports xml_scan helpers from the canonical location instead of duplicating them",
+      "PRIOR ISSUE STILL OPEN: mod97 duplicated in iban.rs and lei.rs",
+      "PRIOR ISSUE STILL OPEN: FedNow amount logic -- resolved to validate_amount() method shared between XML and typed paths -- fully deduplicated",
+      "PRIOR ISSUE STILL OPEN: parse_year Vec allocation -- not in scope of this diff but still present",
+      "PRIOR ISSUE STILL OPEN: RuleRegistry::validate_all non-deterministic HashMap ordering",
+      "NEW: pattern_codegen.rs prior parse_char_class duplication was FIXED -- now uses read_char_or_escape() helper for both escaped and unescaped paths",
+      "NEW ISSUE: cbpr.rs check_name_required() line 468 calls both has_element() AND extract_element() redundantly -- has_element is strictly weaker, so the condition simplifies to extract_element().is_none()",
+      "NEW ISSUE: camt053_to_mt940.rs extract_balance_date() and the val_date_iso block in entry_to_mt61() each contain an identical inline DateAndDateTime2Choice match -- a shared fn extract_date_from_choice() would eliminate 10 lines of duplication",
+      "NEW ISSUE: sepa.rs validate_pacs008_typed() has a duplicated block for SEPA charset check on Dbtr/Nm and Cdtr/Nm (lines 477-503) -- structurally identical except for the tag name; extractable to a closure or helper",
+      "NEW ISSUE (BEHAVIORAL): cbpr.rs check_name_required() silently succeeds when the closing tag is missing (else branch returns without error at line 464-465) -- means a malformed element like <Dbtr><Nm>Alice</Nm (no close tag) passes the CBPR_CDTR_NM_REQUIRED check",
+      "NEW ISSUE (DESIGN): pattern_codegen.rs emit_variable_length() emits an IIFE closure for the validator body without a code comment explaining why -- this is subtle and worth documenting",
+      "CONFIRMED FIXED: cli/validate.rs no longer has ValidateError::Parse used as exit signal -- ValidationFailed { error_count } is the correct variant now",
+      "CONFIRMED FIXED: cli/validate.rs no longer duplicates extract_element/extract_all_elements -- uses xml_scan imports",
+      "roundtrip_all.rs: make_fi() helper is duplicated verbatim in pacs_009, pain_001, pain_013, camt_056, camt_029 modules -- same struct shape each time; minor test-file DRY violation",
+      "roundtrip_all.rs: fixture() helper path computation uses relative path ../../testdata; documented with a comment explaining why -- acceptable",
+      "cli_integration.rs: all tests call Command::new(bin_path()) inline -- acceptable; no shared setup needed",
+      "snapshots.rs: XSD paths via concat!(env!(...)) -- pattern is correct and idiomatic for test files",
+      "validate.rs (model/common): Validatable trait and blanket impls are clean; IsoMessage convenience method is correct"
+    ],
+    "decisions_made": [
+      "No code changes made - review only",
+      "Severity classification this iteration: High=2 (new behavioral bug in cbpr check_name_required, duplicate date extraction in camt053_to_mt940), Suggestions=3",
+      "Cumulative across all reviews: Critical=0, High=8, Suggestions=15"
+    ],
+    "artifacts": [
+      "crates/mx20022-cli/src/commands/validate.rs",
+      "crates/mx20022-cli/tests/cli_integration.rs",
+      "crates/mx20022-codegen/src/emit/pattern_codegen.rs",
+      "crates/mx20022-codegen/tests/snapshots.rs",
+      "crates/mx20022-model/src/common/validate.rs",
+      "crates/mx20022-parse/tests/roundtrip_all.rs",
+      "crates/mx20022-translate/src/mappings/camt053_to_mt940.rs",
+      "crates/mx20022-translate/src/mappings/helpers.rs",
+      "crates/mx20022-translate/tests/translation.rs",
+      "crates/mx20022-validate/src/schemes/cbpr.rs",
+      "crates/mx20022-validate/src/schemes/fednow.rs",
+      "crates/mx20022-validate/src/schemes/sepa.rs",
+      "crates/mx20022-validate/src/schemes/xml_scan.rs"
+    ],
+    "dependencies": [],
+    "risks_issues": [
+      "BEHAVIORAL BUG: cbpr.rs check_name_required() silently passes when closing tag is missing (no error reported for truncated XML) -- medium risk for production XML with malformed partial elements",
+      "BEHAVIORAL BUG: cbpr.rs check_name_required() line 468 -- redundant has_element() || extract_element().is_none() -- always equals extract_element().is_none() since has_element is weaker; logic is correct but misleading",
+      "DRY: camt053_to_mt940.rs DateAndDateTime2Choice match duplicated in extract_balance_date() and entry_to_mt61()",
+      "DRY: sepa.rs typed path -- charset check on Dbtr/Nm and Cdtr/Nm is a copy-paste block",
+      "DRY: mod97 still duplicated in iban.rs and lei.rs (prior finding, still open)",
+      "DRY: RuleRegistry::validate_all non-deterministic error order (prior finding, still open)",
+      "DRY: roundtrip_all.rs make_fi() duplicated across 5 test modules",
+      "DESIGN: pattern_codegen.rs IIFE closure in emit_variable_length() undocumented"
+    ]
+  },
+  "iteration": {
+    "summary": "Third full-pass code quality review covering all 13 files in the git diff. Two previously flagged issues are now fixed: ValidateError::ValidationFailed is a proper dedicated variant (no longer abusing Parse), and cli/validate.rs imports xml_scan helpers from the canonical module instead of duplicating them. pattern_codegen.rs parse_char_class duplication was also resolved via read_char_or_escape(). New findings this pass: check_name_required() in cbpr.rs has a silent-pass behavioral bug when the closing tag is missing, and has a redundant double-check (has_element + extract_element) that is logically equivalent to just extract_element; camt053_to_mt940.rs duplicates the DateAndDateTime2Choice match in two functions; sepa.rs typed-path charset check on Dbtr/Nm and Cdtr/Nm is copy-paste. Test files (roundtrip_all.rs, cli_integration.rs, snapshots.rs, translation.rs) are thorough and well-structured. No critical issues.",
+    "inputs_consulted": [
+      "crates/mx20022-cli/src/commands/validate.rs",
+      "crates/mx20022-cli/tests/cli_integration.rs",
+      "crates/mx20022-codegen/src/emit/pattern_codegen.rs",
+      "crates/mx20022-codegen/tests/snapshots.rs",
+      "crates/mx20022-model/src/common/validate.rs",
+      "crates/mx20022-parse/tests/roundtrip_all.rs",
+      "crates/mx20022-translate/src/mappings/camt053_to_mt940.rs",
+      "crates/mx20022-translate/src/mappings/helpers.rs",
+      "crates/mx20022-translate/tests/translation.rs",
+      "crates/mx20022-validate/src/schemes/cbpr.rs",
+      "crates/mx20022-validate/src/schemes/fednow.rs",
+      "crates/mx20022-validate/src/schemes/sepa.rs",
+      "crates/mx20022-validate/src/schemes/xml_scan.rs",
+      "docs/agents/2026-03-04T12-00-00Z__code-quality-review__cr.json"
+    ],
+    "outputs_produced": [
+      "Full code review report (in assistant response)",
+      "Updated context file superseding prior review"
+    ],
+    "next_actions": [
+      "Fix cbpr.rs check_name_required() to emit an error when closing tag is missing (currently returns silently)",
+      "Simplify cbpr.rs check_name_required() line 468 to just extract_element(block, 'Nm').is_none()",
+      "Extract shared fn extract_date_choice(v: &DateAndDateTime2Choice) -> String in camt053_to_mt940.rs",
+      "Extract sepa.rs charset check into a closure or fn check_sepa_charset_field(nm: Option<&Max140Text>, path, errors)",
+      "Extract mod97 into crates/mx20022-validate/src/rules/checkdigit.rs and import from iban.rs and lei.rs",
+      "Add doc comment to pattern_codegen.rs emit_variable_length() explaining the IIFE closure pattern",
+      "Extract make_fi() into a test helper module shared by roundtrip_all.rs test submodules"
+    ]
+  },
+  "cross_agent_notes": {
+    "mentions": [
+      {
+        "agent_abbr": "sec",
+        "filename": "2026-03-04T01-00-00Z__security-audit__sec.json",
+        "relevance_note": "cbpr.rs silent-pass on malformed/truncated XML is also a security concern -- an attacker could craft XML with a missing closing tag to bypass CBPR_DBTR_NM_REQUIRED check"
+      }
+    ]
+  }
+}

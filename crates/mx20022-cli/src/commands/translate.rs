@@ -39,6 +39,8 @@ pub enum TranslateError {
     Translation(TranslationError),
     /// An XML parse or serialisation error.
     Xml(mx20022_parse::ParseError),
+    /// The file exceeds the maximum allowed size.
+    FileTooLarge { size: u64, max: u64 },
     /// The requested target format is not recognised.
     UnknownTarget(String),
 }
@@ -49,6 +51,12 @@ impl std::fmt::Display for TranslateError {
             TranslateError::Io(e) => write!(f, "I/O error: {e}"),
             TranslateError::Translation(e) => write!(f, "translation error: {e}"),
             TranslateError::Xml(e) => write!(f, "XML error: {e}"),
+            TranslateError::FileTooLarge { size, max } => {
+                write!(
+                    f,
+                    "file is too large ({size} bytes); maximum allowed is {max} bytes"
+                )
+            }
             TranslateError::UnknownTarget(t) => write!(
                 f,
                 "unknown target format '{t}' — valid values: pacs008, mt103, pacs009, mt202, camt053, mt940"
@@ -63,7 +71,7 @@ impl std::error::Error for TranslateError {
             TranslateError::Io(e) => Some(e),
             TranslateError::Translation(e) => Some(e),
             TranslateError::Xml(e) => Some(e),
-            TranslateError::UnknownTarget(_) => None,
+            TranslateError::FileTooLarge { .. } | TranslateError::UnknownTarget(_) => None,
         }
     }
 }
@@ -115,6 +123,9 @@ fn derive_msg_id(file: &Path) -> String {
 ///
 /// Returns an error if the file cannot be read, the translation fails, or the
 /// target format is not recognised.
+/// Maximum file size accepted by the translate command (10 MB).
+const MAX_FILE_SIZE: u64 = 10 * 1024 * 1024;
+
 pub fn run(
     file: &Path,
     to: &str,
@@ -122,6 +133,13 @@ pub fn run(
     msg_id: Option<&str>,
     creation_time: Option<&str>,
 ) -> Result<(), TranslateError> {
+    let meta = std::fs::metadata(file)?;
+    if meta.len() > MAX_FILE_SIZE {
+        return Err(TranslateError::FileTooLarge {
+            size: meta.len(),
+            max: MAX_FILE_SIZE,
+        });
+    }
     let input = std::fs::read_to_string(file)?;
     let effective_msg_id = msg_id.map_or_else(|| derive_msg_id(file), str::to_owned);
     let effective_ts = creation_time.unwrap_or("2000-01-01T00:00:00").to_owned();

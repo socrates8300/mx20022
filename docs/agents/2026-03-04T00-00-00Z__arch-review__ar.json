@@ -1,0 +1,50 @@
+{
+  "metadata": {
+    "task_short": "arch-review",
+    "agent_abbr": "ar",
+    "datetime_utc": "2026-03-04T00:00:00Z",
+    "filename": "2026-03-04T00-00-00Z__arch-review__ar.json",
+    "supersedes": null,
+    "version": "1.0"
+  },
+  "state": {
+    "objectives": [
+      "Full architectural review of mx20022 workspace",
+      "Evaluate crate boundaries, error design, scheme validation, translation patterns"
+    ],
+    "constraints": [],
+    "important_facts": [
+      "7-crate workspace with clean dependency DAG",
+      "codegen is isolated (no model/parse deps) -- good",
+      "Dual validation path (XML scan + typed) in scheme validators",
+      "sepa.rs calls fednow::parse_amount_cents_lenient -- cross-module coupling",
+      "CLI validate command has its own error type not using thiserror"
+    ],
+    "decisions_made": [],
+    "artifacts": [],
+    "dependencies": [],
+    "risks_issues": [
+      "Scheme validator code duplication across cbpr/fednow/sepa",
+      "xml_scan fragility acknowledged but still primary path in CLI",
+      "No trait abstraction for translation mappings"
+    ]
+  },
+  "iteration": {
+    "summary": "Completed full architectural review of all 7 crates. Analyzed dependency graph, error propagation, scheme validation patterns, translation mapping patterns, and codegen pipeline. Identified several findings including scheme validator duplication, xml_scan fragility, cross-module coupling in amount parsing, and missing translation trait abstraction.",
+    "inputs_consulted": [
+      "Cargo.toml (workspace + all crates)",
+      "All lib.rs files",
+      "All error.rs files",
+      "schemes/*.rs",
+      "mappings/mod.rs, mt103_to_pacs008.rs",
+      "rules/mod.rs, schema/mod.rs",
+      "model common/*.rs",
+      "cli validate.rs, main.rs"
+    ],
+    "outputs_produced": ["Architectural review report"],
+    "next_actions": []
+  },
+  "cross_agent_notes": {
+    "mentions": []
+  }
+}

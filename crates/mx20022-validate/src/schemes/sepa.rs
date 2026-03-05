@@ -46,20 +46,23 @@ impl Default for SepaValidator {
     }
 }
 
+/// Returns `true` if `c` is in the SEPA restricted Latin character set.
+fn is_sepa_char(c: char) -> bool {
+    matches!(c,
+        'A'..='Z'
+        | 'a'..='z'
+        | '0'..='9'
+        | '/' | '-' | '?' | ':' | '(' | ')' | '.' | ',' | '\'' | '+' | ' '
+    ) || ('\u{00C0}'..='\u{00FF}').contains(&c)
+}
+
 /// Check whether a string contains only characters from the SEPA restricted
 /// Latin character set.
 ///
 /// Allowed: a-z A-Z 0-9 / - ? : ( ) . , ' + Space and Latin Extended-A
 /// characters with diacritics (U+00C0 – U+00FF, i.e. À–ÿ).
 pub fn is_sepa_charset(s: &str) -> bool {
-    s.chars().all(|c| {
-        matches!(c,
-            'A'..='Z'
-            | 'a'..='z'
-            | '0'..='9'
-            | '/' | '-' | '?' | ':' | '(' | ')' | '.' | ',' | '\'' | '+' | ' '
-        ) || ('\u{00C0}'..='\u{00FF}').contains(&c)
-    })
+    s.chars().all(is_sepa_char)
 }
 
 /// Tags whose text content must conform to the SEPA character set.
@@ -168,7 +171,7 @@ impl SchemeValidator for SepaValidator {
         // --- Ustrd total length max 140 chars --------------------------------
         let ustrd_total: usize = extract_all_elements(xml, "Ustrd")
             .iter()
-            .map(String::len)
+            .map(|s| s.len())
             .sum();
         if ustrd_total > 140 {
             errors.push(ValidationError::new(
@@ -194,7 +197,7 @@ impl SchemeValidator for SepaValidator {
                 ));
             }
             // Range checks via integer-cent arithmetic (avoids f64 precision).
-            match super::fednow::parse_amount_cents_lenient(&amt_str) {
+            match super::common::parse_amount_cents_lenient(amt_str) {
                 Some(cents) => {
                     if cents < 1 {
                         errors.push(ValidationError::new(
@@ -246,12 +249,9 @@ impl SchemeValidator for SepaValidator {
         // --- SEPA character set check ---------------------------------------
         for tag in CHARSET_TAGS {
             for value in extract_all_elements(xml, tag) {
-                if !is_sepa_charset(&value) {
+                if !is_sepa_charset(value) {
                     // Report just the offending characters.
-                    let bad: String = value
-                        .chars()
-                        .filter(|&c| !is_sepa_charset(&c.to_string()))
-                        .collect();
+                    let bad: String = value.chars().filter(|&c| !is_sepa_char(c)).collect();
                     errors.push(ValidationError::new(
                         format!("//{tag}"),
                         Severity::Error,
@@ -417,11 +417,7 @@ impl SepaValidator {
                 // SEPA character set check on Ustrd.
                 for ustrd in &rmt_inf.ustrd {
                     if !is_sepa_charset(&ustrd.0) {
-                        let bad: String = ustrd
-                            .0
-                            .chars()
-                            .filter(|&c| !is_sepa_charset(&c.to_string()))
-                            .collect();
+                        let bad: String = ustrd.0.chars().filter(|&c| !is_sepa_char(c)).collect();
                         errors.push(ValidationError::new(
                             "//Ustrd",
                             Severity::Error,
@@ -448,7 +444,7 @@ impl SepaValidator {
                 ));
             }
             // Range checks via integer-cent arithmetic (avoids f64 precision).
-            match super::fednow::parse_amount_cents_lenient(amt_str) {
+            match super::common::parse_amount_cents_lenient(amt_str) {
                 Some(cents) => {
                     if cents < 1 {
                         errors.push(ValidationError::new(
@@ -480,10 +476,7 @@ impl SepaValidator {
             // --- SEPA character set check on names --------------------------
             if let Some(nm) = &tx.dbtr.nm {
                 if !is_sepa_charset(&nm.0) {
-                    let bad: String =
-                        nm.0.chars()
-                            .filter(|&c| !is_sepa_charset(&c.to_string()))
-                            .collect();
+                    let bad: String = nm.0.chars().filter(|&c| !is_sepa_char(c)).collect();
                     errors.push(ValidationError::new(
                         "//Nm",
                         Severity::Error,
@@ -497,10 +490,7 @@ impl SepaValidator {
             }
             if let Some(nm) = &tx.cdtr.nm {
                 if !is_sepa_charset(&nm.0) {
-                    let bad: String =
-                        nm.0.chars()
-                            .filter(|&c| !is_sepa_charset(&c.to_string()))
-                            .collect();
+                    let bad: String = nm.0.chars().filter(|&c| !is_sepa_char(c)).collect();
                     errors.push(ValidationError::new(
                         "//Nm",
                         Severity::Error,
@@ -554,44 +544,17 @@ fn check_name(
     errors: &mut Vec<ValidationError>,
     rule_id: &str,
 ) {
-    let open = format!("<{parent_tag}>");
-    let close = format!("</{parent_tag}>");
-    let Some(start) = xml.find(&open) else {
-        errors.push(ValidationError::new(
-            format!("/Document/FIToFICstmrCdtTrf/CdtTrfTxInf/{parent_tag}"),
-            Severity::Error,
-            rule_id,
-            format!("{parent_tag} element is missing"),
-        ));
-        return;
-    };
-    let after = start + open.len();
-    let Some(end) = xml[after..].find(&close) else {
-        return;
-    };
-    let block = &xml[after..after + end];
-    match extract_element(block, "Nm") {
-        None => {
-            errors.push(ValidationError::new(
-                format!("/Document/FIToFICstmrCdtTrf/CdtTrfTxInf/{parent_tag}/Nm"),
-                Severity::Error,
-                rule_id,
-                format!("{parent_tag}/Nm is required for SEPA"),
-            ));
-        }
-        Some(nm) if nm.len() > max_len => {
-            errors.push(ValidationError::new(
-                format!("/Document/FIToFICstmrCdtTrf/CdtTrfTxInf/{parent_tag}/Nm"),
-                Severity::Error,
-                rule_id,
-                format!(
-                    "{parent_tag}/Nm must be at most {max_len} characters; got {} characters",
-                    nm.len()
-                ),
-            ));
-        }
-        Some(_) => {}
-    }
+    let path = format!("/Document/FIToFICstmrCdtTrf/CdtTrfTxInf/{parent_tag}");
+    super::common::check_name_in_parent(
+        xml,
+        parent_tag,
+        Some(max_len),
+        &path,
+        rule_id,
+        "SEPA",
+        errors,
+        true,
+    );
 }
 
 #[cfg(test)]

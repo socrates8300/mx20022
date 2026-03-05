@@ -47,6 +47,7 @@
 //! ```
 
 pub mod cbpr;
+pub(crate) mod common;
 pub mod fednow;
 pub mod sepa;
 pub mod xml_scan;

@@ -23,6 +23,239 @@ fn fixture(path: &str) -> String {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
+// pacs.002.001.14 — FI to FI Payment Status Report
+// ─────────────────────────────────────────────────────────────────────────────
+
+mod pacs_002 {
+    use super::*;
+    use mx20022_model::generated::pacs::pacs_002_001_14::{
+        Document, FIToFIPaymentStatusReportV14, GroupHeader120, ISODateTime, Max35Text,
+        OriginalGroupHeader22,
+    };
+
+    fn make_doc() -> Document {
+        Document {
+            fi_to_fi_pmt_sts_rpt: FIToFIPaymentStatusReportV14 {
+                grp_hdr: GroupHeader120 {
+                    msg_id: Max35Text("PACS002-TEST-001".to_owned()),
+                    cre_dt_tm: ISODateTime("2024-01-01T12:00:00Z".to_owned()),
+                    instg_agt: None,
+                    instd_agt: None,
+                    orgnl_biz_qry: None,
+                },
+                orgnl_grp_inf_and_sts: vec![OriginalGroupHeader22 {
+                    orgnl_msg_id: Max35Text("PACS008-20231215-001".to_owned()),
+                    orgnl_msg_nm_id: Max35Text("pacs.008.001.13".to_owned()),
+                    orgnl_cre_dt_tm: None,
+                    orgnl_nb_of_txs: None,
+                    orgnl_ctrl_sum: None,
+                    grp_sts: None,
+                    sts_rsn_inf: vec![],
+                    nb_of_txs_per_sts: vec![],
+                }],
+                tx_inf_and_sts: vec![],
+                splmtry_data: vec![],
+            },
+        }
+    }
+
+    #[test]
+    fn roundtrip() {
+        let original = make_doc();
+        let xml = ser::to_string(&original).expect("serialization must succeed");
+        assert!(
+            xml.contains("PACS002-TEST-001"),
+            "MsgId must appear in XML: {xml}"
+        );
+        let roundtripped: Document = de::from_str(&xml).expect("deserialization must succeed");
+        assert_eq!(
+            original, roundtripped,
+            "pacs.002 roundtrip must be identity"
+        );
+    }
+
+    #[test]
+    fn envelope_detect() {
+        let xml = fixture("pacs/pacs_002_001_14_minimal.xml");
+        let id = envelope::detect_message_type(&xml).expect("must detect namespace");
+        assert_eq!(id.dotted(), "pacs.002.001.14");
+        assert_eq!(id.family, "pacs");
+        assert_eq!(id.msg_id, "002");
+        assert_eq!(id.version, "14");
+    }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// pacs.008.001.13 — FI to FI Customer Credit Transfer
+// ─────────────────────────────────────────────────────────────────────────────
+
+mod pacs_008 {
+    use super::*;
+    use mx20022_model::generated::pacs::pacs_008_001_13::{
+        ActiveCurrencyAndAmount, ActiveCurrencyAndAmountSimpleType, ActiveCurrencyCode,
+        BICFIDec2014Identifier, BranchAndFinancialInstitutionIdentification8,
+        ChargeBearerType1Code, CreditTransferTransaction70, Document,
+        FIToFICustomerCreditTransferV13, FinancialInstitutionIdentification23, GroupHeader131,
+        ISODateTime, Max140Text, Max15NumericText, Max35Text, PartyIdentification272,
+        PaymentIdentification13, SettlementInstruction15, SettlementMethod1Code,
+    };
+
+    fn make_fi(bic: &str) -> BranchAndFinancialInstitutionIdentification8 {
+        BranchAndFinancialInstitutionIdentification8 {
+            fin_instn_id: FinancialInstitutionIdentification23 {
+                bicfi: Some(BICFIDec2014Identifier(bic.to_owned())),
+                clr_sys_mmb_id: None,
+                lei: None,
+                nm: None,
+                pstl_adr: None,
+                othr: None,
+            },
+            brnch_id: None,
+        }
+    }
+
+    fn make_party(name: &str) -> PartyIdentification272 {
+        PartyIdentification272 {
+            nm: Some(Max140Text(name.to_owned())),
+            pstl_adr: None,
+            id: None,
+            ctry_of_res: None,
+            ctct_dtls: None,
+        }
+    }
+
+    fn make_doc() -> Document {
+        Document {
+            fi_to_fi_cstmr_cdt_trf: FIToFICustomerCreditTransferV13 {
+                grp_hdr: GroupHeader131 {
+                    msg_id: Max35Text("PACS008-TEST-001".to_owned()),
+                    cre_dt_tm: ISODateTime("2024-01-01T12:00:00Z".to_owned()),
+                    xpry_dt_tm: None,
+                    btch_bookg: None,
+                    nb_of_txs: Max15NumericText("1".to_owned()),
+                    ctrl_sum: None,
+                    ttl_intr_bk_sttlm_amt: None,
+                    intr_bk_sttlm_dt: None,
+                    sttlm_inf: SettlementInstruction15 {
+                        sttlm_mtd: SettlementMethod1Code::Clrg,
+                        sttlm_acct: None,
+                        clr_sys: None,
+                        instg_rmbrsmnt_agt: None,
+                        instg_rmbrsmnt_agt_acct: None,
+                        instd_rmbrsmnt_agt: None,
+                        instd_rmbrsmnt_agt_acct: None,
+                        thrd_rmbrsmnt_agt: None,
+                        thrd_rmbrsmnt_agt_acct: None,
+                    },
+                    pmt_tp_inf: None,
+                    instg_agt: None,
+                    instd_agt: None,
+                },
+                cdt_trf_tx_inf: vec![CreditTransferTransaction70 {
+                    pmt_id: PaymentIdentification13 {
+                        instr_id: None,
+                        end_to_end_id: Max35Text("E2E-TEST-001".to_owned()),
+                        tx_id: None,
+                        uetr: None,
+                        clr_sys_ref: None,
+                    },
+                    pmt_tp_inf: None,
+                    intr_bk_sttlm_amt: ActiveCurrencyAndAmount {
+                        value: ActiveCurrencyAndAmountSimpleType("1000.00".to_owned()),
+                        ccy: ActiveCurrencyCode("USD".to_owned()),
+                    },
+                    intr_bk_sttlm_dt: None,
+                    sttlm_prty: None,
+                    sttlm_tm_indctn: None,
+                    sttlm_tm_req: None,
+                    addtl_dt_tm: None,
+                    instd_amt: None,
+                    xchg_rate: None,
+                    agrd_rate: None,
+                    chrg_br: ChargeBearerType1Code::Slev,
+                    chrgs_inf: vec![],
+                    mndt_rltd_inf: None,
+                    pmt_sgntr: None,
+                    prvs_instg_agt1: None,
+                    prvs_instg_agt1acct: None,
+                    prvs_instg_agt2: None,
+                    prvs_instg_agt2acct: None,
+                    prvs_instg_agt3: None,
+                    prvs_instg_agt3acct: None,
+                    instg_agt: None,
+                    instd_agt: None,
+                    intrmy_agt1: None,
+                    intrmy_agt1acct: None,
+                    intrmy_agt2: None,
+                    intrmy_agt2acct: None,
+                    intrmy_agt3: None,
+                    intrmy_agt3acct: None,
+                    ultmt_dbtr: None,
+                    initg_pty: None,
+                    dbtr: make_party("Alice Smith"),
+                    dbtr_acct: None,
+                    dbtr_agt: make_fi("AAAAGB2LXXX"),
+                    dbtr_agt_acct: None,
+                    cdtr_agt: make_fi("BBBBUS33XXX"),
+                    cdtr_agt_acct: None,
+                    cdtr: make_party("Bob Jones"),
+                    cdtr_acct: None,
+                    ultmt_cdtr: None,
+                    instr_for_cdtr_agt: vec![],
+                    instr_for_nxt_agt: vec![],
+                    purp: None,
+                    rgltry_rptg: vec![],
+                    tax: None,
+                    rltd_rmt_inf: vec![],
+                    rmt_inf: None,
+                    splmtry_data: vec![],
+                }],
+                splmtry_data: vec![],
+            },
+        }
+    }
+
+    #[test]
+    fn roundtrip() {
+        let original = make_doc();
+        let xml = ser::to_string(&original).expect("serialization must succeed");
+        assert!(
+            xml.contains("PACS008-TEST-001"),
+            "MsgId must appear in XML: {xml}"
+        );
+        assert!(
+            xml.contains("AAAAGB2LXXX"),
+            "debtor agent BIC must appear in XML: {xml}"
+        );
+        let roundtripped: Document = de::from_str(&xml).expect("deserialization must succeed");
+        assert_eq!(
+            original, roundtripped,
+            "pacs.008 roundtrip must be identity"
+        );
+    }
+
+    #[test]
+    fn envelope_detect() {
+        let xml = fixture("pacs/pacs_008_001_13_minimal.xml");
+        let id = envelope::detect_message_type(&xml).expect("must detect namespace");
+        assert_eq!(id.dotted(), "pacs.008.001.13");
+        assert_eq!(id.family, "pacs");
+        assert_eq!(id.msg_id, "008");
+        assert_eq!(id.version, "13");
+    }
+
+    #[test]
+    fn fixture_parses() {
+        let xml = fixture("pacs/pacs_008_001_13_minimal.xml");
+        let doc: Document = de::from_str(&xml).expect("pacs.008 fixture must parse");
+        assert_eq!(
+            doc.fi_to_fi_cstmr_cdt_trf.grp_hdr.msg_id.0,
+            "PACS008-20240101-001"
+        );
+    }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
 // pacs.004.001.11 — Payment Return
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -880,6 +1113,17 @@ mod camt_029 {
 // Fixture-file parse tests: verify that the minimal XML fixtures deserialize
 // without error (namespace is stripped by quick-xml during deserialization).
 // ─────────────────────────────────────────────────────────────────────────────
+
+#[test]
+fn fixture_pacs_002_parses() {
+    use mx20022_model::generated::pacs::pacs_002_001_14::Document;
+    let xml = fixture("pacs/pacs_002_001_14_minimal.xml");
+    let doc: Document = de::from_str(&xml).expect("pacs.002 fixture must parse");
+    assert_eq!(
+        doc.fi_to_fi_pmt_sts_rpt.grp_hdr.msg_id.0,
+        "PACS002-20240101-001"
+    );
+}
 
 #[test]
 fn fixture_pacs_004_parses() {
