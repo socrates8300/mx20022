@@ -10,7 +10,7 @@ keywords.workspace = true
 categories.workspace = true
 
 [dependencies]
-mx20022-model.workspace = true
+mx20022-model = { workspace = true, features = ["all"] }
 thiserror.workspace = true
 regex.workspace = true
 

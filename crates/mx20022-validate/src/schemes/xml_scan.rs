@@ -173,9 +173,10 @@ pub fn extract_all_attributes<'a>(xml: &'a str, attr_name: &str) -> Vec<&'a str>
 /// assert!(!has_element(xml, "AppHdr"));
 /// ```
 pub fn has_element(xml: &str, tag: &str) -> bool {
-    xml.contains(&format!("<{tag}>"))
-        || xml.contains(&format!("<{tag}/>"))
-        || xml.contains(&format!("<{tag} "))
+    let bare = format!("<{tag}>");
+    let self_close = format!("<{tag}/>");
+    let with_attr = format!("<{tag} ");
+    xml.contains(&bare) || xml.contains(&self_close) || xml.contains(&with_attr)
 }
 
 /// Return the UTF-8 byte length of the XML string.

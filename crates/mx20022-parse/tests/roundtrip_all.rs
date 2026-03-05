@@ -850,9 +850,70 @@ mod pain_013 {
 
 mod camt_053 {
     use super::*;
+    use mx20022_model::common::ChoiceWrapper;
     use mx20022_model::generated::camt::camt_053_001_11::{
-        BankToCustomerStatementV11, Document, GroupHeader81, ISODateTime, Max35Text,
+        AccountIdentification4Choice, AccountStatement12, ActiveOrHistoricCurrencyAndAmount,
+        ActiveOrHistoricCurrencyAndAmountSimpleType, ActiveOrHistoricCurrencyCode,
+        BalanceType10Choice, BalanceType13, BankToCustomerStatementV11,
+        BankTransactionCodeStructure4, CashAccount41, CashBalance8, CreditDebitCode,
+        DateAndDateTime2Choice, Document, EntryStatus1Choice, ExternalBalanceType1Code,
+        ExternalEntryStatus1Code, GroupHeader81, IBAN2007Identifier, ISODate, ISODateTime,
+        Max35Text, ReportEntry13,
     };
+
+    fn make_amount(value: &str, ccy: &str) -> ActiveOrHistoricCurrencyAndAmount {
+        ActiveOrHistoricCurrencyAndAmount {
+            value: ActiveOrHistoricCurrencyAndAmountSimpleType(value.to_owned()),
+            ccy: ActiveOrHistoricCurrencyCode(ccy.to_owned()),
+        }
+    }
+
+    fn make_balance(code: &str, dc: CreditDebitCode, amt: &str, date: &str) -> CashBalance8 {
+        CashBalance8 {
+            tp: BalanceType13 {
+                cd_or_prtry: ChoiceWrapper::new(BalanceType10Choice::Cd(ExternalBalanceType1Code(
+                    code.to_owned(),
+                ))),
+                sub_tp: None,
+            },
+            cdt_line: vec![],
+            amt: make_amount(amt, "EUR"),
+            cdt_dbt_ind: dc,
+            dt: ChoiceWrapper::new(DateAndDateTime2Choice::Dt(ISODate(date.to_owned()))),
+            avlbty: vec![],
+        }
+    }
+
+    fn make_entry(dc: CreditDebitCode, amt: &str) -> ReportEntry13 {
+        ReportEntry13 {
+            ntry_ref: Some(Max35Text("ENTRY-REF-001".to_owned())),
+            amt: make_amount(amt, "EUR"),
+            cdt_dbt_ind: dc,
+            rvsl_ind: None,
+            sts: ChoiceWrapper::new(EntryStatus1Choice::Cd(ExternalEntryStatus1Code(
+                "BOOK".to_owned(),
+            ))),
+            bookg_dt: None,
+            val_dt: Some(ChoiceWrapper::new(DateAndDateTime2Choice::Dt(ISODate(
+                "2024-01-02".to_owned(),
+            )))),
+            acct_svcr_ref: None,
+            avlbty: vec![],
+            bk_tx_cd: BankTransactionCodeStructure4 {
+                domn: None,
+                prtry: None,
+            },
+            comssn_wvr_ind: None,
+            addtl_inf_ind: None,
+            amt_dtls: None,
+            chrgs: None,
+            tech_inpt_chanl: None,
+            intrst: None,
+            card_tx: None,
+            ntry_dtls: vec![],
+            addtl_ntry_inf: None,
+        }
+    }
 
     fn make_doc() -> Document {
         Document {
@@ -865,7 +926,40 @@ mod camt_053 {
                     orgnl_biz_qry: None,
                     addtl_inf: None,
                 },
-                stmt: vec![],
+                stmt: vec![AccountStatement12 {
+                    id: Max35Text("STMT-001".to_owned()),
+                    stmt_pgntn: None,
+                    elctrnc_seq_nb: None,
+                    rptg_seq: None,
+                    lgl_seq_nb: None,
+                    cre_dt_tm: None,
+                    fr_to_dt: None,
+                    cpy_dplct_ind: None,
+                    rptg_src: None,
+                    acct: CashAccount41 {
+                        id: Some(ChoiceWrapper::new(AccountIdentification4Choice::IBAN(
+                            IBAN2007Identifier("DE89370400440532013000".to_owned()),
+                        ))),
+                        tp: None,
+                        ccy: None,
+                        nm: None,
+                        prxy: None,
+                        ownr: None,
+                        svcr: None,
+                    },
+                    rltd_acct: None,
+                    intrst: vec![],
+                    bal: vec![
+                        make_balance("OPBD", CreditDebitCode::Crdt, "10000.00", "2024-01-01"),
+                        make_balance("CLBD", CreditDebitCode::Dbit, "500.00", "2024-01-02"),
+                    ],
+                    txs_summry: None,
+                    ntry: vec![
+                        make_entry(CreditDebitCode::Crdt, "2500.00"),
+                        make_entry(CreditDebitCode::Dbit, "1000.50"),
+                    ],
+                    addtl_stmt_inf: None,
+                }],
                 splmtry_data: vec![],
             },
         }
@@ -903,8 +997,14 @@ mod camt_053 {
 
 mod camt_054 {
     use super::*;
+    use mx20022_model::common::ChoiceWrapper;
     use mx20022_model::generated::camt::camt_054_001_11::{
-        BankToCustomerDebitCreditNotificationV11, Document, GroupHeader81, ISODateTime, Max35Text,
+        AccountIdentification4Choice, AccountNotification21, ActiveOrHistoricCurrencyAndAmount,
+        ActiveOrHistoricCurrencyAndAmountSimpleType, ActiveOrHistoricCurrencyCode,
+        BankToCustomerDebitCreditNotificationV11, BankTransactionCodeStructure4, CashAccount41,
+        CreditDebitCode, DateAndDateTime2Choice, Document, EntryStatus1Choice,
+        ExternalEntryStatus1Code, GroupHeader81, IBAN2007Identifier, ISODate, ISODateTime,
+        Max35Text, ReportEntry13,
     };
 
     fn make_doc() -> Document {
@@ -918,7 +1018,63 @@ mod camt_054 {
                     orgnl_biz_qry: None,
                     addtl_inf: None,
                 },
-                ntfctn: vec![],
+                ntfctn: vec![AccountNotification21 {
+                    id: Max35Text("NTFCTN-001".to_owned()),
+                    ntfctn_pgntn: None,
+                    elctrnc_seq_nb: None,
+                    rptg_seq: None,
+                    lgl_seq_nb: None,
+                    cre_dt_tm: None,
+                    fr_to_dt: None,
+                    cpy_dplct_ind: None,
+                    rptg_src: None,
+                    acct: CashAccount41 {
+                        id: Some(ChoiceWrapper::new(AccountIdentification4Choice::IBAN(
+                            IBAN2007Identifier("FR7630006000011234567890189".to_owned()),
+                        ))),
+                        tp: None,
+                        ccy: None,
+                        nm: None,
+                        prxy: None,
+                        ownr: None,
+                        svcr: None,
+                    },
+                    rltd_acct: None,
+                    intrst: vec![],
+                    txs_summry: None,
+                    ntry: vec![ReportEntry13 {
+                        ntry_ref: Some(Max35Text("NTRY-REF-001".to_owned())),
+                        amt: ActiveOrHistoricCurrencyAndAmount {
+                            value: ActiveOrHistoricCurrencyAndAmountSimpleType("750.00".to_owned()),
+                            ccy: ActiveOrHistoricCurrencyCode("EUR".to_owned()),
+                        },
+                        cdt_dbt_ind: CreditDebitCode::Crdt,
+                        rvsl_ind: None,
+                        sts: ChoiceWrapper::new(EntryStatus1Choice::Cd(ExternalEntryStatus1Code(
+                            "BOOK".to_owned(),
+                        ))),
+                        bookg_dt: None,
+                        val_dt: Some(ChoiceWrapper::new(DateAndDateTime2Choice::Dt(ISODate(
+                            "2024-01-15".to_owned(),
+                        )))),
+                        acct_svcr_ref: None,
+                        avlbty: vec![],
+                        bk_tx_cd: BankTransactionCodeStructure4 {
+                            domn: None,
+                            prtry: None,
+                        },
+                        comssn_wvr_ind: None,
+                        addtl_inf_ind: None,
+                        amt_dtls: None,
+                        chrgs: None,
+                        tech_inpt_chanl: None,
+                        intrst: None,
+                        card_tx: None,
+                        ntry_dtls: vec![],
+                        addtl_ntry_inf: None,
+                    }],
+                    addtl_ntfctn_inf: None,
+                }],
                 splmtry_data: vec![],
             },
         }

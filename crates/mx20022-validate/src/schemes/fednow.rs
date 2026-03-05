@@ -35,15 +35,15 @@ use crate::error::{Severity, ValidationError, ValidationResult};
 /// assert!(validator.supported_messages().contains(&"pacs.008"));
 /// ```
 pub struct FedNowValidator {
-    /// Maximum permitted settlement amount in USD.
-    max_amount: f64,
+    /// Maximum permitted settlement amount in USD cents.
+    max_amount_cents: u64,
 }
 
 impl FedNowValidator {
     /// Create a validator with the standard 500,000 USD limit.
     pub fn new() -> Self {
         Self {
-            max_amount: 500_000.0,
+            max_amount_cents: 50_000_000,
         }
     }
 
@@ -58,7 +58,10 @@ impl FedNowValidator {
             max_amount > 0.0 && max_amount.is_finite(),
             "max_amount must be positive and finite"
         );
-        Self { max_amount }
+        #[allow(clippy::cast_possible_truncation, clippy::cast_sign_loss)]
+        Self {
+            max_amount_cents: (max_amount * 100.0).round() as u64,
+        }
     }
 }
 
@@ -205,14 +208,14 @@ impl SchemeValidator for FedNowValidator {
 
         // --- End-to-end ID is required and max 35 chars ---------------------
         if let Some(e2e) = extract_element(xml, "EndToEndId") {
-            if e2e.len() > 35 {
+            if e2e.chars().count() > 35 {
                 errors.push(ValidationError::new(
                     "/Document/FIToFICstmrCdtTrf/CdtTrfTxInf/PmtId/EndToEndId",
                     Severity::Error,
                     "FEDNOW_E2E_LENGTH",
                     format!(
                         "EndToEndId must be at most 35 characters; got {} characters",
-                        e2e.len()
+                        e2e.chars().count()
                     ),
                 ));
             }
@@ -233,14 +236,14 @@ impl SchemeValidator for FedNowValidator {
 
         // --- RmtInf/Ustrd max 140 chars per element -------------------------
         for ustrd in super::xml_scan::extract_all_elements(xml, "Ustrd") {
-            if ustrd.len() > 140 {
+            if ustrd.chars().count() > 140 {
                 errors.push(ValidationError::new(
                     "/Document/FIToFICstmrCdtTrf/CdtTrfTxInf/RmtInf/Ustrd",
                     Severity::Error,
                     "FEDNOW_USTRD_LENGTH",
                     format!(
                         "Ustrd element must be at most 140 characters; got {} characters",
-                        ustrd.len()
+                        ustrd.chars().count()
                     ),
                 ));
             }
@@ -301,18 +304,15 @@ impl FedNowValidator {
                         format!("FedNow minimum amount is 0.01 USD; got \"{amt_str}\""),
                     ));
                 }
-                // Safety: max_amount is validated as positive+finite in constructor,
-                // so this cast is safe for any realistic USD amount.
-                #[allow(clippy::cast_possible_truncation, clippy::cast_sign_loss)]
-                let max_cents = (self.max_amount * 100.0) as u64;
-                if cents > max_cents {
+                if cents > self.max_amount_cents {
                     errors.push(ValidationError::new(
                         path,
                         Severity::Error,
                         "FEDNOW_AMOUNT_LIMIT",
                         format!(
-                            "FedNow maximum amount is {:.2} USD; got \"{amt_str}\"",
-                            self.max_amount
+                            "FedNow maximum amount is {}.{:02} USD; got \"{amt_str}\"",
+                            self.max_amount_cents / 100,
+                            self.max_amount_cents % 100
                         ),
                     ));
                 }
@@ -432,14 +432,14 @@ impl FedNowValidator {
 
             // --- Debtor name max 140 chars ----------------------------------
             if let Some(nm) = &tx.dbtr.nm {
-                if nm.0.len() > 140 {
+                if nm.0.chars().count() > 140 {
                     errors.push(ValidationError::new(
                         "/Document/FIToFICstmrCdtTrf/CdtTrfTxInf/Dbtr/Nm",
                         Severity::Error,
                         "FEDNOW_DBTR_NM_LENGTH",
                         format!(
                             "Dbtr/Nm must be at most 140 characters; got {} characters",
-                            nm.0.len()
+                            nm.0.chars().count()
                         ),
                     ));
                 }
@@ -447,14 +447,14 @@ impl FedNowValidator {
 
             // --- Creditor name max 140 chars --------------------------------
             if let Some(nm) = &tx.cdtr.nm {
-                if nm.0.len() > 140 {
+                if nm.0.chars().count() > 140 {
                     errors.push(ValidationError::new(
                         "/Document/FIToFICstmrCdtTrf/CdtTrfTxInf/Cdtr/Nm",
                         Severity::Error,
                         "FEDNOW_CDTR_NM_LENGTH",
                         format!(
                             "Cdtr/Nm must be at most 140 characters; got {} characters",
-                            nm.0.len()
+                            nm.0.chars().count()
                         ),
                     ));
                 }
@@ -463,14 +463,14 @@ impl FedNowValidator {
             // --- RmtInf/Ustrd max 140 chars per element ---------------------
             if let Some(rmt_inf) = &tx.rmt_inf {
                 for ustrd in &rmt_inf.ustrd {
-                    if ustrd.0.len() > 140 {
+                    if ustrd.0.chars().count() > 140 {
                         errors.push(ValidationError::new(
                             "/Document/FIToFICstmrCdtTrf/CdtTrfTxInf/RmtInf/Ustrd",
                             Severity::Error,
                             "FEDNOW_USTRD_LENGTH",
                             format!(
                                 "Ustrd element must be at most 140 characters; got {} characters",
-                                ustrd.0.len()
+                                ustrd.0.chars().count()
                             ),
                         ));
                     }
@@ -545,13 +545,13 @@ mod tests {
     #[test]
     fn default_max_amount_is_500k() {
         let v = FedNowValidator::default();
-        assert!((v.max_amount - 500_000.0).abs() < f64::EPSILON);
+        assert_eq!(v.max_amount_cents, 50_000_000);
     }
 
     #[test]
     fn custom_max_amount() {
         let v = FedNowValidator::with_max_amount(25_000_000.0);
-        assert!((v.max_amount - 25_000_000.0).abs() < f64::EPSILON);
+        assert_eq!(v.max_amount_cents, 2_500_000_000);
     }
 
     #[test]

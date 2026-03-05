@@ -96,6 +96,23 @@ fn inspect_nonexistent_file_exits_nonzero() {
     );
 }
 
+#[test]
+fn inspect_rejects_oversized_file() {
+    let big = std::env::temp_dir().join("mx20022_test_oversized_inspect.xml");
+    std::fs::write(&big, vec![b'x'; 11 * 1024 * 1024]).unwrap();
+    let out = Command::new(bin_path())
+        .args(["inspect", &big.to_string_lossy()])
+        .output()
+        .unwrap();
+    let _ = std::fs::remove_file(&big);
+    assert!(!out.status.success());
+    let stderr = String::from_utf8_lossy(&out.stderr);
+    assert!(
+        stderr.contains("too large"),
+        "expected 'too large' in: {stderr}"
+    );
+}
+
 // ---------------------------------------------------------------------------
 // validate
 // ---------------------------------------------------------------------------
@@ -273,6 +290,23 @@ fn codegen_nonexistent_xsd_exits_nonzero() {
     assert!(!output.status.success());
 }
 
+#[test]
+fn codegen_rejects_oversized_file() {
+    let big = std::env::temp_dir().join("mx20022_test_oversized_codegen.xsd");
+    std::fs::write(&big, vec![b'x'; 11 * 1024 * 1024]).unwrap();
+    let out = Command::new(bin_path())
+        .args(["codegen", &big.to_string_lossy()])
+        .output()
+        .unwrap();
+    let _ = std::fs::remove_file(&big);
+    assert!(!out.status.success());
+    let stderr = String::from_utf8_lossy(&out.stderr);
+    assert!(
+        stderr.contains("too large"),
+        "expected 'too large' in: {stderr}"
+    );
+}
+
 // ---------------------------------------------------------------------------
 // validate --scheme
 // ---------------------------------------------------------------------------
@@ -367,6 +401,67 @@ fn validate_with_scheme_fednow_invalid_catches_error() {
     assert!(
         stdout.contains("FEDNOW_CURRENCY"),
         "expected FEDNOW_CURRENCY in output, got:\n{stdout}"
+    );
+}
+
+#[test]
+fn validate_rejects_oversized_file() {
+    let big = std::env::temp_dir().join("mx20022_test_oversized.xml");
+    std::fs::write(&big, vec![b'x'; 11 * 1024 * 1024]).unwrap();
+    let out = Command::new(bin_path())
+        .args(["validate", &big.to_string_lossy()])
+        .output()
+        .unwrap();
+    let _ = std::fs::remove_file(&big);
+    assert!(!out.status.success());
+    let stderr = String::from_utf8_lossy(&out.stderr);
+    assert!(
+        stderr.contains("too large"),
+        "expected 'too large' in: {stderr}"
+    );
+}
+
+#[test]
+fn validate_with_scheme_sepa_invalid_catches_error() {
+    let out = Command::new(bin_path())
+        .args([
+            "validate",
+            &scheme_testdata("sepa/invalid_usd.xml").to_string_lossy(),
+            "--scheme",
+            "sepa",
+        ])
+        .output()
+        .unwrap();
+    assert!(
+        !out.status.success(),
+        "validate --scheme sepa should exit non-zero for invalid input"
+    );
+    let stdout = String::from_utf8_lossy(&out.stdout);
+    assert!(
+        stdout.contains("SEPA_CURRENCY"),
+        "expected SEPA_CURRENCY in: {stdout}"
+    );
+}
+
+#[test]
+fn validate_with_scheme_cbpr_invalid_catches_error() {
+    let out = Command::new(bin_path())
+        .args([
+            "validate",
+            &scheme_testdata("cbpr/invalid_missing_uetr.xml").to_string_lossy(),
+            "--scheme",
+            "cbpr",
+        ])
+        .output()
+        .unwrap();
+    assert!(
+        !out.status.success(),
+        "validate --scheme cbpr should exit non-zero for invalid input"
+    );
+    let stdout = String::from_utf8_lossy(&out.stdout);
+    assert!(
+        stdout.contains("CBPR_UETR_REQUIRED"),
+        "expected CBPR_UETR_REQUIRED in: {stdout}"
     );
 }
 

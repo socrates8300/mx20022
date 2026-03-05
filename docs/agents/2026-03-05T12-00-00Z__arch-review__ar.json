@@ -1,0 +1,83 @@
+{
+  "metadata": {
+    "task_short": "arch-review",
+    "agent_abbr": "ar",
+    "datetime_utc": "2026-03-05T12:00:00Z",
+    "filename": "2026-03-05T12-00-00Z__arch-review__ar.json",
+    "supersedes": "2026-03-04T01-00-00Z__arch-review__ar.json",
+    "version": "1.0"
+  },
+  "state": {
+    "objectives": [
+      "Comprehensive architectural review of mx20022 workspace (7 crates)",
+      "Evaluate scalability, maintainability, adherence to architectural principles",
+      "Focus on codegen pipeline, validation architecture, translation layer, trait design"
+    ],
+    "constraints": [
+      "Review only, no code changes",
+      "Edition 2021, MSRV 1.75.0",
+      "unsafe_code = forbid workspace-wide"
+    ],
+    "important_facts": [
+      "Dependency graph is acyclic and well-layered: model(leaf) -> parse -> validate/translate -> cli",
+      "codegen is fully standalone (no internal crate dependency)",
+      "model crate has zero non-serde dependencies -- ideal data crate",
+      "Three-phase codegen pipeline: xsd->ir->emit with clean TypeGraph IR",
+      "Dual validation: Validatable trait (compile-time typed) + RuleRegistry (runtime extensible) + SchemeValidator (payment-scheme overlay)",
+      "Pattern codegen compiles XSD regex to inline byte checks at codegen time, avoiding regex dep in model",
+      "Translation helpers hardcoded to pacs_008_001_13 types (comment says layout identical to pacs.009/camt)",
+      "Feature flags on model only, not propagated through dependent crates",
+      "validate depends on model WITHOUT all features; parse/translate use features=[all] or specific families",
+      "Generated code is 17K+ lines per message version, uses newtype pattern with TryFrom validation",
+      "ChoiceWrapper workaround for quick-xml serde enum limitation is well-documented",
+      "FedNow validator has dual path: XML string scanning + typed downcast via Any",
+      "TranslationResult carries TranslationWarnings for data-loss transparency",
+      "28 generated message modules across 4 families (head, pacs, pain, camt)"
+    ],
+    "decisions_made": [],
+    "artifacts": [
+      "/Volumes/Everything/Development/mx20022/Cargo.toml",
+      "/Volumes/Everything/Development/mx20022/crates/mx20022-codegen/src/ir/types.rs",
+      "/Volumes/Everything/Development/mx20022/crates/mx20022-codegen/src/emit/validate.rs",
+      "/Volumes/Everything/Development/mx20022/crates/mx20022-model/src/common/validate.rs",
+      "/Volumes/Everything/Development/mx20022/crates/mx20022-validate/src/schemes/mod.rs",
+      "/Volumes/Everything/Development/mx20022/crates/mx20022-translate/src/mappings/helpers.rs"
+    ],
+    "dependencies": [],
+    "risks_issues": [
+      "MEDIUM: Feature flag asymmetry -- validate depends on model with default features only (pacs), meaning typed validation of non-pacs types fails unless downstream enables features",
+      "MEDIUM: Translation helpers hardcoded to pacs.008 concrete types, causing structural duplication across mapping modules",
+      "MEDIUM: SchemeValidator::validate_typed uses Any downcasting, losing compile-time type safety at the trait boundary",
+      "LOW: No unified error enum across workspace; each crate defines its own with #[from] composition",
+      "LOW: ConstraintError in model uses manual Display/Error impl while all other crates use thiserror",
+      "LOW: Decimal values stored as String (no semantic type) -- deferred per comment but creates validation-only-at-runtime risk",
+      "LOW: FedNow max_amount uses f64 despite integer-cent arithmetic elsewhere in same function"
+    ]
+  },
+  "iteration": {
+    "summary": "Completed deep architectural review of all 7 crates in the mx20022 workspace. Read every Cargo.toml, lib.rs, and key internal files including the full codegen pipeline (xsd parser, IR types/lower, emit dispatcher, pattern codegen), model common types (validate, builder, choice), parse (de/ser/envelope), validate (rules registry, schemes, typed bridge, FedNow), and translate (MT parser/types, mapping modules, helpers). The architecture is well-structured with clean layering, proper separation of generated vs hand-written code, and thoughtful trait design. Key findings center on feature flag propagation gaps, translation helper coupling to specific message versions, and the Any-based scheme validation escape hatch.",
+    "inputs_consulted": [
+      "All 7 crate Cargo.toml files",
+      "Workspace Cargo.toml",
+      "All lib.rs entry points",
+      "Codegen: ir/types.rs, ir/lower.rs, emit/mod.rs, emit/validate.rs, emit/pattern_codegen.rs",
+      "Model: common/mod.rs, common/validate.rs, common/builder.rs, common/choice.rs, generated/mod.rs, generated/pacs/pacs_008_001_13.rs (partial)",
+      "Parse: lib.rs, de.rs, envelope.rs, error.rs",
+      "Validate: lib.rs, error.rs, typed.rs, rules/mod.rs, schemes/mod.rs, schemes/fednow.rs",
+      "Translate: lib.rs, mt/mod.rs, mt/types.rs, mappings/mod.rs, mappings/error.rs, mappings/helpers.rs, mappings/mt103_to_pacs008.rs",
+      "Prior arch review: 2026-03-04T01-00-00Z__arch-review__ar.json"
+    ],
+    "outputs_produced": [
+      "Structured architectural review document",
+      "This context file"
+    ],
+    "next_actions": []
+  },
+  "cross_agent_notes": {
+    "mentions": [
+      {"agent_abbr": "cr", "filename": "2026-03-05T04-22-43Z__code-quality-review__cr.json", "relevance_note": "Code quality findings complement architectural review"},
+      {"agent_abbr": "ta", "filename": "2026-03-05T04-21-31Z__test-coverage-audit__ta.json", "relevance_note": "Test coverage gaps may indicate architectural boundary issues"},
+      {"agent_abbr": "sec", "filename": "2026-03-04T01-00-00Z__security-audit__sec.json", "relevance_note": "Security findings overlap with validation layer design"}
+    ]
+  }
+}

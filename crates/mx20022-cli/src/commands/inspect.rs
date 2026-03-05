@@ -14,6 +14,8 @@ pub enum InspectError {
     Io(std::io::Error),
     /// The XML does not contain a valid ISO 20022 envelope.
     Parse(mx20022_parse::ParseError),
+    /// The file exceeds the maximum allowed size.
+    FileTooLarge { size: u64, max: u64 },
 }
 
 impl std::fmt::Display for InspectError {
@@ -21,6 +23,12 @@ impl std::fmt::Display for InspectError {
         match self {
             InspectError::Io(e) => write!(f, "I/O error: {e}"),
             InspectError::Parse(e) => write!(f, "parse error: {e}"),
+            InspectError::FileTooLarge { size, max } => {
+                write!(
+                    f,
+                    "file is too large ({size} bytes); maximum allowed is {max} bytes"
+                )
+            }
         }
     }
 }
@@ -42,6 +50,7 @@ impl std::error::Error for InspectError {
         match self {
             InspectError::Io(e) => Some(e),
             InspectError::Parse(e) => Some(e),
+            InspectError::FileTooLarge { .. } => None,
         }
     }
 }
@@ -52,7 +61,17 @@ impl std::error::Error for InspectError {
 ///
 /// Returns an error if the file cannot be read or has no recognisable ISO 20022
 /// namespace.
+/// Maximum file size accepted by the inspect command (10 MB).
+const MAX_FILE_SIZE: u64 = 10 * 1024 * 1024;
+
 pub fn run(file: &Path) -> Result<(), InspectError> {
+    let meta = std::fs::metadata(file)?;
+    if meta.len() > MAX_FILE_SIZE {
+        return Err(InspectError::FileTooLarge {
+            size: meta.len(),
+            max: MAX_FILE_SIZE,
+        });
+    }
     let xml = std::fs::read_to_string(file)?;
 
     println!("File: {}", file.display());

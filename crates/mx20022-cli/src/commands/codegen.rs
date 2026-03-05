@@ -17,6 +17,8 @@ pub enum CodegenError {
     Xsd(xsd::ParseError),
     /// The XSD could not be lowered to IR.
     Lower(ir::LowerError),
+    /// The file exceeds the maximum allowed size.
+    FileTooLarge { size: u64, max: u64 },
 }
 
 impl std::fmt::Display for CodegenError {
@@ -25,6 +27,12 @@ impl std::fmt::Display for CodegenError {
             CodegenError::Io(e) => write!(f, "I/O error: {e}"),
             CodegenError::Xsd(e) => write!(f, "XSD parse error: {e}"),
             CodegenError::Lower(e) => write!(f, "IR lowering error: {e}"),
+            CodegenError::FileTooLarge { size, max } => {
+                write!(
+                    f,
+                    "file is too large ({size} bytes); maximum allowed is {max} bytes"
+                )
+            }
         }
     }
 }
@@ -53,6 +61,7 @@ impl std::error::Error for CodegenError {
             CodegenError::Io(e) => Some(e),
             CodegenError::Xsd(e) => Some(e),
             CodegenError::Lower(e) => Some(e),
+            CodegenError::FileTooLarge { .. } => None,
         }
     }
 }
@@ -65,7 +74,17 @@ impl std::error::Error for CodegenError {
 /// # Errors
 ///
 /// Returns an error if the XSD cannot be read, parsed, or lowered.
+/// Maximum file size accepted by the codegen command (10 MB).
+const MAX_FILE_SIZE: u64 = 10 * 1024 * 1024;
+
 pub fn run(file: &Path, output: Option<&Path>) -> Result<(), CodegenError> {
+    let meta = std::fs::metadata(file)?;
+    if meta.len() > MAX_FILE_SIZE {
+        return Err(CodegenError::FileTooLarge {
+            size: meta.len(),
+            max: MAX_FILE_SIZE,
+        });
+    }
     let f = std::fs::File::open(file)?;
     let schema = xsd::parse(BufReader::new(f))?;
     let graph = ir::lower(&schema)?;
