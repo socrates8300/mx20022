@@ -3,6 +3,8 @@
 Rust library for ISO 20022 financial messages. Parse, validate, and translate
 between SWIFT MT and ISO 20022 MX formats.
 
+[![Crates.io](https://img.shields.io/crates/v/mx20022.svg)](https://crates.io/crates/mx20022)
+[![docs.rs](https://docs.rs/mx20022/badge.svg)](https://docs.rs/mx20022)
 [![CI](https://github.com/socrates8300/mx20022/actions/workflows/ci.yml/badge.svg)](https://github.com/socrates8300/mx20022/actions/workflows/ci.yml)
 [![License: Apache-2.0 OR MIT](https://img.shields.io/badge/license-Apache--2.0%20OR%20MIT-blue.svg)](#license)
 [![MSRV: 1.75.0](https://img.shields.io/badge/MSRV-1.75.0-orange.svg)](https://releases.rs/docs/1.75.0/)
@@ -144,10 +146,10 @@ println!("{xml}");
 
 ## CLI
 
-Build and install the CLI:
+Install the CLI from crates.io:
 
 ```bash
-cargo install --path crates/mx20022-cli
+cargo install mx20022-cli
 ```
 
 ### Commands
