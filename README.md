@@ -29,31 +29,36 @@ between SWIFT MT and ISO 20022 MX formats.
   full message trees via the `Validatable` trait
 - **Code generation** — XSD → intermediate representation → Rust source
 
-## Workspace Crates
+## Installation
 
-| Crate | Description |
-|-------|-------------|
-| `mx20022` | Umbrella re-export (use this as your dependency) |
-| `mx20022-model` | Generated types + hand-written common types |
-| `mx20022-parse` | XML deserialization and serialization |
-| `mx20022-validate` | Schema rules, business rules, scheme validators |
-| `mx20022-translate` | MT ↔ MX bidirectional translation |
-| `mx20022-codegen` | XSD → Rust code generator |
-| `mx20022-cli` | Command-line tool |
+### Umbrella crate (recommended)
 
-## Quick Start
+The easiest way to get started — re-exports model, parse, validate, and translate
+with all message families enabled:
 
-### Requirements
-
-- Rust 1.75.0 or later (stable)
-- [just](https://github.com/casey/just) (optional, for task runner shortcuts)
-
-### Add the dependency
-
-```toml
-[dependencies]
-mx20022 = "0.1"
+```bash
+cargo add mx20022
 ```
+
+### Individual crates
+
+Pick only what you need for smaller compile times and dependency footprint:
+
+```bash
+cargo add mx20022-model    # Generated types + common types
+cargo add mx20022-parse    # XML parsing and serialization
+cargo add mx20022-validate # Schema, business rule, and scheme validation
+cargo add mx20022-translate # MT ↔ MX bidirectional translation
+cargo add mx20022-codegen  # XSD → Rust code generator
+```
+
+### CLI tool
+
+```bash
+cargo install mx20022-cli
+```
+
+### Feature flags
 
 Feature flags on `mx20022-model` control which message families are compiled.
 The umbrella crate enables all of them.
@@ -65,6 +70,8 @@ The umbrella crate enables all of them.
 | `camt` | camt.029, camt.053, camt.054, camt.056 | no |
 | `head` | head.001 | no |
 | `all` | all of the above | no |
+
+## Usage
 
 ### Parse an ISO 20022 message
 
@@ -145,12 +152,6 @@ println!("{xml}");
 ```
 
 ## CLI
-
-Install the CLI from crates.io:
-
-```bash
-cargo install mx20022-cli
-```
 
 ### Commands
 
