@@ -1,6 +1,6 @@
 [package]
 name = "mx20022-parse"
-version = "0.1.1"
+version = "0.2.0"
 description = "XML parsing and serialization for ISO 20022 MX financial messages via quick-xml and serde"
 edition.workspace = true
 rust-version.workspace = true

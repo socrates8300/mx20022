@@ -463,7 +463,7 @@ checksum = "f8ca58f447f06ed17d5fc4043ce1b10dd205e060fb3ce5b979b8ed8e59ff3f79"
 
 [[package]]
 name = "mx20022"
-version = "0.1.1"
+version = "0.2.0"
 dependencies = [
  "mx20022-model",
  "mx20022-parse",
@@ -473,7 +473,7 @@ dependencies = [
 
 [[package]]
 name = "mx20022-cli"
-version = "0.1.1"
+version = "0.2.0"
 dependencies = [
  "clap",
  "mx20022-codegen",
@@ -485,7 +485,7 @@ dependencies = [
 
 [[package]]
 name = "mx20022-codegen"
-version = "0.1.1"
+version = "0.2.0"
 dependencies = [
  "indexmap",
  "insta",
@@ -500,7 +500,7 @@ dependencies = [
 
 [[package]]
 name = "mx20022-model"
-version = "0.1.1"
+version = "0.2.0"
 dependencies = [
  "pretty_assertions",
  "serde",
@@ -508,7 +508,7 @@ dependencies = [
 
 [[package]]
 name = "mx20022-parse"
-version = "0.1.1"
+version = "0.2.0"
 dependencies = [
  "criterion",
  "insta",
@@ -521,7 +521,7 @@ dependencies = [
 
 [[package]]
 name = "mx20022-translate"
-version = "0.1.1"
+version = "0.2.0"
 dependencies = [
  "criterion",
  "mx20022-model",
@@ -533,7 +533,7 @@ dependencies = [
 
 [[package]]
 name = "mx20022-validate"
-version = "0.1.1"
+version = "0.2.0"
 dependencies = [
  "criterion",
  "mx20022-model",

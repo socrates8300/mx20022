@@ -81,7 +81,7 @@ fn validate_iban(iban: &str) -> Result<(), String> {
 
     // Mod-97 check: rearrange (move first 4 chars to end), expand letters to digits, compute mod 97
     let rearranged = format!("{}{}", bban, &canonical[..4]);
-    let numeric = iban_to_numeric(&rearranged);
+    let numeric = alpha_to_numeric(&rearranged);
     let remainder = mod97(&numeric);
     if remainder != 1 {
         return Err(format!(
@@ -92,22 +92,7 @@ fn validate_iban(iban: &str) -> Result<(), String> {
     Ok(())
 }
 
-/// Convert an IBAN string (letters → digits, A=10, B=11, …, Z=35) to a numeric string.
-fn iban_to_numeric(s: &str) -> String {
-    let mut out = String::with_capacity(s.len() * 2);
-    for c in s.chars() {
-        if c.is_ascii_digit() {
-            out.push(c);
-        } else {
-            // A=10, B=11, …, Z=35
-            let n = (c as u32) - ('A' as u32) + 10;
-            out.push_str(&n.to_string());
-        }
-    }
-    out
-}
-
-use super::checkdigit::mod97;
+use super::checkdigit::{alpha_to_numeric, mod97};
 
 #[cfg(test)]
 mod tests {

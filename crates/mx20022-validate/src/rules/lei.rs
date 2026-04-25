@@ -82,7 +82,7 @@ fn validate_lei(lei: &str) -> Result<(), String> {
     // Expand all 20 characters (A=10, B=11, …, Z=35; digits stay) to a numeric
     // string, then compute mod 97.  A valid LEI yields remainder 1.
     // (No rearrangement — the full 20-char string is used as-is, unlike IBAN.)
-    let numeric = lei_to_numeric(lei);
+    let numeric = alpha_to_numeric(lei);
     let remainder = mod97(&numeric);
     if remainder != 1 {
         return Err(format!(
@@ -93,21 +93,7 @@ fn validate_lei(lei: &str) -> Result<(), String> {
     Ok(())
 }
 
-/// Expand alphanumeric string for MOD 97-10: digits stay, letters become A=10…Z=35.
-fn lei_to_numeric(s: &str) -> String {
-    let mut out = String::with_capacity(s.len() * 2);
-    for c in s.chars() {
-        if c.is_ascii_digit() {
-            out.push(c);
-        } else {
-            let n = (c as u32) - ('A' as u32) + 10;
-            out.push_str(&n.to_string());
-        }
-    }
-    out
-}
-
-use super::checkdigit::mod97;
+use super::checkdigit::{alpha_to_numeric, mod97};
 
 #[cfg(test)]
 mod tests {

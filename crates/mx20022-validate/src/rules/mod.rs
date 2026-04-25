@@ -155,14 +155,6 @@ impl RuleRegistry {
             .flat_map(|rule| rule.validate(value, path))
             .collect()
     }
-
-    /// Run **all** registered rules against `value` at `path`.
-    pub fn validate_all(&self, value: &str, path: &str) -> Vec<ValidationError> {
-        self.rules
-            .values()
-            .flat_map(|rule| rule.validate(value, path))
-            .collect()
-    }
 }
 
 impl Default for RuleRegistry {

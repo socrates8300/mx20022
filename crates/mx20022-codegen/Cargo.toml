@@ -1,6 +1,6 @@
 [package]
 name = "mx20022-codegen"
-version = "0.1.1"
+version = "0.2.0"
 description = "XSD-to-Rust code generator for ISO 20022 message types with constraint validation"
 edition.workspace = true
 rust-version.workspace = true

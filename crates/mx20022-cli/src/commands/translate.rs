@@ -15,6 +15,7 @@
 
 use std::path::Path;
 
+use super::MAX_FILE_SIZE;
 use mx20022_model::generated::{
     camt::camt_053_001_11 as camt053,
     pacs::{pacs_008_001_13 as pacs008, pacs_009_001_10 as pacs009},
@@ -123,9 +124,6 @@ fn derive_msg_id(file: &Path) -> String {
 ///
 /// Returns an error if the file cannot be read, the translation fails, or the
 /// target format is not recognised.
-/// Maximum file size accepted by the translate command (10 MB).
-const MAX_FILE_SIZE: u64 = 10 * 1024 * 1024;
-
 pub fn run(
     file: &Path,
     to: &str,

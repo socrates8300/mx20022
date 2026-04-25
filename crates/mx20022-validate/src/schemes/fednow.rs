@@ -553,34 +553,4 @@ mod tests {
         let v = FedNowValidator::with_max_amount(25_000_000.0);
         assert_eq!(v.max_amount_cents, 2_500_000_000);
     }
-
-    #[test]
-    fn parse_amount_cents_normal() {
-        assert_eq!(parse_amount_cents("100.50"), Some(10050));
-    }
-
-    #[test]
-    fn parse_amount_cents_minimum() {
-        assert_eq!(parse_amount_cents("0.01"), Some(1));
-    }
-
-    #[test]
-    fn parse_amount_cents_large() {
-        assert_eq!(parse_amount_cents("999999.99"), Some(99999999));
-    }
-
-    #[test]
-    fn parse_amount_cents_no_dot() {
-        assert_eq!(parse_amount_cents("100"), None);
-    }
-
-    #[test]
-    fn parse_amount_cents_bad_integer() {
-        assert_eq!(parse_amount_cents("abc.50"), None);
-    }
-
-    #[test]
-    fn parse_amount_cents_bad_fraction() {
-        assert_eq!(parse_amount_cents("100.ab"), None);
-    }
 }

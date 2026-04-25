@@ -4,6 +4,7 @@
 //! dates, account strings, party blocks) into normalised Rust types.
 
 use super::super::error::MtError;
+use super::super::types::{Block4, TagField};
 
 // ---------------------------------------------------------------------------
 // Value types
@@ -240,6 +241,43 @@ pub fn parse_party_lines(lines: &[&str]) -> PartyInfo {
 pub fn parse_party_value(value: &str) -> PartyInfo {
     let lines: Vec<&str> = value.lines().collect();
     parse_party_lines(&lines)
+}
+
+// ---------------------------------------------------------------------------
+// Shared field lookup + parsing helpers
+// ---------------------------------------------------------------------------
+
+/// Look up a required field in `block4` by tag name.
+///
+/// Returns [`MtError::MissingField`] when the tag is absent.
+pub(crate) fn require_field<'a>(
+    block4: &'a Block4,
+    tag: &str,
+    message_type: &str,
+) -> Result<&'a TagField, MtError> {
+    block4.get(tag).ok_or_else(|| MtError::MissingField {
+        tag: tag.to_string(),
+        message_type: message_type.to_string(),
+    })
+}
+
+/// Parse a `:32A:` value: `YYMMDD` + currency (3) + amount.
+///
+/// Returns `(date, currency, amount)` on success.
+pub(crate) fn parse_32a(s: &str, tag: &str) -> Result<(String, String, String), MtError> {
+    if s.len() < 10 {
+        return Err(MtError::InvalidFieldValue {
+            tag: tag.to_string(),
+            detail: format!("too short: '{s}'"),
+        });
+    }
+    let date = parse_date_yymmdd(&s[..6]).map_err(|_| MtError::InvalidFieldValue {
+        tag: tag.to_string(),
+        detail: format!("invalid date in '{s}'"),
+    })?;
+    let rest = &s[6..];
+    let amt = parse_amount(rest)?;
+    Ok((date, amt.currency, amt.value))
 }
 
 // ---------------------------------------------------------------------------

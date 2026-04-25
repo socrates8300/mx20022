@@ -67,16 +67,6 @@ impl SchemaValidator {
         self.constraints.validate_field(path, value, &self.registry)
     }
 
-    /// Access the underlying registry (e.g. to register additional rules).
-    pub fn registry_mut(&mut self) -> &mut RuleRegistry {
-        &mut self.registry
-    }
-
-    /// Access the underlying constraint set (e.g. to add constraints at runtime).
-    pub fn constraints_mut(&mut self) -> &mut ConstraintSet {
-        &mut self.constraints
-    }
-
     /// Validate multiple `(path, value)` pairs and merge all findings.
     pub fn validate_fields<'a>(
         &self,

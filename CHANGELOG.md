@@ -7,6 +7,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-04-25
+
+### Changed
+
+- **Breaking:** reduced the public API surface for validation and translation internals. These removals are intentional: the deleted items exposed customization hooks and helpers that were either unused, redundant with narrower APIs, or too low-level to support as stable public contracts.
+- `RuleRegistry::validate_all` was removed. Call `RuleRegistry::validate_field(value, path, rule_ids)` with the explicit rule IDs that should apply to the field. This keeps validation deterministic and avoids running unrelated rules against arbitrary values.
+- `SchemaValidator::registry_mut` and `SchemaValidator::constraints_mut` were removed. Build validation through the supported constructors and field-level validation methods instead of mutating internal state after construction.
+- `ConstraintSet::for_path` is now crate-private. Use `ConstraintSet::validate_field` or `SchemaValidator::validate_field` when checking values; downstream code should not depend on raw constraint lookup.
+- `mappings::helpers::bic_to_fi_id` was removed. Use the party-based mapping helpers when translating MT party data, or construct `BranchAndFinancialInstitutionIdentification8` directly when a caller already has a raw BIC.
+- `MtError::InvalidFieldTag` was removed. Field parser errors should use the existing parse and invalid-value variants that carry concrete field context.
+
+### Fixed
+
+- Release workflow can now call the CI workflow because `.github/workflows/ci.yml` exposes `workflow_call`.
+
 ## [0.1.0] - 2026-03-02
 
 ### Added
@@ -83,5 +98,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Performance benchmarks: parse, serialize, validate, translate
 - XSD schema download script
 
-[Unreleased]: https://github.com/jamesray/mx20022/compare/v0.1.0...HEAD
+[Unreleased]: https://github.com/jamesray/mx20022/compare/v0.2.0...HEAD
+[0.2.0]: https://github.com/jamesray/mx20022/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/jamesray/mx20022/releases/tag/v0.1.0

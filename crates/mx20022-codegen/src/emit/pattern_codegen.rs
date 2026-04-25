@@ -537,7 +537,6 @@ fn emit_cursor_stmts(segments: &[Segment], stmts: &mut Vec<TokenStream>) {
                     }
                     Quantifier::Range(min, max) => {
                         // For {0,1} (optional group), emit a try-match
-                        let (_inner_min_len, _inner_max_len) = compute_length_bounds(inner);
                         let min_lit = *min;
 
                         if *min == 0 && *max == 1 {
@@ -561,7 +560,7 @@ fn emit_cursor_stmts(segments: &[Segment], stmts: &mut Vec<TokenStream>) {
                             let max_lit = *max;
                             let mut inner_stmts = Vec::new();
                             emit_cursor_stmts(inner, &mut inner_stmts);
-                            // inner_min_len / inner_max_len available for future bounds reasoning
+
                             let min_guard = if min_lit > 0 {
                                 quote! {
                                     if count < #min_lit {

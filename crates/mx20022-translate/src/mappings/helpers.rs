@@ -79,23 +79,6 @@ pub fn party_to_fi_id(party: &PartyInfo) -> pacs008::BranchAndFinancialInstituti
     }
 }
 
-/// Build a minimal `BranchAndFinancialInstitutionIdentification8` from a raw
-/// BIC string.
-pub fn bic_to_fi_id(bic: &str) -> pacs008::BranchAndFinancialInstitutionIdentification8 {
-    let fin_instn_id = pacs008::FinancialInstitutionIdentification23 {
-        bicfi: Some(pacs008::BICFIDec2014Identifier(bic.to_string())),
-        clr_sys_mmb_id: None,
-        lei: None,
-        nm: None,
-        pstl_adr: None,
-        othr: None,
-    };
-    pacs008::BranchAndFinancialInstitutionIdentification8 {
-        fin_instn_id,
-        brnch_id: None,
-    }
-}
-
 /// Build a minimal `BranchAndFinancialInstitutionIdentification8` with no
 /// identification (placeholder / unknown agent).
 pub fn empty_fi_id() -> pacs008::BranchAndFinancialInstitutionIdentification8 {

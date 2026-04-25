@@ -8,6 +8,8 @@ use std::path::Path;
 
 use mx20022_codegen::{emit, ir, xsd};
 
+use super::MAX_FILE_SIZE;
+
 /// Error type returned by the codegen command.
 #[derive(Debug)]
 pub enum CodegenError {
@@ -74,9 +76,6 @@ impl std::error::Error for CodegenError {
 /// # Errors
 ///
 /// Returns an error if the XSD cannot be read, parsed, or lowered.
-/// Maximum file size accepted by the codegen command (10 MB).
-const MAX_FILE_SIZE: u64 = 10 * 1024 * 1024;
-
 pub fn run(file: &Path, output: Option<&Path>) -> Result<(), CodegenError> {
     let meta = std::fs::metadata(file)?;
     if meta.len() > MAX_FILE_SIZE {

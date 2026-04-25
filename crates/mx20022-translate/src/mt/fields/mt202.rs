@@ -3,7 +3,7 @@
 use crate::mt::error::MtError;
 use crate::mt::types::Block4;
 
-use super::common::{parse_amount, parse_date_yymmdd, parse_party_value, PartyInfo};
+use super::common::{parse_32a, parse_party_value, require_field, PartyInfo};
 
 // ---------------------------------------------------------------------------
 // Parsed representation
@@ -116,33 +116,6 @@ pub fn parse_mt202(block4: &Block4) -> Result<Mt202, MtError> {
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
-
-fn require_field<'a>(
-    block4: &'a Block4,
-    tag: &str,
-    message_type: &str,
-) -> Result<&'a crate::mt::types::TagField, MtError> {
-    block4.get(tag).ok_or_else(|| MtError::MissingField {
-        tag: tag.to_string(),
-        message_type: message_type.to_string(),
-    })
-}
-
-fn parse_32a(s: &str, tag: &str) -> Result<(String, String, String), MtError> {
-    if s.len() < 10 {
-        return Err(MtError::InvalidFieldValue {
-            tag: tag.to_string(),
-            detail: format!("too short: '{s}'"),
-        });
-    }
-    let date = parse_date_yymmdd(&s[..6]).map_err(|_| MtError::InvalidFieldValue {
-        tag: tag.to_string(),
-        detail: format!("invalid date in '{s}'"),
-    })?;
-    let rest = &s[6..];
-    let amt = parse_amount(rest)?;
-    Ok((date, amt.currency, amt.value))
-}
 
 // ---------------------------------------------------------------------------
 // Unit tests

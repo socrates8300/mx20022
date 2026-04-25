@@ -66,7 +66,7 @@ impl ConstraintSet {
     }
 
     /// Look up all constraints for a given path.
-    pub fn for_path(&self, path: &str) -> Vec<&FieldConstraint> {
+    pub(crate) fn for_path(&self, path: &str) -> Vec<&FieldConstraint> {
         self.constraints.iter().filter(|c| c.path == path).collect()
     }
 
