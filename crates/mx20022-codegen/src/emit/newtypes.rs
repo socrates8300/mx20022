@@ -3,9 +3,9 @@
 use proc_macro2::TokenStream;
 use quote::quote;
 
-use crate::ir::types::{Constraint, NewtypeDef, RustType};
+use crate::ir::types::{Constraint, NewtypeDef, RustType, TypeRef};
 
-use super::util::{make_ident, standard_derives};
+use super::util::{make_ident, standard_derives, type_ref_tokens};
 
 /// Emit a single [`NewtypeDef`] as a `pub struct` newtype.
 ///
@@ -19,7 +19,7 @@ use super::util::{make_ident, standard_derives};
 pub fn emit_newtype(def: &NewtypeDef) -> TokenStream {
     let derives = standard_derives();
     let name = make_ident(&def.name);
-    let inner_type = rust_type_tokens(def.inner);
+    let inner_type = type_ref_tokens(&TypeRef::Builtin(def.inner));
 
     // Emit constraint doc comments if any.
     let constraint_docs: TokenStream = def
@@ -112,15 +112,6 @@ fn emit_try_from(def: &NewtypeDef) -> TokenStream {
             fn from(v: #name) -> Self {
                 v.0
             }
-        }
-    }
-}
-
-fn rust_type_tokens(rt: RustType) -> TokenStream {
-    match rt {
-        RustType::Bool => quote! { bool },
-        RustType::String | RustType::Decimal | RustType::Date | RustType::DateTime => {
-            quote! { String }
         }
     }
 }

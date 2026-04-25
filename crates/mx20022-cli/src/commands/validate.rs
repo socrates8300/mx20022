@@ -14,6 +14,7 @@
 
 use std::path::Path;
 
+use super::MAX_FILE_SIZE;
 use mx20022_parse::envelope::detect_message_type;
 use mx20022_validate::schemes::{
     cbpr::CbprPlusValidator,
@@ -112,9 +113,6 @@ fn resolve_scheme(scheme: Option<&str>) -> Result<Option<Box<dyn SchemeValidator
 ///
 /// Returns an error if the file cannot be read, has no recognisable ISO 20022
 /// namespace, or an unknown scheme is requested.
-/// Maximum file size accepted by the validate command (10 MB).
-const MAX_FILE_SIZE: u64 = 10 * 1024 * 1024;
-
 pub fn run(file: &Path, scheme: Option<&str>) -> Result<(), ValidateError> {
     let meta = std::fs::metadata(file)?;
     if meta.len() > MAX_FILE_SIZE {

@@ -7,7 +7,7 @@
 use crate::mt::error::MtError;
 use crate::mt::types::{Block4, TagField};
 
-use super::common::{parse_amount, parse_date_mmdd, parse_date_yymmdd};
+use super::common::{parse_amount, parse_date_mmdd, parse_date_yymmdd, require_field};
 
 // ---------------------------------------------------------------------------
 // Parsed representation
@@ -425,17 +425,6 @@ fn parse_61(s: &str) -> Result<StatementLine, MtError> {
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
-
-fn require_field<'a>(
-    block4: &'a Block4,
-    tag: &str,
-    message_type: &str,
-) -> Result<&'a crate::mt::types::TagField, MtError> {
-    block4.get(tag).ok_or_else(|| MtError::MissingField {
-        tag: tag.to_string(),
-        message_type: message_type.to_string(),
-    })
-}
 
 // ---------------------------------------------------------------------------
 // Unit tests

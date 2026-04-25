@@ -1,6 +1,6 @@
 [package]
 name = "mx20022-model"
-version = "0.1.1"
+version = "0.2.0"
 description = "Strongly-typed ISO 20022 message models generated from official XSD schemas (pacs, pain, camt, head)"
 edition.workspace = true
 rust-version.workspace = true

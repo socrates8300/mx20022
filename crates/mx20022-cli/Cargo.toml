@@ -1,6 +1,6 @@
 [package]
 name = "mx20022-cli"
-version = "0.1.1"
+version = "0.2.0"
 description = "CLI tool for inspecting, validating, and translating ISO 20022 and SWIFT MT financial messages"
 edition.workspace = true
 rust-version.workspace = true

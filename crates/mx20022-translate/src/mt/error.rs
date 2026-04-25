@@ -17,10 +17,6 @@ pub enum MtError {
     #[error("missing required block: {0}")]
     MissingBlock(u8),
 
-    /// A field tag does not match the expected format.
-    #[error("invalid field tag: {0}")]
-    InvalidFieldTag(String),
-
     /// A required field is missing from the message body.
     #[error("missing required field: {tag} in MT{message_type}")]
     MissingField { tag: String, message_type: String },

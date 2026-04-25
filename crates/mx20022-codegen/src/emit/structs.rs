@@ -107,9 +107,7 @@ fn emit_field(field: &FieldDef, choice_types: &HashSet<String>) -> TokenStream {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::ir::types::{
-        Cardinality, EnumDef, FieldDef, RustType, StructDef, TypeRef, VariantDef,
-    };
+    use crate::ir::types::{Cardinality, FieldDef, RustType, StructDef, TypeRef};
 
     fn field(
         xml_name: &str,
@@ -293,17 +291,5 @@ mod tests {
             src.contains("Option < crate :: common :: ChoiceWrapper < MyChoice > >"),
             "optional xs:choice field must be Option<ChoiceWrapper<T>>; src = {src}"
         );
-    }
-
-    #[allow(dead_code)]
-    fn _make_enum_def() -> EnumDef {
-        EnumDef {
-            name: "Party51Choice".to_owned(),
-            variants: vec![VariantDef {
-                xml_name: "FIId".to_owned(),
-                rust_name: "FIId".to_owned(),
-                type_ref: TypeRef::Named("SomeType".to_owned()),
-            }],
-        }
     }
 }
