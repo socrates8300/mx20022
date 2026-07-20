@@ -30,6 +30,15 @@ pub fn from_str<T: DeserializeOwned>(xml: &str) -> Result<T, ParseError> {
 
 /// Deserialize an ISO 20022 XML message from a buffered reader.
 ///
+/// # Caution
+///
+/// This reads until EOF and imposes no upper bound on input size, element
+/// depth, or memory use. When deserializing from an untrusted or
+/// size-unbounded source (e.g. a network stream), wrap the reader with
+/// [`std::io::Read::take`] or read into a pre-sized buffer and use
+/// [`from_str`] instead, so that a single oversized document cannot exhaust
+/// process memory.
+///
 /// # Errors
 ///
 /// Returns [`ParseError::Deserialize`] if the XML is malformed or does not
