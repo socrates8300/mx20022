@@ -489,7 +489,6 @@ version = "0.3.0"
 dependencies = [
  "indexmap",
  "insta",
- "pretty_assertions",
  "prettyplease",
  "proc-macro2",
  "quick-xml",
@@ -502,7 +501,6 @@ dependencies = [
 name = "mx20022-model"
 version = "0.3.0"
 dependencies = [
- "pretty_assertions",
  "serde",
 ]
 
@@ -511,9 +509,7 @@ name = "mx20022-parse"
 version = "0.3.0"
 dependencies = [
  "criterion",
- "insta",
  "mx20022-model",
- "pretty_assertions",
  "quick-xml",
  "serde",
  "thiserror",
@@ -538,7 +534,6 @@ dependencies = [
  "criterion",
  "mx20022-model",
  "mx20022-parse",
- "pretty_assertions",
  "regex",
  "thiserror",
 ]
