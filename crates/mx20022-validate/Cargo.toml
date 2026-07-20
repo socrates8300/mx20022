@@ -17,9 +17,7 @@ thiserror.workspace = true
 regex.workspace = true
 
 [dev-dependencies]
-pretty_assertions.workspace = true
 mx20022-parse = { workspace = true }
-mx20022-model = { workspace = true, features = ["all"] }
 criterion.workspace = true
 
 [[bench]]
