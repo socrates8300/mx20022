@@ -21,6 +21,6 @@
       }
     }
   },
-  "postCreateCommand": "scripts/install-hooks.sh && rustup toolchain install 1.75.0 --no-self-update",
+  "postCreateCommand": "scripts/install-hooks.sh && rustup toolchain install 1.79.0 --no-self-update",
   "remoteUser": "vscode"
 }

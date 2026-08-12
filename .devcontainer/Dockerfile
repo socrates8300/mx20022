@@ -5,7 +5,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && rm -rf /var/lib/apt/lists/*
 
 RUN rustup component add rustfmt clippy llvm-tools-preview \
-    && rustup toolchain install 1.75.0 --no-self-update
+    && rustup toolchain install 1.79.0 --no-self-update
 
 RUN cargo install cargo-deny@0.16 \
     && cargo install cargo-insta@1 \
