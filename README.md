@@ -9,7 +9,7 @@ you need to build, validate, and migrate financial messages in a single crate.
 [![docs.rs](https://docs.rs/mx20022/badge.svg)](https://docs.rs/mx20022)
 [![CI](https://github.com/socrates8300/mx20022/actions/workflows/ci.yml/badge.svg)](https://github.com/socrates8300/mx20022/actions/workflows/ci.yml)
 [![License: Apache-2.0](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](#license)
-[![MSRV: 1.75.0](https://img.shields.io/badge/MSRV-1.75.0-orange.svg)](https://releases.rs/docs/1.75.0/)
+[![MSRV: 1.79.0](https://img.shields.io/badge/MSRV-1.79.0-orange.svg)](https://releases.rs/docs/1.79.0/)
 
 ## Features
 
@@ -195,7 +195,7 @@ just deny           # cargo-deny license/advisory audit
 just doc            # build documentation
 just bench          # run criterion benchmarks
 just coverage       # HTML coverage report via llvm-cov
-just msrv           # verify MSRV 1.75.0 compatibility
+just msrv           # verify MSRV 1.79.0 compatibility
 
 # Full CI suite locally
 just ci
@@ -264,7 +264,7 @@ cargo run -p mx20022 --example roundtrip
 
 All code must pass `cargo check`, `cargo test`, `cargo clippy -- -D warnings`,
 and `cargo fmt --check` before merge. CI runs these on both stable and MSRV
-1.75.0.
+1.79.0.
 
 `unsafe` code is forbidden workspace-wide.
 

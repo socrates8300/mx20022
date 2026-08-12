@@ -20,7 +20,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        rust: [stable, "1.75.0"]
+        rust: [stable, "1.79.0"]
     steps:
       - uses: actions/checkout@v7
       - uses: dtolnay/rust-toolchain@master
@@ -29,7 +29,9 @@ jobs:
       - uses: Swatinem/rust-cache@v2
         with:
           key: check-${{ matrix.rust }}
-      - run: cargo check --workspace --all-features
+      # rust-toolchain.toml selects stable by default, so invoke the matrix
+      # toolchain explicitly to keep the MSRV lane honest.
+      - run: cargo +${{ matrix.rust }} check --workspace --all-features
 
   test:
     name: Test

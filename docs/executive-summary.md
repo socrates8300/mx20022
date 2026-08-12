@@ -38,7 +38,7 @@ mx20022 fills that gap with a high-performance, memory-safe implementation in Ru
 
 | Attribute | Detail |
 |---|---|
-| Language | Rust (Edition 2021, MSRV 1.75.0) |
+| Language | Rust (Edition 2021, MSRV 1.79.0) |
 | License | Apache-2.0 |
 | Safety | `unsafe` code forbidden workspace-wide; clippy pedantic lints enforced |
 | CI | Automated checks on stable + MSRV: build, test, lint, format, dependency audit |

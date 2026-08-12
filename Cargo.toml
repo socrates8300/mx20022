@@ -12,7 +12,7 @@ members = [
 
 [workspace.package]
 edition = "2021"
-rust-version = "1.75.0"
+rust-version = "1.79.0"
 license = "Apache-2.0"
 repository = "https://github.com/socrates8300/mx20022"
 homepage = "https://github.com/socrates8300/mx20022"
@@ -25,7 +25,7 @@ categories = ["encoding", "parser-implementations", "finance"]
 # Serialization
 serde = { version = "1", features = ["derive"] }
 # Collections
-indexmap = "2"
+indexmap = ">=2, <2.12"
 # XML
 quick-xml = { version = "0.41", features = ["serialize"] }
 # Error handling
@@ -33,16 +33,16 @@ thiserror = "2"
 # Regex
 regex = "1"
 # CLI
-clap = { version = "4", features = ["derive"] }
+clap = { version = ">=4, <4.6", features = ["derive"] }
 # Code generation
 proc-macro2 = "1"
 quote = "1"
-syn = { version = "2", features = ["full"] }
-prettyplease = "0.2"
+syn = { version = "3", features = ["full"] }
+prettyplease = "0.3"
 # Testing
 pretty_assertions = "1"
 insta = { version = "1", features = ["yaml"] }
-criterion = { version = "0.8", features = ["html_reports"] }
+criterion = { version = "0.5", features = ["html_reports"] }
 # Internal crates
 mx20022 = { path = "crates/mx20022", version = "0.3.1" }
 mx20022-model = { path = "crates/mx20022-model", version = "0.3.1" }

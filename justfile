@@ -37,4 +37,4 @@ review:
     cargo insta review
 
 msrv:
-    cargo +1.75.0 check --workspace --all-features
+    cargo +1.79.0 check --workspace --all-features
