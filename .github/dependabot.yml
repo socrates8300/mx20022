@@ -6,6 +6,16 @@ updates:
       interval: weekly
     open-pull-requests-limit: 10
     labels: [dependencies]
+    ignore:
+      # clap 4.6+ requires Rust 1.85; this workspace supports Rust 1.79.
+      - dependency-name: clap
+        versions: [">= 4.6.0"]
+      # These releases exceed the workspace MSRV and were previously hidden
+      # by the stable rust-toolchain override in the MSRV CI lane.
+      - dependency-name: criterion
+        versions: [">= 0.6.0"]
+      - dependency-name: indexmap
+        versions: [">= 2.12.0"]
 
   - package-ecosystem: github-actions
     directory: /
