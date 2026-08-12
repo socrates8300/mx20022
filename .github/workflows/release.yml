@@ -25,58 +25,111 @@ jobs:
       - uses: dtolnay/rust-toolchain@stable
       - uses: Swatinem/rust-cache@v2
 
+      - name: Extract version from tag
+        id: version
+        run: echo "version=${GITHUB_REF#refs/tags/v}" >> "$GITHUB_OUTPUT"
+
       - name: Publish mx20022-model
-        run: cargo publish -p mx20022-model --all-features
         env:
           CARGO_REGISTRY_TOKEN: ${{ secrets.CARGO_REGISTRY_TOKEN }}
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          crate=mx20022-model
+          if curl -sf "https://index.crates.io/mx/20/$crate" | grep -q "\"vers\":\"$VERSION\""; then
+            echo "::notice::$crate $VERSION already published — skipping"
+          else
+            cargo publish -p "$crate" --all-features
+          fi
 
       - name: Wait for crates.io index
         run: sleep 30
 
       - name: Publish mx20022-codegen
-        run: cargo publish -p mx20022-codegen
         env:
           CARGO_REGISTRY_TOKEN: ${{ secrets.CARGO_REGISTRY_TOKEN }}
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          crate=mx20022-codegen
+          if curl -sf "https://index.crates.io/mx/20/$crate" | grep -q "\"vers\":\"$VERSION\""; then
+            echo "::notice::$crate $VERSION already published — skipping"
+          else
+            cargo publish -p "$crate"
+          fi
 
       - name: Wait for crates.io index
         run: sleep 30
 
       - name: Publish mx20022-parse
-        run: cargo publish -p mx20022-parse --all-features
         env:
           CARGO_REGISTRY_TOKEN: ${{ secrets.CARGO_REGISTRY_TOKEN }}
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          crate=mx20022-parse
+          if curl -sf "https://index.crates.io/mx/20/$crate" | grep -q "\"vers\":\"$VERSION\""; then
+            echo "::notice::$crate $VERSION already published — skipping"
+          else
+            cargo publish -p "$crate" --all-features
+          fi
 
       - name: Wait for crates.io index
         run: sleep 30
 
       - name: Publish mx20022-validate
-        run: cargo publish -p mx20022-validate --all-features
         env:
           CARGO_REGISTRY_TOKEN: ${{ secrets.CARGO_REGISTRY_TOKEN }}
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          crate=mx20022-validate
+          if curl -sf "https://index.crates.io/mx/20/$crate" | grep -q "\"vers\":\"$VERSION\""; then
+            echo "::notice::$crate $VERSION already published — skipping"
+          else
+            cargo publish -p "$crate" --all-features
+          fi
 
       - name: Wait for crates.io index
         run: sleep 30
 
       - name: Publish mx20022-translate
-        run: cargo publish -p mx20022-translate --all-features
         env:
           CARGO_REGISTRY_TOKEN: ${{ secrets.CARGO_REGISTRY_TOKEN }}
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          crate=mx20022-translate
+          if curl -sf "https://index.crates.io/mx/20/$crate" | grep -q "\"vers\":\"$VERSION\""; then
+            echo "::notice::$crate $VERSION already published — skipping"
+          else
+            cargo publish -p "$crate" --all-features
+          fi
 
       - name: Wait for crates.io index
         run: sleep 30
 
       - name: Publish mx20022-cli
-        run: cargo publish -p mx20022-cli --all-features
         env:
           CARGO_REGISTRY_TOKEN: ${{ secrets.CARGO_REGISTRY_TOKEN }}
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          crate=mx20022-cli
+          if curl -sf "https://index.crates.io/mx/20/$crate" | grep -q "\"vers\":\"$VERSION\""; then
+            echo "::notice::$crate $VERSION already published — skipping"
+          else
+            cargo publish -p "$crate" --all-features
+          fi
 
       - name: Wait for crates.io index
         run: sleep 30
 
       - name: Publish mx20022 (umbrella)
-        run: cargo publish -p mx20022 --all-features
         env:
           CARGO_REGISTRY_TOKEN: ${{ secrets.CARGO_REGISTRY_TOKEN }}
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          crate=mx20022
+          if curl -sf "https://index.crates.io/mx/20/$crate" | grep -q "\"vers\":\"$VERSION\""; then
+            echo "::notice::$crate $VERSION already published — skipping"
+          else
+            cargo publish -p "$crate" --all-features
+          fi
 
   release:
     name: Create GitHub Release
