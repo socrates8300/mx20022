@@ -38,7 +38,7 @@ clap = { version = "4", features = ["derive"] }
 proc-macro2 = "1"
 quote = "1"
 syn = { version = "2", features = ["full"] }
-prettyplease = "0.2"
+prettyplease = "0.3"
 # Testing
 pretty_assertions = "1"
 insta = { version = "1", features = ["yaml"] }
