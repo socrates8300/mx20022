@@ -7,6 +7,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.2] - 2026-08-12
+
+### Changed
+
+- Raised the declared minimum supported Rust version from 1.75 to 1.79, the
+  actual compiler floor of the patched `quick-xml` 0.41 dependency.
+- Updated `proc-macro2` to 1.0.107, `quote` to 1.0.47, `serde` to 1.0.229,
+  `thiserror` to 2.0.20, `syn` to 3.0.3, and `prettyplease` to 0.3.0.
+- Kept MSRV-sensitive dependencies on compatible release lines: `clap`
+  remains below 4.6, `indexmap` below 2.12, and Criterion on 0.5.
+
+### Fixed
+
+- CI now invokes each matrix toolchain explicitly, preventing the repository's
+  stable toolchain override from producing a false-green MSRV check.
+- Local commands and devcontainer setup now consistently install and verify
+  Rust 1.79.
+
 ## [0.3.1] - 2026-08-12
 
 ### Security
@@ -173,7 +191,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Performance benchmarks: parse, serialize, validate, translate
 - XSD schema download script
 
-[Unreleased]: https://github.com/socrates8300/mx20022/compare/v0.3.1...HEAD
+[Unreleased]: https://github.com/socrates8300/mx20022/compare/v0.3.2...HEAD
+[0.3.2]: https://github.com/socrates8300/mx20022/compare/v0.3.1...v0.3.2
 [0.3.1]: https://github.com/socrates8300/mx20022/compare/v0.3.0...v0.3.1
 [0.3.0]: https://github.com/socrates8300/mx20022/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/socrates8300/mx20022/compare/v0.1.0...v0.2.0
