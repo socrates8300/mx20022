@@ -33,3 +33,6 @@ testdata/**/*.tmp
 # Coverage reports
 target/llvm-cov/
 lcov.info
+
+# SDDv4 local binding (contains internal service URL; keep out of the public repo)
+.sddv4/

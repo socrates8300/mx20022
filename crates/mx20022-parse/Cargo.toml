@@ -1,6 +1,6 @@
 [package]
 name = "mx20022-parse"
-version = "0.3.0"
+version = "0.3.1"
 description = "XML parsing and serialization for ISO 20022 MX financial messages via quick-xml and serde"
 edition.workspace = true
 rust-version.workspace = true
@@ -18,8 +18,6 @@ serde.workspace = true
 thiserror.workspace = true
 
 [dev-dependencies]
-pretty_assertions.workspace = true
-insta.workspace = true
 criterion.workspace = true
 
 [[bench]]

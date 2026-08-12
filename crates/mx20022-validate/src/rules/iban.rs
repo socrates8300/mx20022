@@ -50,6 +50,12 @@ fn validate_iban(iban: &str) -> Result<(), String> {
     // Strip optional spaces (some representations include spaces every 4 chars)
     let canonical: String = iban.chars().filter(|c| !c.is_whitespace()).collect();
 
+    // IBANs are ISO 13616 ASCII. Reject non-ASCII first so later `&str` slices
+    // are char-boundary safe (ASCII is one byte per char). Same model as `lei.rs`.
+    if !canonical.is_ascii() {
+        return Err(format!("IBAN must be ASCII alphanumeric, got `{iban}`"));
+    }
+
     let len = canonical.len();
     if !(5..=34).contains(&len) {
         return Err(format!(
@@ -80,7 +86,7 @@ fn validate_iban(iban: &str) -> Result<(), String> {
     }
 
     // Mod-97 check: rearrange (move first 4 chars to end), expand letters to digits, compute mod 97
-    let rearranged = format!("{}{}", bban, &canonical[..4]);
+    let rearranged = format!("{bban}{}", &canonical[..4]);
     let numeric = alpha_to_numeric(&rearranged);
     let remainder = mod97(&numeric);
     if remainder != 1 {
@@ -164,5 +170,51 @@ mod tests {
         let rule = IbanRule;
         let errors = rule.validate("GB82 WEST 1234 5698 7654 32", "/test");
         assert!(errors.is_empty(), "IBAN with spaces should be accepted");
+    }
+
+    // Regression: multibyte UTF-8 must fail the ASCII gate, not panic.
+    #[test]
+    fn multibyte_input_returns_error_not_panic() {
+        let rule = IbanRule;
+        let errors = rule.validate("中中中中中", "/test");
+        assert!(
+            !errors.is_empty(),
+            "multibyte input should produce a validation error"
+        );
+        assert!(
+            errors[0].message.contains("ASCII"),
+            "non-ASCII must fail the ASCII gate, got: {}",
+            errors[0].message
+        );
+    }
+
+    #[test]
+    fn multibyte_after_ascii_prefix_returns_error_not_panic() {
+        let rule = IbanRule;
+        let errors = rule.validate("GB中中中中", "/test");
+        assert!(
+            !errors.is_empty(),
+            "mixed ASCII-plus-CJK should produce a validation error"
+        );
+        assert!(
+            errors[0].message.contains("ASCII"),
+            "non-ASCII must fail the ASCII gate, got: {}",
+            errors[0].message
+        );
+    }
+
+    #[test]
+    fn four_byte_utf8_returns_error_not_panic() {
+        let rule = IbanRule;
+        let errors = rule.validate("🚀🚀🚀🚀🚀", "/test");
+        assert!(
+            !errors.is_empty(),
+            "4-byte UTF-8 should produce a validation error"
+        );
+        assert!(
+            errors[0].message.contains("ASCII"),
+            "non-ASCII must fail the ASCII gate, got: {}",
+            errors[0].message
+        );
     }
 }

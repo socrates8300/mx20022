@@ -7,6 +7,33 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.1] - 2026-08-12
+
+### Security
+
+- `crossbeam-epoch` bumped 0.9.18 → 0.9.20 to close RUSTSEC-2026-0204.
+  Dev-only transitive dependency via `criterion`; no runtime exposure. (#37)
+
+### Fixed
+
+- `validate_iban` no longer panics on multibyte UTF-8 input. Non-ASCII is
+  rejected after whitespace stripping, before the fixed-offset `&str`
+  slices, keeping the original ISO 13616 field checks. Regression tests
+  assert the ASCII invariant for CJK, mixed ASCII+CJK, and 4-byte emoji
+  input. (#37)
+
+### Added
+
+- `# Caution` documentation on `mx20022_parse::de::from_reader`: the read
+  is unbounded, so callers on untrusted streams should wrap the reader
+  with `Read::take` or pre-size into a buffer and use `from_str`. (#37)
+
+### Removed
+
+- Unused dev-dependencies: `pretty_assertions` (codegen, model, parse,
+  validate), `insta` (parse), and the duplicate `mx20022-model` dev-dep
+  in validate. (#37)
+
 ## [0.3.0] - 2026-05-05
 
 ### Added
@@ -146,7 +173,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Performance benchmarks: parse, serialize, validate, translate
 - XSD schema download script
 
-[Unreleased]: https://github.com/socrates8300/mx20022/compare/v0.3.0...HEAD
+[Unreleased]: https://github.com/socrates8300/mx20022/compare/v0.3.1...HEAD
+[0.3.1]: https://github.com/socrates8300/mx20022/compare/v0.3.0...v0.3.1
 [0.3.0]: https://github.com/socrates8300/mx20022/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/socrates8300/mx20022/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/socrates8300/mx20022/releases/tag/v0.1.0
