@@ -50,6 +50,12 @@ fn validate_iban(iban: &str) -> Result<(), String> {
     // Strip optional spaces (some representations include spaces every 4 chars)
     let canonical: String = iban.chars().filter(|c| !c.is_whitespace()).collect();
 
+    // IBANs are ISO 13616 ASCII. Reject non-ASCII first so later `&str` slices
+    // are char-boundary safe (ASCII is one byte per char). Same model as `lei.rs`.
+    if !canonical.is_ascii() {
+        return Err(format!("IBAN must be ASCII alphanumeric, got `{iban}`"));
+    }
+
     let len = canonical.len();
     if !(5..=34).contains(&len) {
         return Err(format!(
@@ -57,44 +63,30 @@ fn validate_iban(iban: &str) -> Result<(), String> {
         ));
     }
 
-    // Validate via byte class checks rather than slicing the &str directly: a fixed
-    // byte offset like `&canonical[..2]` panics if it lands inside a multibyte UTF-8
-    // character (e.g. 5 CJK characters pass the 5..=34 byte-length gate above but
-    // byte index 2 sits mid-character). Byte slicing on a `&[u8]` has no char
-    // boundaries and never panics. Once every byte is known ASCII, the mod-97
-    // rearrangement below is char-boundary safe. Mirrors the pattern in `bic.rs`.
-    let bytes = canonical.as_bytes();
-
-    // First two bytes must be uppercase ASCII letters (country code).
-    if !bytes[..2].iter().all(u8::is_ascii_uppercase) {
-        let got: String = canonical.chars().take(2).collect();
+    // First two characters must be uppercase ASCII letters (country code)
+    let country = &canonical[..2];
+    if !country.chars().all(|c| c.is_ascii_uppercase()) {
         return Err(format!(
-            "IBAN country code must be 2 uppercase letters, got `{got}`"
+            "IBAN country code must be 2 uppercase letters, got `{country}`"
         ));
     }
 
-    // Bytes 3–4 must be decimal digits (check digits).
-    if !bytes[2..4].iter().all(u8::is_ascii_digit) {
-        let got: String = canonical.chars().skip(2).take(2).collect();
+    // Characters 3–4 must be decimal digits (check digits)
+    let check_str = &canonical[2..4];
+    if !check_str.chars().all(|c| c.is_ascii_digit()) {
         return Err(format!(
-            "IBAN check digits must be 2 decimal digits, got `{got}`"
+            "IBAN check digits must be 2 decimal digits, got `{check_str}`"
         ));
     }
 
-    // Remaining bytes (BBAN) must be ASCII alphanumeric.
-    if !bytes[4..].iter().all(u8::is_ascii_alphanumeric) {
-        let got: String = canonical.chars().skip(4).collect();
-        return Err(format!("IBAN BBAN must be alphanumeric, got `{got}`"));
+    // BBAN: remaining characters must be alphanumeric
+    let bban = &canonical[4..];
+    if !bban.chars().all(|c| c.is_ascii_alphanumeric()) {
+        return Err(format!("IBAN BBAN must be alphanumeric, got `{bban}`"));
     }
 
-    // Mod-97 check: rearrange (move first 4 chars to end), expand letters to digits,
-    // compute mod 97. All bytes are validated ASCII above, so iterating as `b as
-    // char` is safe and yields one character per byte.
-    let rearranged: String = bytes[4..]
-        .iter()
-        .chain(&bytes[..4])
-        .map(|&b| b as char)
-        .collect();
+    // Mod-97 check: rearrange (move first 4 chars to end), expand letters to digits, compute mod 97
+    let rearranged = format!("{bban}{}", &canonical[..4]);
     let numeric = alpha_to_numeric(&rearranged);
     let remainder = mod97(&numeric);
     if remainder != 1 {
@@ -180,46 +172,49 @@ mod tests {
         assert!(errors.is_empty(), "IBAN with spaces should be accepted");
     }
 
-    // Regression: multibyte UTF-8 input must not panic.
-    // Previously the byte-slice boundaries `&canonical[..2]` / `[2..4]` / `[4..]`
-    // panicked when a multibyte char straddled byte 2 or 4, because the length gate
-    // checked byte length, not char count. See RUSTSEC-style hardening: the
-    // SchemeValidator contract (schemes/mod.rs:71-72) forbids panics from Rule::validate.
+    // Regression: multibyte UTF-8 must fail the ASCII gate, not panic.
     #[test]
     fn multibyte_input_returns_error_not_panic() {
         let rule = IbanRule;
-        // 5 CJK characters = 15 bytes, passes the 5..=34 byte-length gate,
-        // but byte index 2 lands inside the first character.
-        let result = std::panic::catch_unwind(|| rule.validate("中中中中中", "/test"));
-        let errors = result.expect("validate must not panic on multibyte input");
+        let errors = rule.validate("中中中中中", "/test");
         assert!(
             !errors.is_empty(),
             "multibyte input should produce a validation error"
         );
-        assert!(errors[0].message.contains("country code"));
+        assert!(
+            errors[0].message.contains("ASCII"),
+            "non-ASCII must fail the ASCII gate, got: {}",
+            errors[0].message
+        );
     }
 
     #[test]
-    fn multibyte_after_country_code_returns_error_not_panic() {
+    fn multibyte_after_ascii_prefix_returns_error_not_panic() {
         let rule = IbanRule;
-        // "GB" is valid ASCII country, but bytes 2..4 land mid-character,
-        // exercising the check-digit boundary specifically.
-        let result = std::panic::catch_unwind(|| rule.validate("GB中中中中", "/test"));
-        let errors = result.expect("validate must not panic on multibyte input");
+        let errors = rule.validate("GB中中中中", "/test");
         assert!(
             !errors.is_empty(),
-            "multibyte input should produce a validation error"
+            "mixed ASCII-plus-CJK should produce a validation error"
         );
-        assert!(errors[0].message.contains("check digits"));
+        assert!(
+            errors[0].message.contains("ASCII"),
+            "non-ASCII must fail the ASCII gate, got: {}",
+            errors[0].message
+        );
     }
 
     #[test]
-    fn emoji_and_4_byte_chars_return_error_not_panic() {
+    fn four_byte_utf8_returns_error_not_panic() {
         let rule = IbanRule;
-        // 4-byte UTF-8 sequences: 5 of them = 20 bytes, passes the length gate,
-        // and byte boundaries 2/4 fall deep inside surrogate pairs.
-        let result = std::panic::catch_unwind(|| rule.validate("🚀🚀🚀🚀🚀", "/test"));
-        let errors = result.expect("validate must not panic on 4-byte UTF-8 input");
-        assert!(!errors.is_empty());
+        let errors = rule.validate("🚀🚀🚀🚀🚀", "/test");
+        assert!(
+            !errors.is_empty(),
+            "4-byte UTF-8 should produce a validation error"
+        );
+        assert!(
+            errors[0].message.contains("ASCII"),
+            "non-ASCII must fail the ASCII gate, got: {}",
+            errors[0].message
+        );
     }
 }
