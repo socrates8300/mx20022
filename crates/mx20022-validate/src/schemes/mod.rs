@@ -16,7 +16,7 @@
 //!
 //! # Error Paths
 //!
-//! Error paths in [`ValidationError`](crate::error::ValidationError) follow
+//! Error paths in [`ValidationError`] follow
 //! XPath-like conventions:
 //!
 //! | Style | Example | When |
