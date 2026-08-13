@@ -7,21 +7,18 @@
 //! When `--scheme` is provided (one of `fednow`, `sepa`, `cbpr`), scheme-
 //! specific rules are applied in addition to the generic rule checks.
 //!
-//! Because the CLI does not statically know which message version it is
-//! processing, field extraction uses lightweight XML scanning rather than
-//! fully-typed deserialization.  This keeps the command free of feature-gated
-//! model types while still exercising the rule engine.
+//! Generic checks use command-private XML extraction because the CLI does not
+//! statically know every message version. Scheme validation is different:
+//! `SchemeValidator::validate` unwraps the payment `Document`, routes by its
+//! namespace, and delegates supported versions to typed field rules.
 
 use std::path::Path;
 
+use super::xml_extract::{extract_all_attributes, extract_all_elements, extract_element};
 use super::MAX_FILE_SIZE;
 use mx20022_parse::envelope::detect_message_type;
 use mx20022_validate::schemes::{
-    cbpr::CbprPlusValidator,
-    fednow::FedNowValidator,
-    sepa::SepaValidator,
-    xml_scan::{extract_all_attributes, extract_all_elements, extract_element},
-    SchemeValidator,
+    cbpr::CbprPlusValidator, fednow::FedNowValidator, sepa::SepaValidator, SchemeValidator,
 };
 use mx20022_validate::{RuleRegistry, Severity, ValidationResult};
 
@@ -122,8 +119,27 @@ pub fn run(file: &Path, scheme: Option<&str>) -> Result<(), ValidateError> {
         });
     }
     let xml = std::fs::read_to_string(file)?;
+    let scheme_validator = resolve_scheme(scheme)?;
 
-    let msg_id = detect_message_type(&xml)?;
+    // Namespace detection reads the complete stream so a Document can inherit
+    // its namespace from a transport wrapper. The detector still gives the
+    // Document namespace precedence over AppHdr metadata.
+    let msg_id = match detect_message_type(&xml) {
+        Ok(message_id) => message_id,
+        Err(error) => {
+            let Some(validator) = scheme_validator.as_deref() else {
+                return Err(error.into());
+            };
+
+            // All built-in scheme validators support pacs.008. When namespace
+            // detection itself fails, route through that supported adapter so
+            // it can report independent raw findings alongside SCHEME_PARSE.
+            println!("Validating: {} (message type unresolved)", file.display());
+            println!("Scheme:     {}", scheme.unwrap_or_else(|| validator.name()));
+            println!();
+            return print_result(&validator.validate(&xml, "pacs.008"));
+        }
+    };
     println!("Validating: {} ({})", file.display(), msg_id.dotted());
     if let Some(s) = scheme {
         println!("Scheme:     {s}");
@@ -210,13 +226,17 @@ pub fn run(file: &Path, scheme: Option<&str>) -> Result<(), ValidateError> {
     }
 
     // --- Scheme-specific validation ----------------------------------------
-    let scheme_validator = resolve_scheme(scheme)?;
     if let Some(validator) = scheme_validator {
         let scheme_result = validator.validate(&xml, &msg_id.dotted());
         result.merge(scheme_result);
     }
 
-    // --- Print results -----------------------------------------------------
+    print_result(&result)
+}
+
+/// Print validation findings and convert Error-severity results into the
+/// command's non-zero outcome.
+fn print_result(result: &ValidationResult) -> Result<(), ValidateError> {
     let error_count = result.error_count();
     let warning_count = result.warning_count();
 

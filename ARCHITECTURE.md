@@ -330,7 +330,7 @@ pub struct ConstraintViolation {
 ```
 src/
 ├── lib.rs          # Re-exports: de, ser, envelope, error
-├── de.rs           # from_str<T>, from_reader<T>
+├── de.rs           # document_xml, from_str<T>, from_reader<T>
 ├── ser.rs          # to_string<T>, to_string_with_declaration<T>
 ├── envelope.rs     # detect_message_type, parse_namespace, MessageId
 └── error.rs        # ParseError enum
@@ -340,6 +340,7 @@ src/
 
 | Function | Signature | Description |
 |---|---|---|
+| `de::document_xml` | `(xml: &str) → Result<&str, ParseError>` | Return a zero-copy payload `Document`, bare or below any transport wrapper |
 | `de::from_str` | `<T: DeserializeOwned>(xml: &str) → Result<T, ParseError>` | Deserialize XML to typed struct |
 | `de::from_reader` | `<R: BufRead, T: DeserializeOwned>(r: R) → Result<T, ParseError>` | Streaming deserialization |
 | `ser::to_string` | `<T: Serialize>(v: &T) → Result<String, ParseError>` | Serialize to XML |
@@ -400,7 +401,7 @@ src/
     ├── fednow.rs         # FedNow rules (USD, $500K limit, UETR, etc.)
     ├── sepa.rs           # SEPA SCT rules (EUR, IBAN required, charset)
     ├── cbpr.rs           # CBPR+ rules (BAH required, 4 BICs mandatory)
-    └── xml_scan.rs       # Lightweight XML string extraction helpers
+    └── raw.rs            # Private envelope, size, and control checks
 ```
 
 **Validation architecture**:
@@ -419,6 +420,8 @@ Layer 2 — Business Rules (field-level)
 
 Layer 3 — Scheme Rules (message-level)
 ├── SchemeValidator trait with validate() and validate_typed()
+├── validate(): unwrap Document, route namespace, deserialize, delegate
+├── validate_typed(): sole home for supported field rules
 ├── FedNow: 15+ rules (currency, settlement, amounts, UETR, size limits)
 ├── SEPA: 12+ rules (EUR, IBAN both sides, charset, amount bounds)
 ├── CBPR+: 12+ rules (BAH, 4 BICs, UETR, charge bearer, UTF-8)
@@ -433,15 +436,22 @@ pub trait Rule: Send + Sync {
 }
 ```
 
-**Scheme validator trait** (dual-path):
+**Scheme validator trait** (parse-and-delegate plus typed entry point):
 ```rust
 pub trait SchemeValidator: Send + Sync {
     fn name(&self) -> &'static str;
     fn supported_messages(&self) -> &[&str];
-    fn validate(&self, xml: &str, message_type: &str) -> ValidationResult;       // XML string path
-    fn validate_typed(&self, msg: &dyn Any, message_type: &str) -> Option<ValidationResult>; // Typed path
+    fn validate(&self, xml: &str, message_type: &str) -> ValidationResult; // Parse and delegate
+    fn validate_typed(&self, msg: &dyn Any, message_type: &str) -> Option<ValidationResult>;
 }
 ```
+
+For supported `pacs.008`, the `Document` namespace is authoritative. Version
+`pacs.008.001.13` delegates to typed rules; other versions receive raw findings,
+the same version-neutral field rules, and `SCHEME_UNTYPED_VERSION`. Parse
+failures produce one `SCHEME_PARSE` finding at `/Document`, alongside any
+independent raw findings for the caller's supported short message type. The
+former public `schemes::xml_scan` API was removed in 0.4.0.
 
 **Validation output**:
 ```rust
@@ -692,7 +702,7 @@ use mx20022::validate::schemes::{fednow::FedNowValidator, SchemeValidator};
 let registry = RuleRegistry::with_defaults();
 let errors = registry.validate_field("GB82WEST12345698765432", "/iban", &["IBAN_CHECK"]);
 
-// Scheme validation (XML path)
+// Scheme validation (parse-and-delegate path)
 let fednow = FedNowValidator::new();
 let result = fednow.validate(&xml, "pacs.008.001.13");
 
@@ -743,6 +753,12 @@ let raw = ActiveCurrencyCode(arbitrary_string);  // No validation — use with c
 
 ## 6. Design Patterns
 
+### Design Decisions
+
+| Area | Decision | Rationale |
+|---|---|---|
+| `pacs.008` scheme validation | Keep `pacs008::Facts` as the shared version-neutral extraction boundary for typed `pacs.008.001.13` and older-version paths. Keep FedNow, SEPA, and CBPR+ rule evaluation explicit; do not replace it with an optional-policy configuration engine. | Scheme policies differ in requiredness, accepted values, bounds, aggregation, diagnostics, and finding order. Extract helpers only when their mechanics are genuinely identical. |
+
 ### Code Generation over Hand-Writing
 
 The single most important architectural decision. ISO 20022 defines 800+ message types. Hand-writing Rust types would be unmaintainable. Instead, a three-stage pipeline (XSD → IR → Rust) auto-generates all types from the official schemas. Adding a new message type means pointing the generator at an XSD file.
@@ -775,13 +791,19 @@ This enables:
 
 `xs:choice` elements (mutually exclusive alternatives) map naturally to Rust enums. However, quick-xml's serde integration requires a `$value`-renamed wrapper for enum fields in structs. `ChoiceWrapper<T>` provides this transparently with `Deref`/`DerefMut` for ergonomic access.
 
-### Dual Validation Paths
+### Parse-and-Delegate Scheme Validation
 
 Scheme validators implement both:
-- `validate(&str, &str) → ValidationResult` — operates on raw XML via string scanning
-- `validate_typed(&dyn Any, &str) → Option<ValidationResult>` — operates on deserialized types
+- `validate(&str, &str) → ValidationResult` — unwraps the payload `Document`
+  below any transport wrapper, routes by its namespace, and applies typed or
+  version-neutral field rules
+- `validate_typed(&dyn Any, &str) → Option<ValidationResult>` — applies the same
+  field rules directly to an already-deserialized document
 
-The typed path is preferred (compile-time field access, no fragile string scanning). The XML path exists for backward compatibility and for validating messages that haven't been deserialized.
+Raw XML pre-passes are deliberately narrow: byte-size limits, envelope-header
+presence, and disallowed controls. They do not implement field rules. This
+keeps both public entry points behaviorally aligned without invoking generated
+`Validatable` constraints as part of scheme validation.
 
 ### Error Composition
 
@@ -918,7 +940,7 @@ testdata/
 | Item | Description |
 |---|---|
 | **Ergonomic API layer** | Prelude module with type aliases, convenience `parse<T>()`/`to_xml<T>()` at top level |
-| **Typed validation pipeline** | Migrate scheme validators from XML string scanning to `Validatable` trait path |
+| **Additional typed scheme versions** | Add generated-document routing beyond `pacs.008.001.13` |
 | **WASM bindings** | Separate `mx20022-wasm` crate via wasm-bindgen, target < 2MB bundle |
 | **Python bindings** | Separate `mx20022-python` crate via PyO3/maturin, type stubs for mypy |
 
@@ -933,8 +955,7 @@ testdata/
 
 | Gap | Status | Resolution |
 |---|---|---|
-| Scheme validators use XML string scanning (fragile) | Typed path added, XML path retained for compat | v0.5: migrate to typed-only |
+| Generated typed scheme routing covers only `pacs.008.001.13` | Other `pacs.008` versions receive raw findings, version-neutral field checks, and `SCHEME_UNTYPED_VERSION` | Add typed routes as models stabilize |
 | Builder API is flat, not nested-closure style | Acceptable trade-off for codegen complexity | Possible `with_defaults()` convenience |
 | Expert module paths required (no prelude) | DX friction | v0.5: prelude with type aliases |
-| SEPA validator uses f64 for amount comparison | Precision risk | v0.5: integer-cent arithmetic |
 | No Display for ValidationResult | Usability gap | v0.5: Display impls |

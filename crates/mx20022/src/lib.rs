@@ -19,14 +19,19 @@
 //! # Quick start: parse an ISO 20022 XML message
 //!
 //! ```rust
-//! use mx20022::prelude::*;
 //! use mx20022::model::generated::pacs::pacs_008_001_13::Document;
+//! use mx20022::parse::{de, envelope};
 //!
-//! let xml = r#"<Document xmlns="urn:iso:std:iso:20022:tech:xsd:pacs.008.001.13"></Document>"#;
-//! let id = detect_message_type(xml).unwrap();
+//! // This fixture deliberately declares the payment namespace on its wrapper.
+//! let xml = include_str!("../tests/fixtures/inherited_namespace_pacs008.xml");
+//! let id = envelope::detect_message_type(xml).unwrap();
 //! assert_eq!(id.family, "pacs");
 //! assert_eq!(id.msg_id, "008");
 //! assert_eq!(id.version, "13");
+//!
+//! let document_xml = de::document_xml(xml).unwrap();
+//! let document: Document = de::from_str(document_xml).unwrap();
+//! assert_eq!(document.fi_to_fi_cstmr_cdt_trf.grp_hdr.msg_id.0, "README-INHERITED-NS");
 //! ```
 //!
 //! # Quick start: translate MT103 to pacs.008

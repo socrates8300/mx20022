@@ -1,11 +1,13 @@
-## Context Database — Your Memory
+## Agent Project Context
 
-Location: `docs/agent_context.db` (SQLite, schema v1). **Query before reasoning. Write as you learn.**
+When `.sddv4/repository.json` exists or the operator invokes SDDv4, use the
+installed `sddv4` skill and service-backed project as the sole context
+authority. Do not query or create `docs/agent_context.db` except for the
+skill's explicit read-only legacy migration.
 
-```sql
--- Bootstrap: run this first, then follow the protocol rows it returns.
-SELECT title, content FROM knowledge WHERE category = 'protocol' ORDER BY title;
-```
+For an unbound repository without an SDDv4 request, do not invent a project or
+context store. A status request remains read-only; setup or concrete work may
+initialize through the skill.
 
 ## Project: mx20022
 
@@ -60,9 +62,9 @@ mx20022/
 ## Key Commands
 
 ```bash
-# Database queries (use sqlite3)
-sqlite3 docs/agent_context.db "SELECT id, title, status FROM items WHERE status = 'in_progress';"
-
-# Find next available work
-sqlite3 docs/agent_context.db "SELECT i.id, i.title, i.priority, it.name FROM items i JOIN iterations it ON i.iteration_id = it.id WHERE i.status = 'not_started' AND NOT EXISTS (SELECT 1 FROM item_dependencies d JOIN items dep ON d.depends_on = dep.id WHERE d.item_id = i.id AND dep.status != 'complete') ORDER BY it.id, i.priority, i.id LIMIT 10;"
+sddv4 context
+cargo fmt --all -- --check
+cargo check --workspace --all-features
+cargo clippy --workspace --all-features -- -D warnings
+cargo test --workspace --all-features
 ```
