@@ -315,6 +315,101 @@ fn sepa_invalid_charset() {
 }
 
 #[test]
+fn sepa_counts_actual_transactions_and_reports_missing_declared_count() {
+    let xml = read_fixture("sepa/valid_pacs008.xml");
+    let tx_start = xml.find("<CdtTrfTxInf>").unwrap();
+    let tx_end =
+        xml[tx_start..].find("</CdtTrfTxInf>").unwrap() + tx_start + "</CdtTrfTxInf>".len();
+    let transaction = xml[tx_start..tx_end].to_owned();
+    let multi_xml = xml.replacen(
+        "</FIToFICstmrCdtTrf>",
+        &format!("{transaction}</FIToFICstmrCdtTrf>"),
+        1,
+    );
+
+    let validator = SepaValidator::new();
+    for (version, message_type, candidate) in [
+        ("typed", "pacs.008.001.13", multi_xml.clone()),
+        (
+            "untyped",
+            "pacs.008.001.08",
+            multi_xml.replace("pacs.008.001.13", "pacs.008.001.08"),
+        ),
+    ] {
+        let result = validator.validate(&candidate, message_type);
+        let finding = result
+            .errors
+            .iter()
+            .find(|error| error.rule_id == "SEPA_SINGLE_TX")
+            .unwrap_or_else(|| {
+                panic!("{version} validation must count two actual transactions: {result:?}")
+            });
+        assert!(finding.message.contains("found 2"), "{finding:?}");
+    }
+
+    let missing_count = xml
+        .replace("      <NbOfTxs>1</NbOfTxs>\n", "")
+        .replace("pacs.008.001.13", "pacs.008.001.08");
+    let result = validator.validate(&missing_count, "pacs.008.001.08");
+    let finding = result
+        .errors
+        .iter()
+        .find(|error| error.rule_id == "SEPA_SINGLE_TX")
+        .unwrap_or_else(|| panic!("missing NbOfTxs must fail: {result:?}"));
+    assert!(finding.message.contains("<missing>"), "{finding:?}");
+}
+
+#[test]
+fn sepa_checks_agent_ultimate_party_and_address_charset_fields() {
+    let xml = read_fixture("sepa/valid_pacs008.xml")
+        .replacen(
+            "          <BICFI>DEUTDEDBXXX</BICFI>",
+            "          <BICFI>DEUTDEDBXXX</BICFI>\n          <Nm>Банк</Nm>",
+            1,
+        )
+        .replacen(
+            "      <Dbtr>\n        <Nm>Hans Muller</Nm>\n      </Dbtr>",
+            "      <UltmtDbtr><Nm>Владелец</Nm></UltmtDbtr>\n      <Dbtr>\n        <Nm>Hans Muller</Nm>\n        <PstlAdr><StrtNm>улица</StrtNm><TwnNm>Москва</TwnNm></PstlAdr>\n      </Dbtr>",
+            1,
+        );
+
+    let validator = SepaValidator::new();
+    for (version, message_type, candidate) in [
+        ("typed", "pacs.008.001.13", xml.clone()),
+        (
+            "untyped",
+            "pacs.008.001.08",
+            xml.replace("pacs.008.001.13", "pacs.008.001.08"),
+        ),
+    ] {
+        let result = validator.validate(&candidate, message_type);
+        assert!(
+            !has_error_with_rule(&result, "SCHEME_PARSE"),
+            "{version} fixture must reach field rules: {result:?}"
+        );
+        let charset_paths: Vec<_> = result
+            .errors
+            .iter()
+            .filter(|error| error.rule_id == "SEPA_CHARSET")
+            .map(|error| error.path.as_str())
+            .collect();
+        assert_eq!(
+            charset_paths.iter().filter(|path| **path == "//Nm").count(),
+            2,
+            "{version} must reject agent and ultimate-party names: {result:?}"
+        );
+        assert!(
+            charset_paths.contains(&"//StrtNm"),
+            "{version} must reject street names: {result:?}"
+        );
+        assert!(
+            charset_paths.contains(&"//TwnNm"),
+            "{version} must reject town names: {result:?}"
+        );
+    }
+}
+
+#[test]
 fn sepa_amount_too_high() {
     let xml = r#"<?xml version="1.0" encoding="UTF-8"?>
 <Document xmlns="urn:iso:std:iso:20022:tech:xsd:pacs.008.001.13">

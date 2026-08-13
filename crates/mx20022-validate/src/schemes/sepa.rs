@@ -97,7 +97,12 @@ impl SchemeValidator for SepaValidator {
 
         let doc = msg.downcast_ref::<pacs_008_001_13::Document>()?;
 
-        Some(self.validate_pacs008(&super::pacs008::Facts::from(doc)))
+        let facts = match super::pacs008::Facts::from_typed_with_additional_charset_fields(doc) {
+            Ok(facts) => facts,
+            Err(error) => return Some(super::scheme_parse_error(&error)),
+        };
+
+        Some(self.validate_pacs008(&facts))
     }
 }
 
@@ -143,16 +148,16 @@ impl SepaValidator {
         }
     }
 
-    /// Check that a name string conforms to the SEPA restricted Latin character set.
-    fn check_sepa_name(name: &str, errors: &mut Vec<ValidationError>) {
-        if !is_sepa_charset(name) {
-            let bad: String = name.chars().filter(|&c| !is_sepa_char(c)).collect();
+    /// Check that a field conforms to the SEPA restricted Latin character set.
+    fn check_sepa_text(tag: &str, value: &str, errors: &mut Vec<ValidationError>) {
+        if !is_sepa_charset(value) {
+            let bad: String = value.chars().filter(|&c| !is_sepa_char(c)).collect();
             errors.push(ValidationError::new(
-                "//Nm",
+                format!("//{tag}"),
                 Severity::Error,
                 "SEPA_CHARSET",
                 format!(
-                    "Field <Nm> contains characters outside the SEPA restricted \
+                    "Field <{tag}> contains characters outside the SEPA restricted \
                      Latin character set: {bad:?}"
                 ),
             ));
@@ -176,18 +181,18 @@ impl SepaValidator {
             }
         }
 
-        // --- NbOfTxs must be "1" -------------------------------------------
-        if let Some(nb_of_txs) = &facts.nb_of_txs {
-            if nb_of_txs != "1" {
-                errors.push(ValidationError::new(
-                    "/Document/FIToFICstmrCdtTrf/GrpHdr/NbOfTxs",
-                    Severity::Error,
-                    "SEPA_SINGLE_TX",
-                    format!(
-                        "SEPA requires one transaction per group (NbOfTxs = \"1\"), got \"{nb_of_txs}\""
-                    ),
-                ));
-            }
+        // --- Declared and actual transaction count must both be one ---------
+        let actual_transactions = facts.transactions.len();
+        if facts.nb_of_txs.as_deref() != Some("1") || actual_transactions != 1 {
+            let declared_transactions = facts.nb_of_txs.as_deref().unwrap_or("<missing>");
+            errors.push(ValidationError::new(
+                "/Document/FIToFICstmrCdtTrf/GrpHdr/NbOfTxs",
+                Severity::Error,
+                "SEPA_SINGLE_TX",
+                format!(
+                    "SEPA requires exactly one transaction per group (NbOfTxs = \"1\" and one CdtTrfTxInf); declared \"{declared_transactions}\", found {actual_transactions} CdtTrfTxInf element(s)"
+                ),
+            ));
         }
 
         for tx in &facts.transactions {
@@ -305,21 +310,7 @@ impl SepaValidator {
 
                 // SEPA character set check on Ustrd.
                 for unstructured in &tx.unstructured_remittance {
-                    if !is_sepa_charset(unstructured) {
-                        let bad: String = unstructured
-                            .chars()
-                            .filter(|&character| !is_sepa_char(character))
-                            .collect();
-                        errors.push(ValidationError::new(
-                            "//Ustrd",
-                            Severity::Error,
-                            "SEPA_CHARSET",
-                            format!(
-                                "Field <Ustrd> contains characters outside the SEPA restricted \
-                                 Latin character set: {bad:?}"
-                            ),
-                        ));
-                    }
+                    Self::check_sepa_text("Ustrd", unstructured, &mut errors);
                 }
             }
 
@@ -334,10 +325,10 @@ impl SepaValidator {
 
             // --- SEPA character set check on names --------------------------
             if let Some(name) = &tx.debtor_name {
-                Self::check_sepa_name(name, &mut errors);
+                Self::check_sepa_text("Nm", name, &mut errors);
             }
             if let Some(name) = &tx.creditor_name {
-                Self::check_sepa_name(name, &mut errors);
+                Self::check_sepa_text("Nm", name, &mut errors);
             }
 
             // --- IBAN required for debtor and creditor accounts ---
@@ -356,6 +347,11 @@ impl SepaValidator {
                     "SEPA requires IBAN for both debtor and creditor; only one found",
                 ));
             }
+        }
+
+        // --- SEPA character set check on other names and addresses ---------
+        for field in &facts.additional_charset_fields {
+            Self::check_sepa_text(field.tag, &field.value, &mut errors);
         }
 
         ValidationResult::new(errors)

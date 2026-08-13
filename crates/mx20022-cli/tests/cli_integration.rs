@@ -550,6 +550,30 @@ fn validate_with_scheme_fednow_counts_actual_transactions() {
 }
 
 #[test]
+fn validate_with_scheme_fednow_keeps_fields_after_nested_supplementary_transaction() {
+    let xml = std::fs::read_to_string(scheme_testdata("fednow/valid_pacs008.xml"))
+        .unwrap()
+        .replace("pacs.008.001.13", "pacs.008.001.08")
+        .replace("Ccy=\"USD\">1000.00", "Ccy=\"EUR\">750000.00")
+        .replace("<ChrgBr>SLEV</ChrgBr>", "<ChrgBr>SHAR</ChrgBr>")
+        .replacen(
+            "      <IntrBkSttlmAmt",
+            "      <SplmtryData><Envlp><CdtTrfTxInf><Value>opaque</Value></CdtTrfTxInf></Envlp></SplmtryData>\n      <IntrBkSttlmAmt",
+            1,
+        );
+
+    let output = run_scheme_xml("fednow-nested-supplementary-transaction", &xml, "fednow");
+    assert!(
+        !output.status.success(),
+        "wrong-currency, over-limit, wrong-charge input must exit non-zero"
+    );
+    let stdout = String::from_utf8_lossy(&output.stdout);
+    for rule_id in ["FEDNOW_CHRGBR", "FEDNOW_CURRENCY", "FEDNOW_AMOUNT_LIMIT"] {
+        assert!(stdout.contains(rule_id), "missing {rule_id} in:\n{stdout}");
+    }
+}
+
+#[test]
 fn validate_with_scheme_fednow_keeps_size_error_on_schema_failure() {
     let fixture = std::fs::read_to_string(scheme_testdata("fednow/valid_pacs008.xml")).unwrap();
     let document = without_xml_declaration(&fixture).replace("      <ChrgBr>SLEV</ChrgBr>\n", "");

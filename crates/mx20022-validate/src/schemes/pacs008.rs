@@ -14,6 +14,13 @@ pub(crate) struct Facts {
     pub(crate) instg_agent_bic: Option<String>,
     pub(crate) instd_agent_bic: Option<String>,
     pub(crate) transactions: Vec<Transaction>,
+    pub(crate) additional_charset_fields: Vec<TaggedText>,
+}
+
+#[derive(Debug)]
+pub(crate) struct TaggedText {
+    pub(crate) tag: &'static str,
+    pub(crate) value: String,
 }
 
 #[derive(Debug, Default)]
@@ -102,10 +109,11 @@ impl Facts {
                         )
                     })?;
                     let ends_transaction = node.name == b"CdtTrfTxInf";
-                    if !inside_supplementary_data(&stack) {
+                    let is_supplementary = inside_supplementary_data(&stack);
+                    if !is_supplementary {
                         process_node(&mut facts, current_transaction, &stack, node);
                     }
-                    if ends_transaction {
+                    if ends_transaction && !is_supplementary {
                         current_transaction = None;
                     }
                 }
@@ -114,6 +122,21 @@ impl Facts {
             }
         }
 
+        Ok(facts)
+    }
+
+    /// Build typed facts and retain the additional tag-based charset fields.
+    ///
+    /// `Nm` occurs in many generated party, agent, and remittance types. Using
+    /// the generated serializer keeps this tag-based rule complete as the
+    /// schema evolves without duplicating that type graph here. Debtor and
+    /// creditor names plus `Ustrd` are already mapped into each transaction.
+    pub(crate) fn from_typed_with_additional_charset_fields(
+        document: &Document,
+    ) -> Result<Self, ParseError> {
+        let mut facts = Self::from(document);
+        let serialized = mx20022_parse::ser::to_string(document)?;
+        facts.additional_charset_fields = Self::from_xml(&serialized)?.additional_charset_fields;
         Ok(facts)
     }
 }
@@ -136,6 +159,7 @@ impl From<&Document> for Facts {
                 .as_ref()
                 .and_then(|agent| agent.fin_instn_id.bicfi.as_ref())
                 .map(|bic| bic.0.clone()),
+            additional_charset_fields: Vec::new(),
             transactions: message
                 .cdt_trf_tx_inf
                 .iter()
@@ -212,6 +236,13 @@ fn process_node(
     let text = node.text.trim().to_owned();
     let name = node.name.as_slice();
 
+    if let Some(tag) = additional_charset_tag(name, ancestors) {
+        facts.additional_charset_fields.push(TaggedText {
+            tag,
+            value: text.clone(),
+        });
+    }
+
     if current_transaction.is_none() {
         match name {
             b"NbOfTxs" if has_ancestor(ancestors, b"GrpHdr") => {
@@ -274,6 +305,15 @@ fn process_node(
     }
 }
 
+fn additional_charset_tag(name: &[u8], ancestors: &[Node]) -> Option<&'static str> {
+    match name {
+        b"Nm" if nearest_party(ancestors).is_none() => Some("Nm"),
+        b"StrtNm" => Some("StrtNm"),
+        b"TwnNm" => Some("TwnNm"),
+        _ => None,
+    }
+}
+
 fn has_ancestor(ancestors: &[Node], name: &[u8]) -> bool {
     ancestors.iter().any(|node| node.name == name)
 }
@@ -323,11 +363,14 @@ mod tests {
 
     #[test]
     fn parses_each_transaction_without_reading_supplementary_payloads() {
-        let xml = r#"<Document><FIToFICstmrCdtTrf><GrpHdr><NbOfTxs>1</NbOfTxs><SttlmInf><SttlmMtd>CLRG</SttlmMtd></SttlmInf></GrpHdr><CdtTrfTxInf><PmtId><EndToEndId>e2e</EndToEndId></PmtId><IntrBkSttlmAmt Ccy="EUR">1.00</IntrBkSttlmAmt><Dbtr><Nm>Alice</Nm></Dbtr><SplmtryData><Envlp><Document><CdtTrfTxInf><IntrBkSttlmAmt Ccy="USD">9.00</IntrBkSttlmAmt></CdtTrfTxInf></Document></Envlp></SplmtryData></CdtTrfTxInf></FIToFICstmrCdtTrf></Document>"#;
+        let xml = r#"<Document><FIToFICstmrCdtTrf><GrpHdr><NbOfTxs>1</NbOfTxs><SttlmInf><SttlmMtd>CLRG</SttlmMtd></SttlmInf></GrpHdr><CdtTrfTxInf><PmtId><EndToEndId>e2e</EndToEndId></PmtId><SplmtryData><Envlp><Document><CdtTrfTxInf><IntrBkSttlmAmt Ccy="USD">9.00</IntrBkSttlmAmt><DbtrAgt><Nm>Банк</Nm><StrtNm>улица</StrtNm></DbtrAgt></CdtTrfTxInf></Document></Envlp></SplmtryData><IntrBkSttlmAmt Ccy="EUR">750000.00</IntrBkSttlmAmt><ChrgBr>SHAR</ChrgBr><Dbtr><Nm>Alice</Nm></Dbtr></CdtTrfTxInf></FIToFICstmrCdtTrf></Document>"#;
         let facts = Facts::from_xml(xml).unwrap();
         assert_eq!(facts.nb_of_txs.as_deref(), Some("1"));
         assert_eq!(facts.transactions.len(), 1);
         assert_eq!(facts.transactions[0].currency.as_deref(), Some("EUR"));
+        assert_eq!(facts.transactions[0].amount.as_deref(), Some("750000.00"));
+        assert_eq!(facts.transactions[0].charge_bearer.as_deref(), Some("SHAR"));
         assert_eq!(facts.transactions[0].debtor_name.as_deref(), Some("Alice"));
+        assert!(facts.additional_charset_fields.is_empty());
     }
 }
