@@ -31,6 +31,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   extraction helpers; scheme validation invokes `SchemeValidator::validate`
   once.
 
+### Fixed
+
+- `mx20022-cli validate` now reads the complete XML stream before reporting a
+  valid message type, so malformed or truncated XML without `--scheme` prints
+  a parse diagnostic and exits non-zero instead of reporting success.
+- `FEDNOW_SINGLE_TX` now checks both the declared `NbOfTxs` and the actual
+  number of `CdtTrfTxInf` elements. A message declaring one transaction while
+  carrying multiple transactions is rejected on typed and older-version
+  validation paths.
+
 ### Removed
 
 - Removed the public `mx20022_validate::schemes::xml_scan` module and the

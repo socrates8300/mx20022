@@ -6,7 +6,8 @@
 //! - Only USD transactions are accepted.
 //! - Settlement method must be `CLRG`.
 //! - Charges bearer must be `SLEV`.
-//! - A single transaction per group (`NbOfTxs = "1"`).
+//! - A single transaction per group (`NbOfTxs = "1"` and exactly one
+//!   `CdtTrfTxInf`).
 //! - UETR is mandatory (UUID v4 format).
 //! - End-to-end ID is mandatory (≤ 35 characters).
 //! - Amount in `[0.01, 500_000.00]` USD (the upper bound is configurable up to
@@ -207,18 +208,18 @@ impl FedNowValidator {
     fn validate_pacs008(&self, facts: &super::pacs008::Facts) -> ValidationResult {
         let mut errors: Vec<ValidationError> = Vec::new();
 
-        // --- NbOfTxs must be "1" -------------------------------------------
-        if let Some(nb_of_txs) = &facts.nb_of_txs {
-            if nb_of_txs != "1" {
-                errors.push(ValidationError::new(
+        // --- Declared and actual transaction count must both be one ---------
+        let actual_transactions = facts.transactions.len();
+        if facts.nb_of_txs.as_deref() != Some("1") || actual_transactions != 1 {
+            let declared_transactions = facts.nb_of_txs.as_deref().unwrap_or("<missing>");
+            errors.push(ValidationError::new(
                 "/Document/FIToFICstmrCdtTrf/GrpHdr/NbOfTxs",
                 Severity::Error,
                 "FEDNOW_SINGLE_TX",
                 format!(
-                    "FedNow requires exactly one transaction per group (NbOfTxs = \"1\"), got \"{nb_of_txs}\""
+                    "FedNow requires exactly one transaction per group (NbOfTxs = \"1\" and one CdtTrfTxInf); declared \"{declared_transactions}\", found {actual_transactions} CdtTrfTxInf element(s)"
                 ),
             ));
-            }
         }
 
         // --- Settlement method must be CLRG ---------------------------------
