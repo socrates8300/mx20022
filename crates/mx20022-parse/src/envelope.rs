@@ -87,7 +87,8 @@ pub fn parse_namespace(ns: &str) -> Result<MessageId, ParseError> {
 /// # Errors
 ///
 /// Returns [`ParseError::InvalidEnvelope`] if no matching namespace is found or
-/// the namespace is malformed.
+/// the namespace or XML stream is malformed. The complete stream is read before
+/// a detected message type is returned.
 ///
 /// # Examples
 ///
@@ -103,14 +104,27 @@ pub fn parse_namespace(ns: &str) -> Result<MessageId, ParseError> {
 pub fn detect_message_type(xml: &str) -> Result<MessageId, ParseError> {
     let mut reader = NsReader::from_str(xml);
     let mut first_iso_namespace = None;
+    let mut document_message_id = None;
+    let mut depth = 0usize;
+    let mut root_seen = false;
 
     loop {
         let (namespace, event) = reader.read_resolved_event().map_err(|error| {
             ParseError::InvalidEnvelope(format!("malformed XML envelope: {error}"))
         })?;
+        let opens_element = matches!(&event, Event::Start(_));
 
         match event {
             Event::Start(element) | Event::Empty(element) => {
+                if depth == 0 {
+                    if root_seen {
+                        return Err(ParseError::InvalidEnvelope(
+                            "XML contains more than one root element".to_owned(),
+                        ));
+                    }
+                    root_seen = true;
+                }
+
                 let is_document = element.local_name().as_ref() == b"Document";
                 match namespace {
                     ResolveResult::Bound(namespace) => {
@@ -120,19 +134,21 @@ pub fn detect_message_type(xml: &str) -> Result<MessageId, ParseError> {
                                     "element namespace is not UTF-8: {error}"
                                 ))
                             })?;
-                        if is_document {
-                            return parse_namespace(namespace);
+                        if is_document && document_message_id.is_none() {
+                            document_message_id = Some(parse_namespace(namespace)?);
                         }
                         if first_iso_namespace.is_none() && namespace.starts_with(NS_PREFIX) {
                             first_iso_namespace = Some(parse_namespace(namespace)?);
                         }
                     }
-                    ResolveResult::Unbound if is_document => {
+                    ResolveResult::Unbound if is_document && document_message_id.is_none() => {
                         return Err(ParseError::InvalidEnvelope(
                             "Document element has no namespace".to_owned(),
                         ));
                     }
-                    ResolveResult::Unknown(prefix) if is_document => {
+                    ResolveResult::Unknown(prefix)
+                        if is_document && document_message_id.is_none() =>
+                    {
                         return Err(ParseError::InvalidEnvelope(format!(
                             "Document namespace prefix is not declared: {}",
                             String::from_utf8_lossy(&prefix)
@@ -140,13 +156,36 @@ pub fn detect_message_type(xml: &str) -> Result<MessageId, ParseError> {
                     }
                     ResolveResult::Unbound | ResolveResult::Unknown(_) => {}
                 }
+                if opens_element {
+                    depth += 1;
+                }
+            }
+            Event::End(_) => {
+                depth = depth.checked_sub(1).ok_or_else(|| {
+                    ParseError::InvalidEnvelope(
+                        "malformed XML envelope: unmatched closing element".to_owned(),
+                    )
+                })?;
+            }
+            Event::Text(text) if depth == 0 => {
+                if !text.as_ref().iter().all(u8::is_ascii_whitespace) {
+                    return Err(ParseError::InvalidEnvelope(
+                        "non-whitespace content appears outside the root element".to_owned(),
+                    ));
+                }
             }
             Event::Eof => break,
             _ => {}
         }
     }
 
-    first_iso_namespace.ok_or_else(|| {
+    if depth != 0 {
+        return Err(ParseError::InvalidEnvelope(
+            "malformed XML envelope: root element is not closed".to_owned(),
+        ));
+    }
+
+    document_message_id.or(first_iso_namespace).ok_or_else(|| {
         ParseError::InvalidEnvelope("no ISO 20022 namespace found in XML document".to_owned())
     })
 }
@@ -239,6 +278,15 @@ mod tests {
         assert_eq!(
             detect_message_type(xml).unwrap().dotted(),
             "pacs.008.001.13"
+        );
+    }
+
+    #[test]
+    fn detect_message_type_rejects_truncated_document() {
+        let xml = r#"<Document xmlns="urn:iso:std:iso:20022:tech:xsd:pacs.008.001.13"><FIToFICstmrCdtTrf>"#;
+        assert!(
+            detect_message_type(xml).is_err(),
+            "namespace detection must not accept malformed trailing XML"
         );
     }
 }

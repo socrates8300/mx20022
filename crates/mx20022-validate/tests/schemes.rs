@@ -134,6 +134,52 @@ fn fednow_multi_transaction() {
 }
 
 #[test]
+fn fednow_declared_single_with_two_transactions_fails() {
+    let xml = read_fixture("fednow/valid_pacs008.xml");
+    let tx_start = xml.find("<CdtTrfTxInf>").unwrap();
+    let tx_end =
+        xml[tx_start..].find("</CdtTrfTxInf>").unwrap() + tx_start + "</CdtTrfTxInf>".len();
+    let transaction = xml[tx_start..tx_end].to_owned();
+    let multi_xml = xml.replacen(
+        "</FIToFICstmrCdtTrf>",
+        &format!("{transaction}</FIToFICstmrCdtTrf>"),
+        1,
+    );
+
+    let validator = FedNowValidator::new();
+    let xml_result = validator.validate(&multi_xml, "pacs.008.001.13");
+    assert!(
+        has_error_with_rule(&xml_result, "FEDNOW_SINGLE_TX"),
+        "declaring one while carrying two transactions must fail: {:?}",
+        xml_result.errors
+    );
+    let single_tx_finding = xml_result
+        .errors
+        .iter()
+        .find(|error| error.rule_id == "FEDNOW_SINGLE_TX")
+        .unwrap();
+    assert!(single_tx_finding.message.contains("found 2"));
+
+    let document = parse_pacs008(&multi_xml);
+    let typed_result = validator
+        .validate_typed(&document, "pacs.008.001.13")
+        .expect("FedNow supports typed pacs.008.001.13");
+    assert!(
+        has_error_with_rule(&typed_result, "FEDNOW_SINGLE_TX"),
+        "typed validation must count the two actual transactions: {:?}",
+        typed_result.errors
+    );
+
+    let older_xml = multi_xml.replace("pacs.008.001.13", "pacs.008.001.08");
+    let older_result = validator.validate(&older_xml, "pacs.008.001.08");
+    assert!(
+        has_error_with_rule(&older_result, "FEDNOW_SINGLE_TX"),
+        "older-version validation must count actual transactions: {:?}",
+        older_result.errors
+    );
+}
+
+#[test]
 fn fednow_missing_uetr() {
     let xml = r#"<?xml version="1.0" encoding="UTF-8"?>
 <Document xmlns="urn:iso:std:iso:20022:tech:xsd:pacs.008.001.13">
@@ -1120,7 +1166,7 @@ fn malformed_namespaced_document_preserves_raw_header_warning() {
 }
 
 #[test]
-fn pacs_008_001_08_returns_raw_findings_and_untyped_warning_only() {
+fn pacs_008_001_08_applies_version_neutral_transaction_count() {
     let xml = r#"<Document xmlns="urn:iso:std:iso:20022:tech:xsd:pacs.008.001.08"><Anything/></Document>"#;
     let result = FedNowValidator::new().validate(xml, "pacs.008.001.13");
     let mut rule_ids: Vec<_> = result
@@ -1131,7 +1177,11 @@ fn pacs_008_001_08_returns_raw_findings_and_untyped_warning_only() {
     rule_ids.sort_unstable();
     assert_eq!(
         rule_ids,
-        vec!["FEDNOW_APPHDR_MISSING", "SCHEME_UNTYPED_VERSION"]
+        vec![
+            "FEDNOW_APPHDR_MISSING",
+            "FEDNOW_SINGLE_TX",
+            "SCHEME_UNTYPED_VERSION"
+        ]
     );
 }
 

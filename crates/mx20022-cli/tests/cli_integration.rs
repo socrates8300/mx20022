@@ -192,6 +192,36 @@ fn validate_invalid_bic_exits_nonzero() {
 }
 
 #[test]
+fn validate_malformed_xml_without_scheme_exits_nonzero() {
+    let path =
+        std::env::temp_dir().join(format!("mx20022-cli-{}-malformed.xml", std::process::id()));
+    std::fs::write(
+        &path,
+        r#"<Document xmlns="urn:iso:std:iso:20022:tech:xsd:pacs.008.001.13"><FIToFICstmrCdtTrf>"#,
+    )
+    .expect("temporary XML fixture should be writable");
+
+    let output = Command::new(bin_path())
+        .args(["validate", &path.to_string_lossy()])
+        .output()
+        .expect("failed to run mx20022-cli");
+    let _ = std::fs::remove_file(path);
+
+    assert!(
+        !output.status.success(),
+        "malformed XML must exit non-zero, stdout: {}",
+        String::from_utf8_lossy(&output.stdout)
+    );
+    let stdout = String::from_utf8_lossy(&output.stdout);
+    let stderr = String::from_utf8_lossy(&output.stderr);
+    assert!(!stdout.contains("OK"), "malformed XML must not print OK");
+    assert!(
+        stderr.contains("parse error") && stderr.contains("malformed XML"),
+        "expected a malformed-XML diagnostic, stderr: {stderr}"
+    );
+}
+
+#[test]
 fn validate_head_xml_exits_zero() {
     let output = Command::new(bin_path())
         .args([
@@ -494,6 +524,29 @@ fn validate_with_scheme_fednow_invalid_catches_error() {
         stdout.contains("FEDNOW_CURRENCY"),
         "expected FEDNOW_CURRENCY in output, got:\n{stdout}"
     );
+}
+
+#[test]
+fn validate_with_scheme_fednow_counts_actual_transactions() {
+    let xml = std::fs::read_to_string(scheme_testdata("fednow/valid_pacs008.xml")).unwrap();
+    let tx_start = xml.find("<CdtTrfTxInf>").unwrap();
+    let tx_end =
+        xml[tx_start..].find("</CdtTrfTxInf>").unwrap() + tx_start + "</CdtTrfTxInf>".len();
+    let transaction = &xml[tx_start..tx_end];
+    let multi_xml = xml.replacen(
+        "</FIToFICstmrCdtTrf>",
+        &format!("{transaction}</FIToFICstmrCdtTrf>"),
+        1,
+    );
+
+    let output = run_scheme_xml("fednow-actual-multi-tx", &multi_xml, "fednow");
+    assert!(
+        !output.status.success(),
+        "FedNow input with two actual transactions must exit non-zero"
+    );
+    let stdout = String::from_utf8_lossy(&output.stdout);
+    assert!(stdout.contains("FEDNOW_SINGLE_TX"), "stdout: {stdout}");
+    assert!(stdout.contains("found 2"), "stdout: {stdout}");
 }
 
 #[test]
