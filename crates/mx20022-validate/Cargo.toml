@@ -1,6 +1,6 @@
 [package]
 name = "mx20022-validate"
-version = "0.3.2"
+version = "0.4.0"
 description = "ISO 20022 message validation: XSD constraints, IBAN/BIC/LEI rules, FedNow, SEPA, and CBPR+ scheme checks"
 edition.workspace = true
 rust-version.workspace = true
@@ -13,11 +13,12 @@ categories = ["encoding", "finance"]
 
 [dependencies]
 mx20022-model = { workspace = true, features = ["all"] }
+mx20022-parse.workspace = true
+quick-xml.workspace = true
 thiserror.workspace = true
 regex.workspace = true
 
 [dev-dependencies]
-mx20022-parse = { workspace = true }
 criterion.workspace = true
 
 [[bench]]

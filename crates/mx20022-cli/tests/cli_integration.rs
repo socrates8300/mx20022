@@ -4,7 +4,7 @@
 //! so that real argument parsing, I/O, and exit-code behaviour is exercised.
 
 use std::path::PathBuf;
-use std::process::Command;
+use std::process::{Command, Output};
 
 fn bin_path() -> PathBuf {
     // The integration-test binary is always compiled to the same target tree as
@@ -192,6 +192,36 @@ fn validate_invalid_bic_exits_nonzero() {
 }
 
 #[test]
+fn validate_malformed_xml_without_scheme_exits_nonzero() {
+    let path =
+        std::env::temp_dir().join(format!("mx20022-cli-{}-malformed.xml", std::process::id()));
+    std::fs::write(
+        &path,
+        r#"<Document xmlns="urn:iso:std:iso:20022:tech:xsd:pacs.008.001.13"><FIToFICstmrCdtTrf>"#,
+    )
+    .expect("temporary XML fixture should be writable");
+
+    let output = Command::new(bin_path())
+        .args(["validate", &path.to_string_lossy()])
+        .output()
+        .expect("failed to run mx20022-cli");
+    let _ = std::fs::remove_file(path);
+
+    assert!(
+        !output.status.success(),
+        "malformed XML must exit non-zero, stdout: {}",
+        String::from_utf8_lossy(&output.stdout)
+    );
+    let stdout = String::from_utf8_lossy(&output.stdout);
+    let stderr = String::from_utf8_lossy(&output.stderr);
+    assert!(!stdout.contains("OK"), "malformed XML must not print OK");
+    assert!(
+        stderr.contains("parse error") && stderr.contains("malformed XML"),
+        "expected a malformed-XML diagnostic, stderr: {stderr}"
+    );
+}
+
+#[test]
 fn validate_head_xml_exits_zero() {
     let output = Command::new(bin_path())
         .args([
@@ -320,6 +350,21 @@ fn scheme_testdata(rel: &str) -> PathBuf {
         .unwrap_or_else(|_| panic!("scheme testdata path not found: {rel}"))
 }
 
+fn run_scheme_xml(name: &str, xml: &str, scheme: &str) -> Output {
+    let path = std::env::temp_dir().join(format!("mx20022-cli-{}-{name}.xml", std::process::id()));
+    std::fs::write(&path, xml).expect("temporary XML fixture should be writable");
+    let output = Command::new(bin_path())
+        .args(["validate", &path.to_string_lossy(), "--scheme", scheme])
+        .output()
+        .expect("failed to run mx20022-cli");
+    let _ = std::fs::remove_file(path);
+    output
+}
+
+fn without_xml_declaration(xml: &str) -> &str {
+    xml.find("?>").map_or(xml, |end| xml[end + 2..].trim())
+}
+
 #[test]
 fn validate_with_scheme_fednow_valid_exits_zero() {
     let output = Command::new(bin_path())
@@ -378,6 +423,83 @@ fn validate_with_scheme_cbpr_valid_exits_zero() {
         String::from_utf8_lossy(&output.stderr),
         String::from_utf8_lossy(&output.stdout)
     );
+    assert!(
+        String::from_utf8_lossy(&output.stdout).contains("pacs.008.001.13"),
+        "CBPR envelope should route by its Document namespace, stdout: {}",
+        String::from_utf8_lossy(&output.stdout)
+    );
+}
+
+#[test]
+fn validate_with_scheme_accepts_supported_transport_wrappers() {
+    let fixture = std::fs::read_to_string(scheme_testdata("cbpr/valid_pacs008.xml")).unwrap();
+    let payload = without_xml_declaration(&fixture)
+        .replacen("<BizMsgEnvlp>", "", 1)
+        .replacen("</BizMsgEnvlp>", "", 1);
+
+    for (name, open, close) in [
+        ("envelope", "<Envelope>", "</Envelope>"),
+        ("request-payload", "<RequestPayload>", "</RequestPayload>"),
+        (
+            "bizmsg-payload",
+            "<BizMsgEnvlp><Payload>",
+            "</Payload></BizMsgEnvlp>",
+        ),
+    ] {
+        let xml = format!("{open}{payload}{close}");
+        let output = run_scheme_xml(name, &xml, "cbpr");
+        assert!(
+            output.status.success(),
+            "{name} wrapper should validate, stderr: {}\nstdout: {}",
+            String::from_utf8_lossy(&output.stderr),
+            String::from_utf8_lossy(&output.stdout)
+        );
+        assert!(
+            String::from_utf8_lossy(&output.stdout).contains("pacs.008.001.13"),
+            "{name} wrapper should route the Document namespace"
+        );
+    }
+}
+
+#[test]
+fn validate_with_scheme_ignores_document_inside_supplementary_data() {
+    let fixture = std::fs::read_to_string(scheme_testdata("fednow/valid_pacs008.xml")).unwrap();
+    let xml = without_xml_declaration(&fixture).replacen(
+        "</CdtTrfTxInf>",
+        "<SplmtryData><Envlp><Document><Value>opaque</Value></Document></Envlp></SplmtryData></CdtTrfTxInf>",
+        1,
+    );
+    let output = run_scheme_xml("nested-document", &xml, "fednow");
+    assert!(
+        output.status.success(),
+        "supplementary Document content should not be an ambiguous payload, stderr: {}\nstdout: {}",
+        String::from_utf8_lossy(&output.stderr),
+        String::from_utf8_lossy(&output.stdout)
+    );
+}
+
+#[test]
+fn validate_with_scheme_resolves_namespace_inherited_from_envelope() {
+    let fixture = std::fs::read_to_string(scheme_testdata("fednow/valid_pacs008.xml")).unwrap();
+    let document = without_xml_declaration(&fixture).replacen(
+        " xmlns=\"urn:iso:std:iso:20022:tech:xsd:pacs.008.001.13\"",
+        "",
+        1,
+    );
+    let xml = format!(
+        "<Envelope xmlns=\"urn:iso:std:iso:20022:tech:xsd:pacs.008.001.13\">{document}</Envelope>"
+    );
+    let output = run_scheme_xml("inherited-document-namespace", &xml, "fednow");
+    assert!(
+        output.status.success(),
+        "inherited Document namespace should validate, stderr: {}\nstdout: {}",
+        String::from_utf8_lossy(&output.stderr),
+        String::from_utf8_lossy(&output.stdout)
+    );
+    assert!(
+        String::from_utf8_lossy(&output.stdout).contains("pacs.008.001.13"),
+        "CLI should announce the inherited Document namespace"
+    );
 }
 
 #[test]
@@ -402,6 +524,102 @@ fn validate_with_scheme_fednow_invalid_catches_error() {
         stdout.contains("FEDNOW_CURRENCY"),
         "expected FEDNOW_CURRENCY in output, got:\n{stdout}"
     );
+}
+
+#[test]
+fn validate_with_scheme_fednow_counts_actual_transactions() {
+    let xml = std::fs::read_to_string(scheme_testdata("fednow/valid_pacs008.xml")).unwrap();
+    let tx_start = xml.find("<CdtTrfTxInf>").unwrap();
+    let tx_end =
+        xml[tx_start..].find("</CdtTrfTxInf>").unwrap() + tx_start + "</CdtTrfTxInf>".len();
+    let transaction = &xml[tx_start..tx_end];
+    let multi_xml = xml.replacen(
+        "</FIToFICstmrCdtTrf>",
+        &format!("{transaction}</FIToFICstmrCdtTrf>"),
+        1,
+    );
+
+    let output = run_scheme_xml("fednow-actual-multi-tx", &multi_xml, "fednow");
+    assert!(
+        !output.status.success(),
+        "FedNow input with two actual transactions must exit non-zero"
+    );
+    let stdout = String::from_utf8_lossy(&output.stdout);
+    assert!(stdout.contains("FEDNOW_SINGLE_TX"), "stdout: {stdout}");
+    assert!(stdout.contains("found 2"), "stdout: {stdout}");
+}
+
+#[test]
+fn validate_with_scheme_fednow_keeps_fields_after_nested_supplementary_transaction() {
+    let xml = std::fs::read_to_string(scheme_testdata("fednow/valid_pacs008.xml"))
+        .unwrap()
+        .replace("pacs.008.001.13", "pacs.008.001.08")
+        .replace("Ccy=\"USD\">1000.00", "Ccy=\"EUR\">750000.00")
+        .replace("<ChrgBr>SLEV</ChrgBr>", "<ChrgBr>SHAR</ChrgBr>")
+        .replacen(
+            "      <IntrBkSttlmAmt",
+            "      <SplmtryData><Envlp><CdtTrfTxInf><Value>opaque</Value></CdtTrfTxInf></Envlp></SplmtryData>\n      <IntrBkSttlmAmt",
+            1,
+        );
+
+    let output = run_scheme_xml("fednow-nested-supplementary-transaction", &xml, "fednow");
+    assert!(
+        !output.status.success(),
+        "wrong-currency, over-limit, wrong-charge input must exit non-zero"
+    );
+    let stdout = String::from_utf8_lossy(&output.stdout);
+    for rule_id in ["FEDNOW_CHRGBR", "FEDNOW_CURRENCY", "FEDNOW_AMOUNT_LIMIT"] {
+        assert!(stdout.contains(rule_id), "missing {rule_id} in:\n{stdout}");
+    }
+}
+
+#[test]
+fn validate_with_scheme_fednow_keeps_size_error_on_schema_failure() {
+    let fixture = std::fs::read_to_string(scheme_testdata("fednow/valid_pacs008.xml")).unwrap();
+    let document = without_xml_declaration(&fixture).replace("      <ChrgBr>SLEV</ChrgBr>\n", "");
+    let padding = format!("<!--{}-->", "x".repeat(65 * 1024));
+    let xml = format!(
+        "<BizMsgEnvlp><AppHdr><BizMsgIdr>oversized-invalid</BizMsgIdr></AppHdr>{padding}{document}</BizMsgEnvlp>"
+    );
+    let output = run_scheme_xml("fednow-oversized-schema-invalid", &xml, "fednow");
+
+    assert!(
+        !output.status.success(),
+        "oversized schema-invalid FedNow input must exit non-zero"
+    );
+    let stdout = String::from_utf8_lossy(&output.stdout);
+    assert!(stdout.contains("FEDNOW_MSG_SIZE"), "stdout: {stdout}");
+    assert!(stdout.contains("SCHEME_PARSE"), "stdout: {stdout}");
+}
+
+#[test]
+fn validate_with_scheme_fednow_keeps_size_error_on_early_parse_failures() {
+    let padding = format!("<!--{}-->", "x".repeat(65 * 1024));
+    let cases = [
+        (
+            "fednow-oversized-malformed",
+            format!(
+                "<BizMsgEnvlp><AppHdr><BizMsgIdr>oversized-malformed</BizMsgIdr></AppHdr>{padding}<Document xmlns=\"urn:iso:std:iso:20022:tech:xsd:pacs.008.001.13\"><Broken>"
+            ),
+        ),
+        (
+            "fednow-oversized-undeclared-prefix",
+            format!(
+                "<BizMsgEnvlp><AppHdr><BizMsgIdr>oversized-prefix</BizMsgIdr></AppHdr>{padding}<mx:Document><Value/></mx:Document></BizMsgEnvlp>"
+            ),
+        ),
+    ];
+
+    for (name, xml) in cases {
+        let output = run_scheme_xml(name, &xml, "fednow");
+        assert!(!output.status.success(), "{name} must exit non-zero");
+        let stdout = String::from_utf8_lossy(&output.stdout);
+        assert!(
+            stdout.contains("FEDNOW_MSG_SIZE"),
+            "{name} stdout: {stdout}"
+        );
+        assert!(stdout.contains("SCHEME_PARSE"), "{name} stdout: {stdout}");
+    }
 }
 
 #[test]
@@ -440,6 +658,23 @@ fn validate_with_scheme_sepa_invalid_catches_error() {
     assert!(
         stdout.contains("SEPA_CURRENCY"),
         "expected SEPA_CURRENCY in: {stdout}"
+    );
+}
+
+#[test]
+fn validate_with_scheme_sepa_older_version_keeps_currency_error() {
+    let fixture = std::fs::read_to_string(scheme_testdata("sepa/invalid_usd.xml")).unwrap();
+    let xml = fixture.replace("pacs.008.001.13", "pacs.008.001.08");
+    let output = run_scheme_xml("sepa-001-08-invalid-usd", &xml, "sepa");
+    assert!(
+        !output.status.success(),
+        "older-version SEPA currency violations must remain errors"
+    );
+    let stdout = String::from_utf8_lossy(&output.stdout);
+    assert!(stdout.contains("SEPA_CURRENCY"), "stdout: {stdout}");
+    assert!(
+        stdout.contains("SCHEME_UNTYPED_VERSION"),
+        "stdout: {stdout}"
     );
 }
 

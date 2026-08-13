@@ -12,9 +12,133 @@
 //! let _hdr: BusinessApplicationHeaderV04 = from_str(xml).unwrap();
 //! ```
 
+use quick_xml::events::Event;
+use quick_xml::Reader;
 use serde::de::DeserializeOwned;
 
 use crate::{envelope::detect_message_type, ParseError};
+
+fn xml_position(position: u64) -> Result<usize, ParseError> {
+    usize::try_from(position).map_err(|_| {
+        ParseError::InvalidEnvelope("XML position exceeds addressable input size".to_owned())
+    })
+}
+
+/// Return the complete ISO 20022 `Document` element from raw XML.
+///
+/// The returned slice borrows directly from `xml`. A `Document` may be the
+/// root element or appear below a transport wrapper. Namespace prefixes are
+/// ignored when matching element names. Once the payload `Document` begins,
+/// nested elements also named `Document` are treated as payload content rather
+/// than additional candidates.
+///
+/// # Errors
+///
+/// Returns [`ParseError::InvalidEnvelope`] when the XML is malformed, contains
+/// no `Document`, or contains more than one top-level payload candidate.
+pub fn document_xml(xml: &str) -> Result<&str, ParseError> {
+    let mut reader = Reader::from_str(xml);
+    let mut depth = 0usize;
+    let mut root_seen = false;
+    let mut document_start: Option<(usize, usize)> = None;
+    let mut document_range: Option<(usize, usize)> = None;
+
+    loop {
+        let event_start = xml_position(reader.buffer_position())?;
+        let event = reader
+            .read_event()
+            .map_err(|error| ParseError::InvalidEnvelope(format!("malformed XML: {error}")))?;
+
+        match event {
+            Event::Start(element) => {
+                let local_name = element.local_name();
+                let local_name = local_name.as_ref();
+
+                if depth == 0 {
+                    if root_seen {
+                        return Err(ParseError::InvalidEnvelope(
+                            "XML contains more than one root element".to_owned(),
+                        ));
+                    }
+                    root_seen = true;
+                }
+
+                if local_name == b"Document" && document_start.is_none() {
+                    if document_range.is_some() {
+                        return Err(ParseError::InvalidEnvelope(
+                            "XML contains multiple Document elements".to_owned(),
+                        ));
+                    }
+                    document_start = Some((event_start, depth));
+                }
+
+                depth += 1;
+            }
+            Event::Empty(element) => {
+                let local_name = element.local_name();
+                let local_name = local_name.as_ref();
+
+                if depth == 0 {
+                    if root_seen {
+                        return Err(ParseError::InvalidEnvelope(
+                            "XML contains more than one root element".to_owned(),
+                        ));
+                    }
+                    root_seen = true;
+                }
+
+                if local_name == b"Document" && document_start.is_none() {
+                    if document_range.is_some() {
+                        return Err(ParseError::InvalidEnvelope(
+                            "XML contains multiple Document elements".to_owned(),
+                        ));
+                    }
+                    document_range = Some((event_start, xml_position(reader.buffer_position())?));
+                }
+            }
+            Event::End(element) => {
+                if depth == 0 {
+                    return Err(ParseError::InvalidEnvelope(
+                        "XML contains an unmatched closing element".to_owned(),
+                    ));
+                }
+
+                let local_name = element.local_name();
+                let local_name = local_name.as_ref();
+                depth -= 1;
+
+                if local_name == b"Document" {
+                    if let Some((start, document_depth)) = document_start {
+                        if depth == document_depth {
+                            document_range = Some((start, xml_position(reader.buffer_position())?));
+                            document_start = None;
+                        }
+                    }
+                }
+            }
+            Event::Text(text) if depth == 0 => {
+                if !text.as_ref().iter().all(u8::is_ascii_whitespace) {
+                    return Err(ParseError::InvalidEnvelope(
+                        "non-whitespace content appears outside the root element".to_owned(),
+                    ));
+                }
+            }
+            Event::Eof => break,
+            _ => {}
+        }
+    }
+
+    if depth != 0 || document_start.is_some() {
+        return Err(ParseError::InvalidEnvelope(
+            "Document element is not closed".to_owned(),
+        ));
+    }
+
+    let (start, end) = document_range.ok_or_else(|| {
+        ParseError::InvalidEnvelope("expected one Document payload element".to_owned())
+    })?;
+    Ok(&xml[start..end])
+}
 
 /// Deserialize an ISO 20022 XML message from a string slice.
 ///
@@ -93,6 +217,73 @@ mod tests {
         // "<<<garbage>>>" is invalid XML and cannot match the Foo struct shape.
         let result: Result<Foo, _> = from_str("<<<garbage>>>");
         assert!(result.is_err(), "malformed XML must return an error");
+    }
+
+    #[test]
+    fn document_xml_returns_bare_document_without_copying() {
+        let xml = r#"<Document xmlns="urn:test"><Value/></Document>"#;
+        let document = document_xml(xml).unwrap();
+        assert_eq!(document, xml);
+        assert_eq!(document.as_ptr(), xml.as_ptr());
+    }
+
+    #[test]
+    fn document_xml_unwraps_envelope_document() {
+        let xml = r#"<?xml version="1.0"?><BizMsgEnvlp><AppHdr/><Document xmlns="urn:test"><Value/></Document></BizMsgEnvlp>"#;
+        assert_eq!(
+            document_xml(xml).unwrap(),
+            r#"<Document xmlns="urn:test"><Value/></Document>"#
+        );
+    }
+
+    #[test]
+    fn document_xml_unwraps_arbitrary_transport_wrappers() {
+        for xml in [
+            "<Envelope><Document><Value/></Document></Envelope>",
+            "<RequestPayload><Document><Value/></Document></RequestPayload>",
+            "<BizMsgEnvlp><Payload><Document><Value/></Document></Payload></BizMsgEnvlp>",
+        ] {
+            assert_eq!(document_xml(xml).unwrap(), "<Document><Value/></Document>");
+        }
+    }
+
+    #[test]
+    fn document_xml_ignores_nested_document_content() {
+        let xml = "<Envelope><Document><SplmtryData><Envlp><Document><Value/></Document></Envlp></SplmtryData></Document></Envelope>";
+        assert_eq!(
+            document_xml(xml).unwrap(),
+            "<Document><SplmtryData><Envlp><Document><Value/></Document></Envlp></SplmtryData></Document>"
+        );
+    }
+
+    #[test]
+    fn document_xml_matches_prefixed_local_names() {
+        let xml = r#"<env:BizMsgEnvlp xmlns:env="urn:env" xmlns:mx="urn:mx"><mx:Document><mx:Value/></mx:Document></env:BizMsgEnvlp>"#;
+        assert_eq!(
+            document_xml(xml).unwrap(),
+            r#"<mx:Document><mx:Value/></mx:Document>"#
+        );
+    }
+
+    #[test]
+    fn document_xml_rejects_missing_document() {
+        let error = document_xml("<BizMsgEnvlp><AppHdr/></BizMsgEnvlp>").unwrap_err();
+        assert!(matches!(error, ParseError::InvalidEnvelope(_)));
+    }
+
+    #[test]
+    fn document_xml_rejects_malformed_nesting() {
+        let error = document_xml("<BizMsgEnvlp><Document></BizMsgEnvlp>").unwrap_err();
+        assert!(matches!(error, ParseError::InvalidEnvelope(_)));
+    }
+
+    #[test]
+    fn document_xml_rejects_multiple_candidates() {
+        let error =
+            document_xml("<BizMsgEnvlp><Document/><Document><Value/></Document></BizMsgEnvlp>")
+                .unwrap_err();
+        assert!(matches!(error, ParseError::InvalidEnvelope(_)));
+        assert!(error.to_string().contains("multiple Document"));
     }
 
     #[test]
