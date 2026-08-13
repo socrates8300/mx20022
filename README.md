@@ -83,12 +83,14 @@ use mx20022::parse::{de, envelope};
 
 let xml = std::fs::read_to_string("message.xml")?;
 
-// Detect the message type from the XML namespace
+// Detect on the complete stream so wrapper-inherited namespaces remain in
+// scope. The Document namespace still wins over a preceding AppHdr namespace.
 let msg_id = envelope::detect_message_type(&xml)?;
 println!("Message type: {}", msg_id.dotted()); // e.g. "pacs.008.001.13"
 
-// Deserialize to a strongly-typed struct
-let doc: Document = de::from_str(&xml)?;
+// Then unwrap the payload Document without copying and deserialize it.
+let document_xml = de::document_xml(&xml)?;
+let doc: Document = de::from_str(document_xml)?;
 let hdr = &doc.fi_to_fi_cstmr_cdt_trf.grp_hdr;
 println!("Message ID: {}", hdr.msg_id.0);
 println!("Transactions: {}", hdr.nb_of_txs.0);
@@ -100,6 +102,9 @@ println!("Transactions: {}", hdr.nb_of_txs.0);
 use mx20022::validate::schemes::{fednow::FedNowValidator, SchemeValidator};
 
 let validator = FedNowValidator::new(); // $500K default limit
+// validate() accepts a bare or transport-wrapped payload Document. For
+// pacs.008.001.13 it parses the Document and delegates to typed field rules;
+// older pacs.008 versions use the same version-neutral field rules.
 let result = validator.validate(&xml, "pacs.008.001.13");
 
 if result.is_valid() {

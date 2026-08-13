@@ -33,6 +33,17 @@ fn has_warning_with_rule(result: &mx20022_validate::ValidationResult, rule_id: &
         .any(|e| e.rule_id == rule_id && e.severity == Severity::Warning)
 }
 
+fn assert_only_rule(result: &mx20022_validate::ValidationResult, rule_id: &str) {
+    assert_eq!(
+        result.errors.len(),
+        1,
+        "expected exactly one {rule_id} finding, got: {:?}",
+        result.errors
+    );
+    assert_eq!(result.errors[0].rule_id, rule_id);
+    assert_eq!(result.errors[0].path, "/Document");
+}
+
 // ---------------------------------------------------------------------------
 // FedNow tests
 // ---------------------------------------------------------------------------
@@ -550,18 +561,8 @@ use mx20022_model::generated::pacs::pacs_008_001_13;
 /// If the XML is wrapped in an envelope (e.g. `<BizMsgEnvlp>`), extracts the
 /// inner `<Document>` element first.
 fn parse_pacs008(xml: &str) -> pacs_008_001_13::Document {
-    let doc_xml = extract_document_fragment(xml);
+    let doc_xml = mx20022_parse::de::document_xml(xml).expect("fixture must contain Document");
     mx20022_parse::de::from_str(doc_xml).expect("fixture must deserialize into pacs.008 Document")
-}
-
-/// Extract the `<Document ...>...</Document>` fragment from possibly-enveloped XML.
-fn extract_document_fragment(xml: &str) -> &str {
-    if let Some(start) = xml.find("<Document") {
-        if let Some(end) = xml.rfind("</Document>") {
-            return &xml[start..end + "</Document>".len()];
-        }
-    }
-    xml
 }
 
 #[test]
@@ -886,6 +887,14 @@ fn fednow_rejects_zero_amount() {
 }
 
 #[test]
+fn fednow_rejects_invalid_decimal_count_without_panicking() {
+    let xml = fednow_base_xml().replace("{amount}", "100.5");
+    let result = FedNowValidator::new().validate(&xml, "pacs.008.001.13");
+    assert!(has_error_with_rule(&result, "FEDNOW_AMOUNT_DECIMALS"));
+    assert!(!has_error_with_rule(&result, "FEDNOW_AMOUNT_FORMAT"));
+}
+
+#[test]
 fn fednow_rejects_long_e2e_id() {
     let long_e2e = "A".repeat(36); // 36 > 35 max
     let xml = fednow_base_xml()
@@ -902,30 +911,12 @@ fn fednow_rejects_long_e2e_id() {
 
 #[test]
 fn sepa_rejects_missing_debtor_name() {
-    let xml = r#"<?xml version="1.0" encoding="UTF-8"?>
-<Document xmlns="urn:iso:std:iso:20022:tech:xsd:pacs.008.001.13">
-  <FIToFICstmrCdtTrf>
-    <GrpHdr>
-      <MsgId>SEPA-NO-DBTR-NM</MsgId>
-      <CreDtTm>2024-01-01T09:00:00Z</CreDtTm>
-      <NbOfTxs>1</NbOfTxs>
-      <SttlmInf><SttlmMtd>CLRG</SttlmMtd></SttlmInf>
-    </GrpHdr>
-    <CdtTrfTxInf>
-      <PmtId><EndToEndId>E2E-001</EndToEndId></PmtId>
-      <IntrBkSttlmAmt Ccy="EUR">100.00</IntrBkSttlmAmt>
-      <ChrgBr>SLEV</ChrgBr>
-      <Dbtr>
-        <Id><OrgId><AnyBIC>BANKDEFF</AnyBIC></OrgId></Id>
-      </Dbtr>
-      <DbtrAcct><Id><IBAN>DE89370400440532013000</IBAN></Id></DbtrAcct>
-      <Cdtr><Nm>Bob</Nm></Cdtr>
-      <CdtrAcct><Id><IBAN>FR7630006000011234567890189</IBAN></Id></CdtrAcct>
-    </CdtTrfTxInf>
-  </FIToFICstmrCdtTrf>
-</Document>"#;
+    let mut doc = parse_pacs008(&read_fixture("sepa/valid_pacs008.xml"));
+    doc.fi_to_fi_cstmr_cdt_trf.cdt_trf_tx_inf[0].dbtr.nm = None;
     let v = SepaValidator::new();
-    let result = v.validate(xml, "pacs.008.001.13");
+    let result = v
+        .validate_typed(&doc, "pacs.008.001.13")
+        .expect("SEPA supports typed pacs.008.001.13");
     assert!(
         has_error_with_rule(&result, "SEPA_DBTR_NM"),
         "Expected SEPA_DBTR_NM for missing debtor name; got: {:?}",
@@ -935,30 +926,12 @@ fn sepa_rejects_missing_debtor_name() {
 
 #[test]
 fn sepa_rejects_missing_creditor_name() {
-    let xml = r#"<?xml version="1.0" encoding="UTF-8"?>
-<Document xmlns="urn:iso:std:iso:20022:tech:xsd:pacs.008.001.13">
-  <FIToFICstmrCdtTrf>
-    <GrpHdr>
-      <MsgId>SEPA-NO-CDTR-NM</MsgId>
-      <CreDtTm>2024-01-01T09:00:00Z</CreDtTm>
-      <NbOfTxs>1</NbOfTxs>
-      <SttlmInf><SttlmMtd>CLRG</SttlmMtd></SttlmInf>
-    </GrpHdr>
-    <CdtTrfTxInf>
-      <PmtId><EndToEndId>E2E-001</EndToEndId></PmtId>
-      <IntrBkSttlmAmt Ccy="EUR">100.00</IntrBkSttlmAmt>
-      <ChrgBr>SLEV</ChrgBr>
-      <Dbtr><Nm>Alice</Nm></Dbtr>
-      <DbtrAcct><Id><IBAN>DE89370400440532013000</IBAN></Id></DbtrAcct>
-      <Cdtr>
-        <Id><OrgId><AnyBIC>BANKDEFF</AnyBIC></OrgId></Id>
-      </Cdtr>
-      <CdtrAcct><Id><IBAN>FR7630006000011234567890189</IBAN></Id></CdtrAcct>
-    </CdtTrfTxInf>
-  </FIToFICstmrCdtTrf>
-</Document>"#;
+    let mut doc = parse_pacs008(&read_fixture("sepa/valid_pacs008.xml"));
+    doc.fi_to_fi_cstmr_cdt_trf.cdt_trf_tx_inf[0].cdtr.nm = None;
     let v = SepaValidator::new();
-    let result = v.validate(xml, "pacs.008.001.13");
+    let result = v
+        .validate_typed(&doc, "pacs.008.001.13")
+        .expect("SEPA supports typed pacs.008.001.13");
     assert!(
         has_error_with_rule(&result, "SEPA_CDTR_NM"),
         "Expected SEPA_CDTR_NM for missing creditor name; got: {:?}",
@@ -967,7 +940,7 @@ fn sepa_rejects_missing_creditor_name() {
 }
 
 #[test]
-fn cbpr_rejects_missing_chrgbr() {
+fn cbpr_missing_required_chrgbr_returns_scheme_parse() {
     let xml = r#"<?xml version="1.0" encoding="UTF-8"?>
 <BizMsgEnvlp>
   <AppHdr><BizMsgIdr>BAH-001</BizMsgIdr></AppHdr>
@@ -998,15 +971,11 @@ fn cbpr_rejects_missing_chrgbr() {
 </BizMsgEnvlp>"#;
     let v = CbprPlusValidator::new();
     let result = v.validate(xml, "pacs.008.001.13");
-    assert!(
-        has_error_with_rule(&result, "CBPR_CHRGBR_REQUIRED"),
-        "Expected CBPR_CHRGBR_REQUIRED; got: {:?}",
-        result.errors
-    );
+    assert_only_rule(&result, "SCHEME_PARSE");
 }
 
 #[test]
-fn cbpr_rejects_invalid_chrgbr_value() {
+fn cbpr_schema_invalid_chrgbr_returns_scheme_parse() {
     let xml = r#"<?xml version="1.0" encoding="UTF-8"?>
 <BizMsgEnvlp>
   <AppHdr><BizMsgIdr>BAH-001</BizMsgIdr></AppHdr>
@@ -1038,17 +1007,12 @@ fn cbpr_rejects_invalid_chrgbr_value() {
 </BizMsgEnvlp>"#;
     let v = CbprPlusValidator::new();
     let result = v.validate(xml, "pacs.008.001.13");
-    assert!(
-        has_error_with_rule(&result, "CBPR_CHRGBR_VALUE"),
-        "Expected CBPR_CHRGBR_VALUE for ChrgBr=XXXX; got: {:?}",
-        result.errors
-    );
+    assert_only_rule(&result, "SCHEME_PARSE");
 }
 
 #[test]
-fn cbpr_rejects_unclosed_parent_tag() {
-    // The <Dbtr> tag is intentionally unclosed — should produce an error
-    // instead of silently passing (verifies fix from item 1).
+fn cbpr_malformed_nesting_returns_scheme_parse() {
+    // The <Dbtr> tag is intentionally unclosed.
     let xml = r#"<?xml version="1.0" encoding="UTF-8"?>
 <BizMsgEnvlp>
   <AppHdr><BizMsgIdr>BAH-001</BizMsgIdr></AppHdr>
@@ -1078,14 +1042,341 @@ fn cbpr_rejects_unclosed_parent_tag() {
 </BizMsgEnvlp>"#;
     let v = CbprPlusValidator::new();
     let result = v.validate(xml, "pacs.008.001.13");
-    // Should detect unclosed Dbtr tag rather than silently passing.
-    let has_unclosed_error = result
+    assert_only_rule(&result, "SCHEME_PARSE");
+}
+
+#[test]
+fn xml_and_typed_rule_ids_match_for_multi_transaction_document() {
+    let fixture = read_fixture("fednow/valid_pacs008.xml");
+    let document = mx20022_parse::de::document_xml(&fixture).unwrap();
+    let tx_start = document.find("<CdtTrfTxInf>").unwrap();
+    let tx_end =
+        document[tx_start..].find("</CdtTrfTxInf>").unwrap() + tx_start + "</CdtTrfTxInf>".len();
+    let transaction = &document[tx_start..tx_end];
+    let multi_document = document
+        .replacen("<NbOfTxs>1</NbOfTxs>", "<NbOfTxs>2</NbOfTxs>", 1)
+        .replacen(
+            "</FIToFICstmrCdtTrf>",
+            &format!("{transaction}</FIToFICstmrCdtTrf>"),
+            1,
+        );
+    let envelope = format!(
+        "<BizMsgEnvlp><AppHdr><BizMsgIdr>multi</BizMsgIdr></AppHdr>{multi_document}</BizMsgEnvlp>"
+    );
+
+    let validator = FedNowValidator::new();
+    let xml_result = validator.validate(&envelope, "pacs.008");
+    let document = parse_pacs008(&envelope);
+    let typed_result = validator
+        .validate_typed(&document, "pacs.008.001.13")
+        .unwrap();
+
+    let mut xml_rule_ids: Vec<_> = xml_result
         .errors
         .iter()
-        .any(|e| e.message.contains("unclosed") || e.rule_id.contains("DBTR_NM"));
+        .map(|error| error.rule_id.as_str())
+        .collect();
+    let mut typed_rule_ids: Vec<_> = typed_result
+        .errors
+        .iter()
+        .map(|error| error.rule_id.as_str())
+        .collect();
+    xml_rule_ids.sort_unstable();
+    typed_rule_ids.sort_unstable();
+    assert_eq!(xml_rule_ids, typed_rule_ids);
+}
+
+#[test]
+fn sepa_rejects_36_scalar_end_to_end_id_through_xml_adapter() {
+    let xml =
+        read_fixture("sepa/valid_pacs008.xml").replace("E2E-SEPA-20240101-001", &"é".repeat(36));
+    let result = SepaValidator::new().validate(&xml, "pacs.008.001.13");
+    assert!(has_error_with_rule(&result, "SEPA_E2E_LENGTH"));
+}
+
+#[test]
+fn missing_required_001_13_field_returns_only_scheme_parse() {
+    let document = read_fixture("fednow/valid_pacs008.xml")
+        .replace("<?xml version=\"1.0\" encoding=\"UTF-8\"?>", "")
+        .replace("      <ChrgBr>SLEV</ChrgBr>\n", "");
+    let xml = format!(
+        "<BizMsgEnvlp><AppHdr><BizMsgIdr>missing-required</BizMsgIdr></AppHdr>{document}</BizMsgEnvlp>"
+    );
+    let result = FedNowValidator::new().validate(&xml, "pacs.008.001.13");
+    assert_only_rule(&result, "SCHEME_PARSE");
+}
+
+#[test]
+fn malformed_namespaced_document_preserves_raw_header_warning() {
+    let xml = r#"<Document xmlns="urn:iso:std:iso:20022:tech:xsd:pacs.008.001.13"><FIToFICstmrCdtTrf></Document>"#;
+    let result = FedNowValidator::new().validate(xml, "pacs.008.001.13");
+    let mut rule_ids: Vec<_> = result
+        .errors
+        .iter()
+        .map(|error| error.rule_id.as_str())
+        .collect();
+    rule_ids.sort_unstable();
+    assert_eq!(rule_ids, vec!["FEDNOW_APPHDR_MISSING", "SCHEME_PARSE"]);
+}
+
+#[test]
+fn pacs_008_001_08_returns_raw_findings_and_untyped_warning_only() {
+    let xml = r#"<Document xmlns="urn:iso:std:iso:20022:tech:xsd:pacs.008.001.08"><Anything/></Document>"#;
+    let result = FedNowValidator::new().validate(xml, "pacs.008.001.13");
+    let mut rule_ids: Vec<_> = result
+        .errors
+        .iter()
+        .map(|error| error.rule_id.as_str())
+        .collect();
+    rule_ids.sort_unstable();
+    assert_eq!(
+        rule_ids,
+        vec!["FEDNOW_APPHDR_MISSING", "SCHEME_UNTYPED_VERSION"]
+    );
+}
+
+#[test]
+fn older_pacs_008_versions_retain_scheme_field_errors() {
+    let sepa_xml =
+        read_fixture("sepa/invalid_usd.xml").replace("pacs.008.001.13", "pacs.008.001.08");
+    let sepa = SepaValidator::new().validate(&sepa_xml, "pacs.008.001.13");
+    assert!(has_error_with_rule(&sepa, "SEPA_CURRENCY"));
+    assert!(has_warning_with_rule(&sepa, "SCHEME_UNTYPED_VERSION"));
+
+    let fednow_xml =
+        read_fixture("fednow/invalid_eur.xml").replace("pacs.008.001.13", "pacs.008.001.08");
+    let fednow = FedNowValidator::new().validate(&fednow_xml, "pacs.008.001.13");
+    assert!(has_error_with_rule(&fednow, "FEDNOW_CURRENCY"));
+    assert!(has_warning_with_rule(&fednow, "SCHEME_UNTYPED_VERSION"));
+
+    let cbpr_xml =
+        read_fixture("cbpr/invalid_missing_uetr.xml").replace("pacs.008.001.13", "pacs.008.001.08");
+    let cbpr = CbprPlusValidator::new().validate(&cbpr_xml, "pacs.008.001.13");
+    assert!(has_error_with_rule(&cbpr, "CBPR_UETR_REQUIRED"));
+    assert!(has_warning_with_rule(&cbpr, "SCHEME_UNTYPED_VERSION"));
+}
+
+#[test]
+fn older_pacs_008_versions_preserve_scanner_era_rule_ids() {
+    let cbpr_xml =
+        read_fixture("cbpr/valid_pacs008.xml").replace("pacs.008.001.13", "pacs.008.001.08");
+    for (xml, rule_id) in [
+        (
+            cbpr_xml.replace("<ChrgBr>SHAR</ChrgBr>", ""),
+            "CBPR_CHRGBR_REQUIRED",
+        ),
+        (
+            cbpr_xml.replace("<ChrgBr>SHAR</ChrgBr>", "<ChrgBr>XXXX</ChrgBr>"),
+            "CBPR_CHRGBR_VALUE",
+        ),
+        (
+            cbpr_xml.replace("<EndToEndId>E2E-CBPR-20240101-001</EndToEndId>", ""),
+            "CBPR_E2E_REQUIRED",
+        ),
+    ] {
+        let result = CbprPlusValidator::new().validate(&xml, "pacs.008.001.13");
+        assert!(
+            has_error_with_rule(&result, rule_id),
+            "{rule_id}: {result:?}"
+        );
+    }
+
+    let sepa_xml = read_fixture("sepa/valid_pacs008.xml")
+        .replace("pacs.008.001.13", "pacs.008.001.08")
+        .replace("<ChrgBr>SLEV</ChrgBr>", "");
+    let sepa = SepaValidator::new().validate(&sepa_xml, "pacs.008.001.13");
     assert!(
-        has_unclosed_error,
-        "Expected an error about unclosed Dbtr or missing Dbtr/Nm; got: {:?}",
+        has_error_with_rule(&sepa, "SEPA_CHRGBR_REQUIRED"),
+        "{sepa:?}"
+    );
+}
+
+#[test]
+fn document_namespace_overrides_caller_version() {
+    let xml = read_fixture("fednow/invalid_eur.xml");
+    let result = FedNowValidator::new().validate(&xml, "pacs.008.001.08");
+    assert!(has_error_with_rule(&result, "FEDNOW_CURRENCY"));
+    assert!(!has_warning_with_rule(&result, "SCHEME_UNTYPED_VERSION"));
+}
+
+#[test]
+fn prefixed_document_uses_namespace_inherited_from_envelope() {
+    let document = read_fixture("fednow/valid_pacs008.xml")
+        .replace("<?xml version=\"1.0\" encoding=\"UTF-8\"?>", "")
+        .replace(
+            "<Document xmlns=\"urn:iso:std:iso:20022:tech:xsd:pacs.008.001.13\">",
+            "<mx:Document>",
+        )
+        .replace("</Document>", "</mx:Document>");
+    let xml = format!(
+        r#"<env:BizMsgEnvlp xmlns:env="urn:envelope" xmlns:mx="urn:iso:std:iso:20022:tech:xsd:pacs.008.001.13"><AppHdr><BizMsgIdr>id</BizMsgIdr></AppHdr>{document}</env:BizMsgEnvlp>"#
+    );
+
+    let result = FedNowValidator::new().validate(&xml, "pacs.008.001.08");
+    assert!(
+        result.errors.is_empty(),
+        "inherited Document namespace should route and deserialize: {:?}",
         result.errors
     );
+}
+
+#[test]
+fn supported_transport_wrappers_route_the_payment_document() {
+    let fixture = read_fixture("cbpr/valid_pacs008.xml");
+    let payload = fixture
+        .replace("<?xml version=\"1.0\" encoding=\"UTF-8\"?>", "")
+        .replacen("<BizMsgEnvlp>", "", 1)
+        .replacen("</BizMsgEnvlp>", "", 1);
+
+    for (open, close) in [
+        ("<Envelope>", "</Envelope>"),
+        ("<RequestPayload>", "</RequestPayload>"),
+        ("<BizMsgEnvlp><Payload>", "</Payload></BizMsgEnvlp>"),
+    ] {
+        let xml = format!("{open}{payload}{close}");
+        let result = CbprPlusValidator::new().validate(&xml, "pacs.008.001.13");
+        assert!(
+            result.is_valid(),
+            "supported wrapper should validate: {:?}",
+            result.errors
+        );
+        assert!(!has_error_with_rule(&result, "SCHEME_PARSE"));
+    }
+}
+
+#[test]
+fn supplementary_document_is_not_a_second_payload_candidate() {
+    let xml = read_fixture("fednow/valid_pacs008.xml").replacen(
+        "</CdtTrfTxInf>",
+        "<SplmtryData><Envlp><Document><Value>opaque</Value></Document></Envlp></SplmtryData></CdtTrfTxInf>",
+        1,
+    );
+    let result = FedNowValidator::new().validate(&xml, "pacs.008.001.13");
+    assert!(
+        result.is_valid(),
+        "opaque supplementary XML should not block scheme validation: {:?}",
+        result.errors
+    );
+    assert!(!has_error_with_rule(&result, "SCHEME_PARSE"));
+}
+
+#[test]
+fn fednow_raw_size_check_applies_to_non_pacs_008_supported_type() {
+    let xml = format!("<Document>{}</Document>", "x".repeat(65 * 1024));
+    let result = FedNowValidator::new().validate(&xml, "pacs.002.001.14");
+    assert!(has_error_with_rule(&result, "FEDNOW_MSG_SIZE"));
+}
+
+#[test]
+fn fednow_size_finding_survives_schema_parse_failure() {
+    let document = read_fixture("fednow/valid_pacs008.xml")
+        .replace("<?xml version=\"1.0\" encoding=\"UTF-8\"?>", "")
+        .replace("      <ChrgBr>SLEV</ChrgBr>\n", "");
+    let padding = format!("<!--{}-->", "x".repeat(65 * 1024));
+    let xml = format!(
+        "<BizMsgEnvlp><AppHdr><BizMsgIdr>oversized-invalid</BizMsgIdr></AppHdr>{padding}{document}</BizMsgEnvlp>"
+    );
+
+    let result = FedNowValidator::new().validate(&xml, "pacs.008.001.13");
+    let mut rule_ids: Vec<_> = result
+        .errors
+        .iter()
+        .map(|error| error.rule_id.as_str())
+        .collect();
+    rule_ids.sort_unstable();
+    assert_eq!(rule_ids, vec!["FEDNOW_MSG_SIZE", "SCHEME_PARSE"]);
+}
+
+#[test]
+fn fednow_size_finding_survives_document_extraction_failure() {
+    let padding = format!("<!--{}-->", "x".repeat(65 * 1024));
+    let xml = format!(
+        "<BizMsgEnvlp><AppHdr><BizMsgIdr>oversized-malformed</BizMsgIdr></AppHdr>{padding}<Document xmlns=\"urn:iso:std:iso:20022:tech:xsd:pacs.008.001.13\"><Broken>"
+    );
+
+    let result = FedNowValidator::new().validate(&xml, "pacs.008.001.13");
+    let mut rule_ids: Vec<_> = result
+        .errors
+        .iter()
+        .map(|error| error.rule_id.as_str())
+        .collect();
+    rule_ids.sort_unstable();
+    assert_eq!(rule_ids, vec!["FEDNOW_MSG_SIZE", "SCHEME_PARSE"]);
+}
+
+#[test]
+fn fednow_size_finding_survives_document_namespace_failure() {
+    let padding = format!("<!--{}-->", "x".repeat(65 * 1024));
+    let xml = format!(
+        "<BizMsgEnvlp><AppHdr><BizMsgIdr>oversized-prefix</BizMsgIdr></AppHdr>{padding}<mx:Document><Value/></mx:Document></BizMsgEnvlp>"
+    );
+
+    let result = FedNowValidator::new().validate(&xml, "pacs.008.001.13");
+    let mut rule_ids: Vec<_> = result
+        .errors
+        .iter()
+        .map(|error| error.rule_id.as_str())
+        .collect();
+    rule_ids.sort_unstable();
+    assert_eq!(rule_ids, vec!["FEDNOW_MSG_SIZE", "SCHEME_PARSE"]);
+}
+
+#[test]
+fn fednow_size_finding_survives_duplicate_and_wrong_type_failures() {
+    let padding = format!("<!--{}-->", "x".repeat(65 * 1024));
+    let cases = [
+        format!(
+            "<Envelope><AppHdr><BizMsgIdr>duplicate</BizMsgIdr></AppHdr>{padding}<Document xmlns=\"urn:iso:std:iso:20022:tech:xsd:pacs.008.001.13\"/><Document xmlns=\"urn:iso:std:iso:20022:tech:xsd:pacs.008.001.13\"/></Envelope>"
+        ),
+        format!(
+            "<Envelope><AppHdr><BizMsgIdr>wrong-type</BizMsgIdr></AppHdr>{padding}<Document xmlns=\"urn:iso:std:iso:20022:tech:xsd:camt.056.001.11\"/></Envelope>"
+        ),
+    ];
+
+    for xml in cases {
+        let result = FedNowValidator::new().validate(&xml, "pacs.008.001.13");
+        let mut rule_ids: Vec<_> = result
+            .errors
+            .iter()
+            .map(|error| error.rule_id.as_str())
+            .collect();
+        rule_ids.sort_unstable();
+        assert_eq!(rule_ids, vec!["FEDNOW_MSG_SIZE", "SCHEME_PARSE"]);
+    }
+}
+
+#[test]
+fn cbpr_header_and_control_findings_survive_document_extraction_failure() {
+    let xml = "<Document xmlns=\"urn:iso:std:iso:20022:tech:xsd:pacs.008.001.13\">\u{1}";
+    let result = CbprPlusValidator::new().validate(xml, "pacs.008.001.13");
+    let mut rule_ids: Vec<_> = result
+        .errors
+        .iter()
+        .map(|error| error.rule_id.as_str())
+        .collect();
+    rule_ids.sort_unstable();
+    assert_eq!(
+        rule_ids,
+        vec!["CBPR_BAH_REQUIRED", "CBPR_CONTROL_CHAR", "SCHEME_PARSE"]
+    );
+}
+
+#[test]
+fn fednow_raw_header_warning_remains_on_routable_pacs_008() {
+    let xml = read_fixture("fednow/valid_pacs008.xml");
+    let result = FedNowValidator::new().validate(&xml, "pacs.008.001.13");
+    assert!(has_warning_with_rule(&result, "FEDNOW_APPHDR_MISSING"));
+}
+
+#[test]
+fn cbpr_raw_header_and_control_checks_apply_to_supported_untyped_message() {
+    let missing_header = CbprPlusValidator::new().validate("<Document/>", "pacs.009.001.10");
+    assert!(has_error_with_rule(&missing_header, "CBPR_BAH_REQUIRED"));
+
+    let control = CbprPlusValidator::new().validate(
+        "<AppHdr><BizMsgIdr>id</BizMsgIdr></AppHdr>\u{1}",
+        "pacs.009.001.10",
+    );
+    assert!(has_error_with_rule(&control, "CBPR_CONTROL_CHAR"));
+    assert!(!has_error_with_rule(&control, "CBPR_BAH_REQUIRED"));
 }
