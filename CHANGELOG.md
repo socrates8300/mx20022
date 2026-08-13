@@ -40,6 +40,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   number of `CdtTrfTxInf` elements. A message declaring one transaction while
   carrying multiple transactions is rejected on typed and older-version
   validation paths.
+- Nested `CdtTrfTxInf` elements inside `SplmtryData` no longer terminate the
+  enclosing transaction during older-version pacs.008 fact extraction, so
+  subsequent scheme value rules cannot be bypassed.
+- `SEPA_SINGLE_TX` now checks both declared and actual transaction counts, and
+  SEPA restricted-Latin checks again cover all `Nm`, `StrtNm`, and `TwnNm`
+  fields in addition to `Ustrd` on typed and older-version validation paths.
 
 ### Removed
 
