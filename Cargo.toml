@@ -33,7 +33,7 @@ thiserror = "2"
 # Regex
 regex = "1"
 # CLI
-clap = { version = ">=4, <4.6", features = ["derive"] }
+clap = { version = ">=4, <4.7", features = ["derive"] }
 # Code generation
 proc-macro2 = "1"
 quote = "1"
