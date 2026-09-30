@@ -23,8 +23,8 @@ pub(crate) fn header_presence(xml: &str) -> (bool, bool) {
             Ok(Event::Start(element) | Event::Empty(element)) => {
                 let local_name = element.local_name();
                 match local_name.as_ref() {
-                    b"AppHdr" => app_header = true,
-                    b"BizMsgIdr" => business_message_id = true,
+                    "AppHdr" => app_header = true,
+                    "BizMsgIdr" => business_message_id = true,
                     _ => {}
                 }
                 if app_header && business_message_id {

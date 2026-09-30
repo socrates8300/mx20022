@@ -221,7 +221,7 @@ where
 /// when such content exists and otherwise retaining the borrowed Document.
 fn document_for_typed_validation(document: &str) -> Result<Cow<'_, str>, ParseError> {
     let mut reader = quick_xml::Reader::from_str(document);
-    let mut stack = Vec::<Vec<u8>>::new();
+    let mut stack = Vec::<String>::new();
     let mut active_envelope: Option<(usize, usize)> = None;
     let mut opaque_ranges = Vec::<(usize, usize)>::new();
 
@@ -237,10 +237,12 @@ fn document_for_typed_validation(document: &str) -> Result<Cow<'_, str>, ParseEr
 
         match event {
             Event::Start(element) => {
-                let local_name = element.local_name().as_ref().to_vec();
+                let local_name = element.local_name().as_ref().to_owned();
                 if active_envelope.is_none()
-                    && local_name == b"Envlp"
-                    && stack.last().is_some_and(|parent| parent == b"SplmtryData")
+                    && local_name == "Envlp"
+                    && stack
+                        .last()
+                        .is_some_and(|parent| parent.as_str() == "SplmtryData")
                 {
                     let content_start =
                         usize::try_from(reader.buffer_position()).map_err(|_| {
@@ -299,25 +301,19 @@ fn document_message_type(xml: &str) -> Result<String, ParseError> {
         })?;
         match event {
             Event::Start(element) | Event::Empty(element) => {
-                if element.local_name().as_ref() != b"Document" {
+                if element.local_name().as_ref() != "Document" {
                     continue;
                 }
                 return match namespace {
                     ResolveResult::Bound(namespace) => {
-                        let namespace =
-                            std::str::from_utf8(namespace.as_ref()).map_err(|error| {
-                                ParseError::InvalidEnvelope(format!(
-                                    "Document namespace is not UTF-8: {error}"
-                                ))
-                            })?;
+                        let namespace = namespace.as_ref();
                         parse_namespace(namespace).map(|message_id| message_id.dotted())
                     }
                     ResolveResult::Unbound => Err(ParseError::InvalidEnvelope(
                         "Document root has no namespace".to_owned(),
                     )),
                     ResolveResult::Unknown(prefix) => Err(ParseError::InvalidEnvelope(format!(
-                        "Document namespace prefix is not declared: {}",
-                        String::from_utf8_lossy(&prefix)
+                        "Document namespace prefix is not declared: {prefix}"
                     ))),
                 };
             }

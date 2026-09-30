@@ -63,7 +63,7 @@ pub fn document_xml(xml: &str) -> Result<&str, ParseError> {
                     root_seen = true;
                 }
 
-                if local_name == b"Document" && document_start.is_none() {
+                if local_name == "Document" && document_start.is_none() {
                     if document_range.is_some() {
                         return Err(ParseError::InvalidEnvelope(
                             "XML contains multiple Document elements".to_owned(),
@@ -87,7 +87,7 @@ pub fn document_xml(xml: &str) -> Result<&str, ParseError> {
                     root_seen = true;
                 }
 
-                if local_name == b"Document" && document_start.is_none() {
+                if local_name == "Document" && document_start.is_none() {
                     if document_range.is_some() {
                         return Err(ParseError::InvalidEnvelope(
                             "XML contains multiple Document elements".to_owned(),
@@ -107,7 +107,7 @@ pub fn document_xml(xml: &str) -> Result<&str, ParseError> {
                 let local_name = local_name.as_ref();
                 depth -= 1;
 
-                if local_name == b"Document" {
+                if local_name == "Document" {
                     if let Some((start, document_depth)) = document_start {
                         if depth == document_depth {
                             document_range = Some((start, xml_position(reader.buffer_position())?));
@@ -117,7 +117,7 @@ pub fn document_xml(xml: &str) -> Result<&str, ParseError> {
                 }
             }
             Event::Text(text) if depth == 0 => {
-                if !text.as_ref().iter().all(u8::is_ascii_whitespace) {
+                if !text.as_ref().chars().all(|c| c.is_ascii_whitespace()) {
                     return Err(ParseError::InvalidEnvelope(
                         "non-whitespace content appears outside the root element".to_owned(),
                     ));

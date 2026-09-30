@@ -1,5 +1,5 @@
 # Build stage
-FROM rust:1.85-bookworm AS builder
+FROM rust:1.86-bookworm AS builder
 RUN cargo install cargo-deny@0.16 && cargo install just@1
 WORKDIR /build
 COPY . .
