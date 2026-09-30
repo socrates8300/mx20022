@@ -59,10 +59,6 @@ pub enum ParseError {
     /// The `<xs:schema>` root element was not found.
     #[error("missing <xs:schema> root element")]
     MissingSchemaRoot,
-
-    /// UTF-8 decoding failure for an attribute value.
-    #[error("utf-8 error in attribute value: {0}")]
-    Utf8(#[from] std::str::Utf8Error),
 }
 
 // ---------------------------------------------------------------------------
@@ -219,7 +215,7 @@ fn on_start(
         None => {
             if local == "schema" {
                 *found_schema_root = true;
-                schema.target_namespace = attr_value(e, "targetNamespace")?.unwrap_or_default();
+                schema.target_namespace = attr_value(e, "targetNamespace").unwrap_or_default();
                 ctx_stack.push(Context::Schema);
             }
             // Everything else at the root level before <xs:schema> is ignored.
@@ -244,7 +240,7 @@ fn on_start(
             "element" => {
                 // Top-level element: `<xs:element name="…" type="…">` (with children — unusual).
                 // We still capture it but then push a dummy skip context so End pops cleanly.
-                on_top_level_element(e, schema)?;
+                on_top_level_element(e, schema);
                 // Push Schema context so the End event doesn't disturb us — actually we
                 // need depth tracking. Increment schema "skip" would break things. Instead
                 // we track this via an incremented nesting on the parent. Since Schema doesn't
@@ -265,7 +261,7 @@ fn on_start(
 
             // Only act on the direct children (nesting_depth == 1).
             if b.nesting_depth == 1 && local == "restriction" {
-                b.base = attr_value(e, "base")?.unwrap_or_default();
+                b.base = attr_value(e, "base").unwrap_or_default();
             }
             // Facets (minLength etc.) are self-closing (Empty events) so we
             // don't need Start handlers for them.
@@ -298,7 +294,7 @@ fn on_start(
                         ..
                     } = b.content
                     {
-                        *base = attr_value(e, "base")?.unwrap_or_default();
+                        *base = attr_value(e, "base").unwrap_or_default();
                         *in_extension = true;
                     }
                 }
@@ -332,13 +328,13 @@ fn on_empty(
         None => {
             if local == "schema" {
                 *found_schema_root = true;
-                schema.target_namespace = attr_value(e, "targetNamespace")?.unwrap_or_default();
+                schema.target_namespace = attr_value(e, "targetNamespace").unwrap_or_default();
             }
         }
 
         Some(Context::Schema) => {
             if local == "element" {
-                on_top_level_element(e, schema)?;
+                on_top_level_element(e, schema);
             }
             // simpleType/complexType as empties would have no content, skip them.
         }
@@ -348,39 +344,39 @@ fn on_empty(
             match local {
                 "restriction" => {
                     // <xs:restriction base="xs:boolean"/> with no facets.
-                    b.base = attr_value(e, "base")?.unwrap_or_default();
+                    b.base = attr_value(e, "base").unwrap_or_default();
                 }
                 "enumeration" => {
-                    let v = attr_value(e, "value")?.unwrap_or_default();
+                    let v = attr_value(e, "value").unwrap_or_default();
                     b.facets.push(Facet::Enumeration(v));
                 }
                 "pattern" => {
-                    let v = attr_value(e, "value")?.unwrap_or_default();
+                    let v = attr_value(e, "value").unwrap_or_default();
                     b.facets.push(Facet::Pattern(v));
                 }
                 "minLength" => {
-                    let v = attr_value(e, "value")?.unwrap_or_default();
+                    let v = attr_value(e, "value").unwrap_or_default();
                     b.facets.push(Facet::MinLength(parse_u64(&v, "minLength")?));
                 }
                 "maxLength" => {
-                    let v = attr_value(e, "value")?.unwrap_or_default();
+                    let v = attr_value(e, "value").unwrap_or_default();
                     b.facets.push(Facet::MaxLength(parse_u64(&v, "maxLength")?));
                 }
                 "minInclusive" => {
-                    let v = attr_value(e, "value")?.unwrap_or_default();
+                    let v = attr_value(e, "value").unwrap_or_default();
                     b.facets.push(Facet::MinInclusive(v));
                 }
                 "maxInclusive" => {
-                    let v = attr_value(e, "value")?.unwrap_or_default();
+                    let v = attr_value(e, "value").unwrap_or_default();
                     b.facets.push(Facet::MaxInclusive(v));
                 }
                 "totalDigits" => {
-                    let v = attr_value(e, "value")?.unwrap_or_default();
+                    let v = attr_value(e, "value").unwrap_or_default();
                     b.facets
                         .push(Facet::TotalDigits(parse_u32(&v, "totalDigits")?));
                 }
                 "fractionDigits" => {
-                    let v = attr_value(e, "value")?.unwrap_or_default();
+                    let v = attr_value(e, "value").unwrap_or_default();
                     b.facets
                         .push(Facet::FractionDigits(parse_u32(&v, "fractionDigits")?));
                 }
@@ -393,11 +389,11 @@ fn on_empty(
                 on_element_inside_complex(e, b)?;
             }
             "any" => {
-                let namespace = attr_value(e, "namespace")?;
+                let namespace = attr_value(e, "namespace");
                 b.content = ComplexContentBuilder::Any { namespace };
             }
             "attribute" => {
-                on_attribute_inside_complex(e, b)?;
+                on_attribute_inside_complex(e, b);
             }
             _ => {}
         },
@@ -468,11 +464,10 @@ fn on_end(ctx_stack: &mut Vec<Context>, schema: &mut Schema) {
 // ---------------------------------------------------------------------------
 
 /// Process a top-level `<xs:element name="…" type="…">` declaration.
-fn on_top_level_element(e: &BytesStart<'_>, schema: &mut Schema) -> Result<(), ParseError> {
-    if let (Some(name), Some(type_name)) = (attr_value(e, "name")?, attr_value(e, "type")?) {
+fn on_top_level_element(e: &BytesStart<'_>, schema: &mut Schema) {
+    if let (Some(name), Some(type_name)) = (attr_value(e, "name"), attr_value(e, "type")) {
         schema.elements.push(Element { name, type_name });
     }
-    Ok(())
 }
 
 /// Process an `<xs:element>` inside a `<xs:sequence>` or `<xs:choice>`.
@@ -482,8 +477,7 @@ fn on_element_inside_complex(
 ) -> Result<(), ParseError> {
     match b.content {
         ComplexContentBuilder::Sequence(ref mut seq) => {
-            if let (Some(name), Some(type_name)) = (attr_value(e, "name")?, attr_value(e, "type")?)
-            {
+            if let (Some(name), Some(type_name)) = (attr_value(e, "name"), attr_value(e, "type")) {
                 let min_occurs = parse_min_occurs(e)?;
                 let max_occurs = parse_max_occurs(e)?;
                 seq.push(SequenceElement {
@@ -495,8 +489,7 @@ fn on_element_inside_complex(
             }
         }
         ComplexContentBuilder::Choice(ref mut variants) => {
-            if let (Some(name), Some(type_name)) = (attr_value(e, "name")?, attr_value(e, "type")?)
-            {
+            if let (Some(name), Some(type_name)) = (attr_value(e, "name"), attr_value(e, "type")) {
                 variants.push(ChoiceVariant { name, type_name });
             }
         }
@@ -506,10 +499,7 @@ fn on_element_inside_complex(
 }
 
 /// Process an `<xs:attribute>` inside a `<xs:extension>`.
-fn on_attribute_inside_complex(
-    e: &BytesStart<'_>,
-    b: &mut ComplexTypeBuilder,
-) -> Result<(), ParseError> {
+fn on_attribute_inside_complex(e: &BytesStart<'_>, b: &mut ComplexTypeBuilder) {
     if let ComplexContentBuilder::SimpleContent {
         ref mut attributes,
         in_extension,
@@ -517,9 +507,8 @@ fn on_attribute_inside_complex(
     } = b.content
     {
         if in_extension {
-            if let (Some(name), Some(type_name)) = (attr_value(e, "name")?, attr_value(e, "type")?)
-            {
-                let required = attr_value(e, "use")?.is_some_and(|v| v == "required");
+            if let (Some(name), Some(type_name)) = (attr_value(e, "name"), attr_value(e, "type")) {
+                let required = attr_value(e, "use").is_some_and(|v| v == "required");
                 attributes.push(Attribute {
                     name,
                     type_name,
@@ -528,7 +517,6 @@ fn on_attribute_inside_complex(
             }
         }
     }
-    Ok(())
 }
 
 // ---------------------------------------------------------------------------
@@ -536,14 +524,13 @@ fn on_attribute_inside_complex(
 // ---------------------------------------------------------------------------
 
 /// Return an attribute value as an owned `String`, or `None` if absent.
-fn attr_value(e: &BytesStart<'_>, name: &str) -> Result<Option<String>, ParseError> {
+fn attr_value(e: &BytesStart<'_>, name: &str) -> Option<String> {
     for attr in e.attributes().flatten() {
         if local_name(attr.key.as_ref()) == name {
-            let val = std::str::from_utf8(attr.value.as_ref())?.to_owned();
-            return Ok(Some(val));
+            return Some(attr.value.as_ref().to_owned());
         }
     }
-    Ok(None)
+    None
 }
 
 /// Return an attribute value, returning `MissingAttribute` if absent.
@@ -552,12 +539,12 @@ fn require_attr(
     attr: &'static str,
     element: &'static str,
 ) -> Result<String, ParseError> {
-    attr_value(e, attr)?.ok_or(ParseError::MissingAttribute { element, attr })
+    attr_value(e, attr).ok_or(ParseError::MissingAttribute { element, attr })
 }
 
 /// Parse the `minOccurs` attribute, defaulting to `1`.
 fn parse_min_occurs(e: &BytesStart<'_>) -> Result<u32, ParseError> {
-    match attr_value(e, "minOccurs")? {
+    match attr_value(e, "minOccurs") {
         None => Ok(1),
         Some(v) => parse_u32(&v, "minOccurs"),
     }
@@ -565,7 +552,7 @@ fn parse_min_occurs(e: &BytesStart<'_>) -> Result<u32, ParseError> {
 
 /// Parse the `maxOccurs` attribute, defaulting to `Bounded(1)`.
 fn parse_max_occurs(e: &BytesStart<'_>) -> Result<MaxOccurs, ParseError> {
-    match attr_value(e, "maxOccurs")? {
+    match attr_value(e, "maxOccurs") {
         None => Ok(MaxOccurs::Bounded(1)),
         Some(ref v) if v == "unbounded" => Ok(MaxOccurs::Unbounded),
         Some(v) => parse_u32(&v, "maxOccurs").map(MaxOccurs::Bounded),
@@ -599,9 +586,8 @@ fn parse_u64(s: &str, attr: &'static str) -> Result<u64, ParseError> {
 // ---------------------------------------------------------------------------
 
 /// Strip the namespace prefix from a qualified name (e.g. `"xs:element"` → `"element"`).
-fn local_name(name: &[u8]) -> &str {
-    let s = std::str::from_utf8(name).unwrap_or("");
-    s.rfind(':').map_or(s, |pos| &s[pos + 1..])
+fn local_name(name: &str) -> &str {
+    name.rfind(':').map_or(name, |pos| &name[pos + 1..])
 }
 
 /// Convert a [`ComplexContentBuilder`] into the final [`ComplexContent`].

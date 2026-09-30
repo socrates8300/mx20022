@@ -6,16 +6,10 @@ updates:
       interval: weekly
     open-pull-requests-limit: 10
     labels: [dependencies]
-    ignore:
-      # clap 4.6+ requires Rust 1.85; this workspace supports Rust 1.79.
-      - dependency-name: clap
-        versions: [">= 4.6.0"]
-      # These releases exceed the workspace MSRV and were previously hidden
-      # by the stable rust-toolchain override in the MSRV CI lane.
-      - dependency-name: criterion
-        versions: [">= 0.6.0"]
-      - dependency-name: indexmap
-        versions: [">= 2.12.0"]
+    # No ignore rules: the previous MSRV 1.79 caps on clap, criterion, and
+    # indexmap are satisfied by the current MSRV 1.86 (clap 4.6 needs 1.85,
+    # indexmap 2.12 needs 1.82, criterion 0.6 needs 1.80). The "Check (1.86.0)"
+    # CI lane validates every proposed bump against the declared MSRV.
 
   - package-ecosystem: github-actions
     directory: /

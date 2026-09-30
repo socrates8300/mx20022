@@ -16,6 +16,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Raised the declared minimum supported Rust version from 1.79 to 1.86 and
+  updated `quick-xml` from 0.41 to 0.42. The new release ships an edition-2024
+  manifest, so Cargo 1.86 or newer is required to parse it. The port drops the
+  removed decoder API: element and attribute names are now `&str`, text and
+  CDATA content arrive as validated UTF-8, and attribute values are read with
+  `normalized_value`.
+- Lifted the Dependabot MSRV caps on `clap` (`>= 4.6.0`), `indexmap`
+  (`>= 2.12.0`), and `criterion` (`>= 0.6.0`). Those releases require Rust
+  1.85, 1.82, and 1.80 respectively, all satisfied by the new MSRV.
 - Bumped all seven workspace crates and their internal dependency requirements
   to 0.4.0. This source change is not a published release.
 - Scheme validation now unwraps `Document`, routes `pacs.008` by its
@@ -49,6 +58,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Removed
 
+- Removed the `mx20022_codegen::xsd::ParseError::Utf8` variant. `quick-xml`
+  0.42 stores names and attribute values as validated UTF-8 `&str`, so an XSD
+  attribute value can no longer fail UTF-8 decoding.
 - Removed the public `mx20022_validate::schemes::xml_scan` module and the
   scanner-based scheme field-rule path. This is a deliberate breaking change
   for 0.4.0.

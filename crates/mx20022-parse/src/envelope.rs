@@ -125,15 +125,10 @@ pub fn detect_message_type(xml: &str) -> Result<MessageId, ParseError> {
                     root_seen = true;
                 }
 
-                let is_document = element.local_name().as_ref() == b"Document";
+                let is_document = element.local_name().as_ref() == "Document";
                 match namespace {
                     ResolveResult::Bound(namespace) => {
-                        let namespace =
-                            std::str::from_utf8(namespace.as_ref()).map_err(|error| {
-                                ParseError::InvalidEnvelope(format!(
-                                    "element namespace is not UTF-8: {error}"
-                                ))
-                            })?;
+                        let namespace = namespace.as_ref();
                         if is_document && document_message_id.is_none() {
                             document_message_id = Some(parse_namespace(namespace)?);
                         }
@@ -150,8 +145,7 @@ pub fn detect_message_type(xml: &str) -> Result<MessageId, ParseError> {
                         if is_document && document_message_id.is_none() =>
                     {
                         return Err(ParseError::InvalidEnvelope(format!(
-                            "Document namespace prefix is not declared: {}",
-                            String::from_utf8_lossy(&prefix)
+                            "Document namespace prefix is not declared: {prefix}"
                         )));
                     }
                     ResolveResult::Unbound | ResolveResult::Unknown(_) => {}
@@ -168,7 +162,7 @@ pub fn detect_message_type(xml: &str) -> Result<MessageId, ParseError> {
                 })?;
             }
             Event::Text(text) if depth == 0 => {
-                if !text.as_ref().iter().all(u8::is_ascii_whitespace) {
+                if !text.as_ref().chars().all(|c| c.is_ascii_whitespace()) {
                     return Err(ParseError::InvalidEnvelope(
                         "non-whitespace content appears outside the root element".to_owned(),
                     ));

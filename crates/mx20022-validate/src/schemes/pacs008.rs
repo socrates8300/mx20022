@@ -42,7 +42,7 @@ pub(crate) struct Transaction {
 
 #[derive(Debug)]
 struct Node {
-    name: Vec<u8>,
+    name: String,
     text: String,
     currency: Option<String>,
 }
@@ -60,8 +60,8 @@ impl Facts {
             })?;
             match event {
                 Event::Start(element) => {
-                    let name = element.local_name().as_ref().to_vec();
-                    if name == b"CdtTrfTxInf" && !inside_supplementary_data(&stack) {
+                    let name = element.local_name().as_ref().to_owned();
+                    if name == "CdtTrfTxInf" && !inside_supplementary_data(&stack) {
                         facts.transactions.push(Transaction::default());
                         current_transaction = facts.transactions.len().checked_sub(1);
                     }
@@ -72,34 +72,25 @@ impl Facts {
                     });
                 }
                 Event::Empty(element) => {
-                    let name = element.local_name().as_ref().to_vec();
-                    if name == b"CdtTrfTxInf" && !inside_supplementary_data(&stack) {
+                    let name = element.local_name().as_ref().to_owned();
+                    if name == "CdtTrfTxInf" && !inside_supplementary_data(&stack) {
                         facts.transactions.push(Transaction::default());
                     }
                 }
                 Event::Text(text) => {
                     if let Some(node) = stack.last_mut() {
-                        let decoded = text.decode().map_err(|error| {
-                            ParseError::InvalidEnvelope(format!(
-                                "pacs.008 text is not decodable: {error}"
-                            ))
-                        })?;
-                        let unescaped = quick_xml::escape::unescape(&decoded).map_err(|error| {
-                            ParseError::InvalidEnvelope(format!(
-                                "pacs.008 text contains an invalid entity: {error}"
-                            ))
-                        })?;
+                        let unescaped =
+                            quick_xml::escape::unescape(text.as_ref()).map_err(|error| {
+                                ParseError::InvalidEnvelope(format!(
+                                    "pacs.008 text contains an invalid entity: {error}"
+                                ))
+                            })?;
                         node.text.push_str(&unescaped);
                     }
                 }
                 Event::CData(text) => {
                     if let Some(node) = stack.last_mut() {
-                        let decoded = text.decode().map_err(|error| {
-                            ParseError::InvalidEnvelope(format!(
-                                "pacs.008 CDATA is not decodable: {error}"
-                            ))
-                        })?;
-                        node.text.push_str(&decoded);
+                        node.text.push_str(text.as_ref());
                     }
                 }
                 Event::End(_) => {
@@ -108,7 +99,7 @@ impl Facts {
                             "pacs.008 Document contains an unmatched closing element".to_owned(),
                         )
                     })?;
-                    let ends_transaction = node.name == b"CdtTrfTxInf";
+                    let ends_transaction = node.name == "CdtTrfTxInf";
                     let is_supplementary = inside_supplementary_data(&stack);
                     if !is_supplementary {
                         process_node(&mut facts, current_transaction, &stack, node);
@@ -207,7 +198,7 @@ impl From<&Document> for Facts {
 }
 
 fn inside_supplementary_data(stack: &[Node]) -> bool {
-    stack.iter().any(|node| node.name == b"SplmtryData")
+    stack.iter().any(|node| node.name == "SplmtryData")
 }
 
 fn currency_attribute(element: &BytesStart<'_>) -> Result<Option<String>, ParseError> {
@@ -215,9 +206,9 @@ fn currency_attribute(element: &BytesStart<'_>) -> Result<Option<String>, ParseE
         let attribute = attribute.map_err(|error| {
             ParseError::InvalidEnvelope(format!("invalid pacs.008 attribute: {error}"))
         })?;
-        if attribute.key.local_name().as_ref() == b"Ccy" {
+        if attribute.key.local_name().as_ref() == "Ccy" {
             let value = attribute
-                .decoded_and_normalized_value(quick_xml::XmlVersion::Implicit1_0, element.decoder())
+                .normalized_value(quick_xml::XmlVersion::Implicit1_0)
                 .map_err(|error| {
                     ParseError::InvalidEnvelope(format!("invalid pacs.008 currency: {error}"))
                 })?;
@@ -234,7 +225,7 @@ fn process_node(
     node: Node,
 ) {
     let text = node.text.trim().to_owned();
-    let name = node.name.as_slice();
+    let name = node.name.as_str();
 
     if let Some(tag) = additional_charset_tag(name, ancestors) {
         facts.additional_charset_fields.push(TaggedText {
@@ -245,16 +236,16 @@ fn process_node(
 
     if current_transaction.is_none() {
         match name {
-            b"NbOfTxs" if has_ancestor(ancestors, b"GrpHdr") => {
+            "NbOfTxs" if has_ancestor(ancestors, "GrpHdr") => {
                 facts.nb_of_txs.get_or_insert(text);
             }
-            b"SttlmMtd" if has_ancestor(ancestors, b"GrpHdr") => {
+            "SttlmMtd" if has_ancestor(ancestors, "GrpHdr") => {
                 facts.settlement_method.get_or_insert(text);
             }
-            b"BICFI" if has_ancestor(ancestors, b"InstgAgt") => {
+            "BICFI" if has_ancestor(ancestors, "InstgAgt") => {
                 facts.instg_agent_bic.get_or_insert(text);
             }
-            b"BICFI" if has_ancestor(ancestors, b"InstdAgt") => {
+            "BICFI" if has_ancestor(ancestors, "InstdAgt") => {
                 facts.instd_agent_bic.get_or_insert(text);
             }
             _ => {}
@@ -264,66 +255,66 @@ fn process_node(
 
     let transaction = &mut facts.transactions[current_transaction.expect("checked above")];
     match name {
-        b"ChrgBr" => {
+        "ChrgBr" => {
             transaction.charge_bearer.get_or_insert(text);
         }
-        b"IntrBkSttlmAmt" => {
+        "IntrBkSttlmAmt" => {
             transaction.currency = node.currency;
             transaction.amount.get_or_insert(text);
         }
-        b"UETR" => {
+        "UETR" => {
             transaction.uetr.get_or_insert(text);
         }
-        b"EndToEndId" => {
+        "EndToEndId" => {
             transaction.end_to_end_id.get_or_insert(text);
         }
-        b"Nm" if nearest_party(ancestors) == Some(b"Dbtr".as_slice()) => {
+        "Nm" if nearest_party(ancestors) == Some("Dbtr") => {
             transaction.debtor_name.get_or_insert(text);
         }
-        b"Nm" if nearest_party(ancestors) == Some(b"Cdtr".as_slice()) => {
+        "Nm" if nearest_party(ancestors) == Some("Cdtr") => {
             transaction.creditor_name.get_or_insert(text);
         }
-        b"BICFI" if has_ancestor(ancestors, b"DbtrAgt") => {
+        "BICFI" if has_ancestor(ancestors, "DbtrAgt") => {
             transaction.debtor_agent_bic.get_or_insert(text);
         }
-        b"BICFI" if has_ancestor(ancestors, b"CdtrAgt") => {
+        "BICFI" if has_ancestor(ancestors, "CdtrAgt") => {
             transaction.creditor_agent_bic.get_or_insert(text);
         }
-        b"IntrBkSttlmDt" => {
+        "IntrBkSttlmDt" => {
             transaction.has_settlement_date = true;
         }
-        b"IBAN" if has_ancestor(ancestors, b"DbtrAcct") => {
+        "IBAN" if has_ancestor(ancestors, "DbtrAcct") => {
             transaction.has_debtor_iban = true;
         }
-        b"IBAN" if has_ancestor(ancestors, b"CdtrAcct") => {
+        "IBAN" if has_ancestor(ancestors, "CdtrAcct") => {
             transaction.has_creditor_iban = true;
         }
-        b"Ustrd" => {
+        "Ustrd" => {
             transaction.unstructured_remittance.push(text);
         }
         _ => {}
     }
 }
 
-fn additional_charset_tag(name: &[u8], ancestors: &[Node]) -> Option<&'static str> {
+fn additional_charset_tag(name: &str, ancestors: &[Node]) -> Option<&'static str> {
     match name {
-        b"Nm" if nearest_party(ancestors).is_none() => Some("Nm"),
-        b"StrtNm" => Some("StrtNm"),
-        b"TwnNm" => Some("TwnNm"),
+        "Nm" if nearest_party(ancestors).is_none() => Some("Nm"),
+        "StrtNm" => Some("StrtNm"),
+        "TwnNm" => Some("TwnNm"),
         _ => None,
     }
 }
 
-fn has_ancestor(ancestors: &[Node], name: &[u8]) -> bool {
+fn has_ancestor(ancestors: &[Node], name: &str) -> bool {
     ancestors.iter().any(|node| node.name == name)
 }
 
-fn nearest_party(ancestors: &[Node]) -> Option<&[u8]> {
+fn nearest_party(ancestors: &[Node]) -> Option<&str> {
     ancestors
         .iter()
         .rev()
-        .map(|node| node.name.as_slice())
-        .find(|name| matches!(*name, b"Dbtr" | b"Cdtr"))
+        .map(|node| node.name.as_str())
+        .find(|name| matches!(*name, "Dbtr" | "Cdtr"))
 }
 
 fn has_iban(
