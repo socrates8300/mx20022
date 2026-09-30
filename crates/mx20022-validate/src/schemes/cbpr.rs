@@ -16,7 +16,6 @@
 
 use std::any::Any;
 
-use super::xml_scan::{extract_all_elements, extract_element, has_element};
 use super::SchemeValidator;
 use crate::error::{Severity, ValidationError, ValidationResult};
 
@@ -47,9 +46,6 @@ impl Default for CbprPlusValidator {
     }
 }
 
-/// Valid `ChrgBr` values under CBPR+.
-const VALID_CHRGBR: &[&str] = &["CRED", "DEBT", "SHAR", "SLEV"];
-
 impl SchemeValidator for CbprPlusValidator {
     fn name(&self) -> &'static str {
         "CBPR+"
@@ -62,129 +58,13 @@ impl SchemeValidator for CbprPlusValidator {
     }
 
     fn validate(&self, xml: &str, message_type: &str) -> ValidationResult {
-        let short_type = super::short_message_type(message_type);
-
-        if !self.supported_messages().contains(&short_type.as_str()) {
-            return ValidationResult::default();
-        }
-
-        let mut errors: Vec<ValidationError> = Vec::new();
-
-        // --- UTF-8 control character check ----------------------------------
-        // The XML string is already valid UTF-8 (Rust strings), so we only need
-        // to look for disallowed control characters.
-        check_control_characters(xml, &mut errors);
-
-        // --- Business Application Header ------------------------------------
-        if !has_element(xml, "AppHdr") && !has_element(xml, "BizMsgIdr") {
-            errors.push(ValidationError::new(
-                "/AppHdr",
-                Severity::Error,
-                "CBPR_BAH_REQUIRED",
-                "CBPR+ requires a Business Application Header (AppHdr / BizMsgIdr)",
-            ));
-        }
-
-        // Field-level checks are pacs.008-specific.
-        if short_type != "pacs.008" {
-            return ValidationResult::new(errors);
-        }
-
-        // --- Mandatory BICs -------------------------------------------------
-        let bic_fields: &[(&str, &str, &str)] = &[
-            (
-                "InstgAgt",
-                "CBPR_INSTG_AGT_BIC",
-                "/Document/FIToFICstmrCdtTrf/GrpHdr/InstgAgt/FinInstnId/BICFI",
-            ),
-            (
-                "InstdAgt",
-                "CBPR_INSTD_AGT_BIC",
-                "/Document/FIToFICstmrCdtTrf/GrpHdr/InstdAgt/FinInstnId/BICFI",
-            ),
-            (
-                "DbtrAgt",
-                "CBPR_DBTR_AGT_BIC",
-                "/Document/FIToFICstmrCdtTrf/CdtTrfTxInf/DbtrAgt/FinInstnId/BICFI",
-            ),
-            (
-                "CdtrAgt",
-                "CBPR_CDTR_AGT_BIC",
-                "/Document/FIToFICstmrCdtTrf/CdtTrfTxInf/CdtrAgt/FinInstnId/BICFI",
-            ),
-        ];
-        for (parent, rule_id, path) in bic_fields {
-            check_bic_in_parent(xml, parent, path, rule_id, &mut errors);
-        }
-
-        // --- Debtor and creditor names required -----------------------------
-        check_name_required(xml, "Dbtr", "CBPR_DBTR_NM_REQUIRED", &mut errors);
-        check_name_required(xml, "Cdtr", "CBPR_CDTR_NM_REQUIRED", &mut errors);
-
-        // --- UETR required --------------------------------------------------
-        if !has_element(xml, "UETR") {
-            errors.push(ValidationError::new(
-                "/Document/FIToFICstmrCdtTrf/CdtTrfTxInf/PmtId/UETR",
-                Severity::Error,
-                "CBPR_UETR_REQUIRED",
-                "CBPR+ requires a UETR in PmtId",
-            ));
-        }
-
-        // --- End-to-end ID required -----------------------------------------
-        if !has_element(xml, "EndToEndId") {
-            errors.push(ValidationError::new(
-                "/Document/FIToFICstmrCdtTrf/CdtTrfTxInf/PmtId/EndToEndId",
-                Severity::Error,
-                "CBPR_E2E_REQUIRED",
-                "CBPR+ requires an EndToEndId in PmtId",
-            ));
-        }
-
-        // --- ChrgBr required and must be valid ------------------------------
-        if let Some(chrg_br) = extract_element(xml, "ChrgBr") {
-            if !VALID_CHRGBR.contains(&chrg_br) {
-                errors.push(ValidationError::new(
-                    "/Document/FIToFICstmrCdtTrf/CdtTrfTxInf/ChrgBr",
-                    Severity::Error,
-                    "CBPR_CHRGBR_VALUE",
-                    format!("ChrgBr must be one of CRED, DEBT, SHAR, SLEV; got \"{chrg_br}\""),
-                ));
-            }
-        } else {
-            errors.push(ValidationError::new(
-                "/Document/FIToFICstmrCdtTrf/CdtTrfTxInf/ChrgBr",
-                Severity::Error,
-                "CBPR_CHRGBR_REQUIRED",
-                "CBPR+ requires ChrgBr (one of CRED, DEBT, SHAR, SLEV)",
-            ));
-        }
-
-        // --- Interbank settlement date required -----------------------------
-        if !has_element(xml, "IntrBkSttlmDt") {
-            errors.push(ValidationError::new(
-                "/Document/FIToFICstmrCdtTrf/CdtTrfTxInf/IntrBkSttlmDt",
-                Severity::Error,
-                "CBPR_STTLM_DT_REQUIRED",
-                "CBPR+ requires IntrBkSttlmDt",
-            ));
-        }
-
-        // --- BIC padding check (8-char BICs should be 11) ------------------
-        for bic in extract_all_elements(xml, "BICFI") {
-            if bic.len() == 8 {
-                errors.push(ValidationError::new(
-                    "//BICFI",
-                    Severity::Warning,
-                    "CBPR_BIC_PADDING",
-                    format!(
-                        "CBPR+ recommends 11-character BICs; \"{bic}\" is 8 characters (pad with XXX)"
-                    ),
-                ));
-            }
-        }
-
-        ValidationResult::new(errors)
+        super::run_xml(
+            self,
+            xml,
+            message_type,
+            |xml, _| Self::validate_raw(xml),
+            Self::validate_pacs008,
+        )
     }
 
     fn validate_typed(&self, msg: &dyn Any, message_type: &str) -> Option<ValidationResult> {
@@ -201,64 +81,87 @@ impl SchemeValidator for CbprPlusValidator {
 
         let doc = msg.downcast_ref::<pacs_008_001_13::Document>()?;
 
-        Some(self.validate_pacs008_typed(doc))
+        Some(Self::validate_pacs008(&super::pacs008::Facts::from(doc)))
     }
 }
 
 impl CbprPlusValidator {
-    /// Typed validation for pacs.008 messages under CBPR+ rules.
-    #[allow(clippy::unused_self)]
-    fn validate_pacs008_typed(
-        &self,
-        doc: &mx20022_model::generated::pacs::pacs_008_001_13::Document,
-    ) -> ValidationResult {
+    /// Validate rules that require the original XML envelope.
+    fn validate_raw(xml: &str) -> ValidationResult {
+        let mut errors = Vec::new();
+
+        if let Some((offset, character)) = super::raw::first_disallowed_control(xml) {
+            errors.push(ValidationError::new(
+                "/Document",
+                Severity::Error,
+                "CBPR_CONTROL_CHAR",
+                format!(
+                    "Disallowed control character U+{:04X} at byte offset {offset}",
+                    character as u32
+                ),
+            ));
+        }
+
+        let (has_app_header, has_business_message_id) = super::raw::header_presence(xml);
+        if !has_app_header && !has_business_message_id {
+            errors.push(ValidationError::new(
+                "/AppHdr",
+                Severity::Error,
+                "CBPR_BAH_REQUIRED",
+                "CBPR+ requires a Business Application Header (AppHdr / BizMsgIdr)",
+            ));
+        }
+
+        ValidationResult::new(errors)
+    }
+
+    /// Validate version-neutral pacs.008 facts under CBPR+ rules.
+    fn validate_pacs008(facts: &super::pacs008::Facts) -> ValidationResult {
         let mut errors: Vec<ValidationError> = Vec::new();
-        let msg = &doc.fi_to_fi_cstmr_cdt_trf;
 
         // --- Instructing agent BIC required (GrpHdr level) ------------------
-        check_bic_typed(
-            msg.grp_hdr.instg_agt.as_ref(),
-            "InstgAgt",
-            "/Document/FIToFICstmrCdtTrf/GrpHdr/InstgAgt/FinInstnId/BICFI",
-            "CBPR_INSTG_AGT_BIC",
-            &mut errors,
-        );
+        if facts.instg_agent_bic.is_none() {
+            errors.push(ValidationError::new(
+                "/Document/FIToFICstmrCdtTrf/GrpHdr/InstgAgt/FinInstnId/BICFI",
+                Severity::Error,
+                "CBPR_INSTG_AGT_BIC",
+                "InstgAgt/FinInstnId/BICFI is required for CBPR+",
+            ));
+        }
 
         // --- Instructed agent BIC required (GrpHdr level) -------------------
-        check_bic_typed(
-            msg.grp_hdr.instd_agt.as_ref(),
-            "InstdAgt",
-            "/Document/FIToFICstmrCdtTrf/GrpHdr/InstdAgt/FinInstnId/BICFI",
-            "CBPR_INSTD_AGT_BIC",
-            &mut errors,
-        );
+        if facts.instd_agent_bic.is_none() {
+            errors.push(ValidationError::new(
+                "/Document/FIToFICstmrCdtTrf/GrpHdr/InstdAgt/FinInstnId/BICFI",
+                Severity::Error,
+                "CBPR_INSTD_AGT_BIC",
+                "InstdAgt/FinInstnId/BICFI is required for CBPR+",
+            ));
+        }
 
         // --- BIC padding check for GrpHdr-level agents ---
-        for agent in [
-            msg.grp_hdr.instg_agt.as_ref(),
-            msg.grp_hdr.instd_agt.as_ref(),
+        for bic in [
+            facts.instg_agent_bic.as_deref(),
+            facts.instd_agent_bic.as_deref(),
         ]
         .into_iter()
         .flatten()
         {
-            if let Some(bic) = &agent.fin_instn_id.bicfi {
-                if bic.0.len() == 8 {
-                    errors.push(ValidationError::new(
-                        "//BICFI",
-                        Severity::Warning,
-                        "CBPR_BIC_PADDING",
-                        format!(
-                            "CBPR+ recommends 11-character BICs; \"{}\" is 8 characters (pad with XXX)",
-                            bic.0
-                        ),
-                    ));
-                }
+            if bic.len() == 8 {
+                errors.push(ValidationError::new(
+                    "//BICFI",
+                    Severity::Warning,
+                    "CBPR_BIC_PADDING",
+                    format!(
+                        "CBPR+ recommends 11-character BICs; \"{bic}\" is 8 characters (pad with XXX)"
+                    ),
+                ));
             }
         }
 
-        for tx in &msg.cdt_trf_tx_inf {
+        for tx in &facts.transactions {
             // --- Debtor agent BIC required ----------------------------------
-            if tx.dbtr_agt.fin_instn_id.bicfi.is_none() {
+            if tx.debtor_agent_bic.is_none() {
                 errors.push(ValidationError::new(
                     "/Document/FIToFICstmrCdtTrf/CdtTrfTxInf/DbtrAgt/FinInstnId/BICFI",
                     Severity::Error,
@@ -268,7 +171,7 @@ impl CbprPlusValidator {
             }
 
             // --- Creditor agent BIC required --------------------------------
-            if tx.cdtr_agt.fin_instn_id.bicfi.is_none() {
+            if tx.creditor_agent_bic.is_none() {
                 errors.push(ValidationError::new(
                     "/Document/FIToFICstmrCdtTrf/CdtTrfTxInf/CdtrAgt/FinInstnId/BICFI",
                     Severity::Error,
@@ -279,27 +182,26 @@ impl CbprPlusValidator {
 
             // --- BIC padding check (8-char BICs should be 11) ---------------
             for bic in [
-                tx.dbtr_agt.fin_instn_id.bicfi.as_ref(),
-                tx.cdtr_agt.fin_instn_id.bicfi.as_ref(),
+                tx.debtor_agent_bic.as_deref(),
+                tx.creditor_agent_bic.as_deref(),
             ]
             .into_iter()
             .flatten()
             {
-                if bic.0.len() == 8 {
+                if bic.len() == 8 {
                     errors.push(ValidationError::new(
                         "//BICFI",
                         Severity::Warning,
                         "CBPR_BIC_PADDING",
                         format!(
-                            "CBPR+ recommends 11-character BICs; \"{}\" is 8 characters (pad with XXX)",
-                            bic.0
+                            "CBPR+ recommends 11-character BICs; \"{bic}\" is 8 characters (pad with XXX)"
                         ),
                     ));
                 }
             }
 
             // --- Debtor name required ---------------------------------------
-            if tx.dbtr.nm.is_none() {
+            if tx.debtor_name.is_none() {
                 errors.push(ValidationError::new(
                     "/Document/FIToFICstmrCdtTrf/CdtTrfTxInf/Dbtr/Nm",
                     Severity::Error,
@@ -309,7 +211,7 @@ impl CbprPlusValidator {
             }
 
             // --- Creditor name required -------------------------------------
-            if tx.cdtr.nm.is_none() {
+            if tx.creditor_name.is_none() {
                 errors.push(ValidationError::new(
                     "/Document/FIToFICstmrCdtTrf/CdtTrfTxInf/Cdtr/Nm",
                     Severity::Error,
@@ -319,7 +221,7 @@ impl CbprPlusValidator {
             }
 
             // --- UETR required ----------------------------------------------
-            if tx.pmt_id.uetr.is_none() {
+            if tx.uetr.is_none() {
                 errors.push(ValidationError::new(
                     "/Document/FIToFICstmrCdtTrf/CdtTrfTxInf/PmtId/UETR",
                     Severity::Error,
@@ -328,15 +230,37 @@ impl CbprPlusValidator {
                 ));
             }
 
-            // --- End-to-end ID is a required field (always present) ----------
-            // (Max35Text is required on PaymentIdentification13, nothing to
-            // check beyond XSD.)
+            // --- End-to-end ID required -------------------------------------
+            if tx.end_to_end_id.is_none() {
+                errors.push(ValidationError::new(
+                    "/Document/FIToFICstmrCdtTrf/CdtTrfTxInf/PmtId/EndToEndId",
+                    Severity::Error,
+                    "CBPR_E2E_REQUIRED",
+                    "CBPR+ requires an EndToEndId in PmtId",
+                ));
+            }
 
-            // ChrgBr validity is enforced by the ChargeBearerType1Code enum — all
-            // variants (Cred, Debt, Shar, Slev) are valid for CBPR+.
+            // --- Charges bearer required and schema-valid ------------------
+            match tx.charge_bearer.as_deref() {
+                Some("CRED" | "DEBT" | "SHAR" | "SLEV") => {}
+                Some(charge_bearer) => errors.push(ValidationError::new(
+                    "/Document/FIToFICstmrCdtTrf/CdtTrfTxInf/ChrgBr",
+                    Severity::Error,
+                    "CBPR_CHRGBR_VALUE",
+                    format!(
+                        "ChrgBr must be one of CRED, DEBT, SHAR, SLEV; got \"{charge_bearer}\""
+                    ),
+                )),
+                None => errors.push(ValidationError::new(
+                    "/Document/FIToFICstmrCdtTrf/CdtTrfTxInf/ChrgBr",
+                    Severity::Error,
+                    "CBPR_CHRGBR_REQUIRED",
+                    "CBPR+ requires ChrgBr (one of CRED, DEBT, SHAR, SLEV)",
+                )),
+            }
 
             // --- Interbank settlement date required -------------------------
-            if tx.intr_bk_sttlm_dt.is_none() {
+            if !tx.has_settlement_date {
                 errors.push(ValidationError::new(
                     "/Document/FIToFICstmrCdtTrf/CdtTrfTxInf/IntrBkSttlmDt",
                     Severity::Error,
@@ -346,89 +270,7 @@ impl CbprPlusValidator {
             }
         }
 
-        // Note: AppHdr check and UTF-8 control character check require raw
-        // XML context and are not covered by the typed path.
-
         ValidationResult::new(errors)
-    }
-}
-
-/// Check that a `BICFI` element exists inside a parent block (XML scan).
-fn check_bic_in_parent(
-    xml: &str,
-    parent_tag: &str,
-    path: &str,
-    rule_id: &str,
-    errors: &mut Vec<ValidationError>,
-) {
-    super::common::check_bic_in_parent(xml, parent_tag, path, rule_id, "CBPR+", errors);
-}
-
-/// Check that a `Nm` element exists inside a parent block (XML scan).
-fn check_name_required(
-    xml: &str,
-    parent_tag: &str,
-    rule_id: &str,
-    errors: &mut Vec<ValidationError>,
-) {
-    let path = format!("/Document/FIToFICstmrCdtTrf/CdtTrfTxInf/{parent_tag}");
-    super::common::check_name_in_parent(
-        xml, parent_tag, None, &path, rule_id, "CBPR+", errors, true,
-    );
-}
-
-/// Check that a BIC is present in an optional agent struct (typed).
-fn check_bic_typed(
-    agent: Option<
-        &mx20022_model::generated::pacs::pacs_008_001_13::BranchAndFinancialInstitutionIdentification8,
-    >,
-    parent_name: &str,
-    path: &str,
-    rule_id: &str,
-    errors: &mut Vec<ValidationError>,
-) {
-    match agent {
-        None => {
-            errors.push(ValidationError::new(
-                path,
-                Severity::Error,
-                rule_id,
-                format!("{parent_name}/FinInstnId/BICFI is required for CBPR+ but the parent element is missing"),
-            ));
-        }
-        Some(agt) if agt.fin_instn_id.bicfi.is_none() => {
-            errors.push(ValidationError::new(
-                path,
-                Severity::Error,
-                rule_id,
-                format!("{parent_name}/FinInstnId/BICFI is required for CBPR+"),
-            ));
-        }
-        Some(_) => {}
-    }
-}
-
-/// Check for disallowed control characters in the XML string.
-///
-/// CBPR+ requires UTF-8 encoding with no control characters except:
-/// - LF (0x0A)
-/// - CR (0x0D)
-/// - TAB (0x09)
-fn check_control_characters(xml: &str, errors: &mut Vec<ValidationError>) {
-    for (i, c) in xml.char_indices() {
-        if c.is_control() && !matches!(c, '\n' | '\r' | '\t') {
-            errors.push(ValidationError::new(
-                "/Document",
-                Severity::Error,
-                "CBPR_CONTROL_CHAR",
-                format!(
-                    "Disallowed control character U+{:04X} at byte offset {i}",
-                    c as u32
-                ),
-            ));
-            // Report only the first occurrence to avoid noise.
-            break;
-        }
     }
 }
 
@@ -456,16 +298,15 @@ mod tests {
 
     #[test]
     fn control_character_produces_error() {
-        let mut errors = Vec::new();
-        check_control_characters("hello\x01world", &mut errors);
-        assert_eq!(errors.len(), 1);
-        assert_eq!(errors[0].rule_id, "CBPR_CONTROL_CHAR");
+        let result = CbprPlusValidator::validate_raw("hello\x01world");
+        assert_eq!(result.errors[0].rule_id, "CBPR_CONTROL_CHAR");
     }
 
     #[test]
     fn allowed_whitespace_is_fine() {
-        let mut errors = Vec::new();
-        check_control_characters("hello\nworld\r\n\t", &mut errors);
-        assert!(errors.is_empty());
+        let result = CbprPlusValidator::validate_raw(
+            "<AppHdr><BizMsgIdr>id</BizMsgIdr>hello\nworld\r\n\t</AppHdr>",
+        );
+        assert!(result.errors.is_empty());
     }
 }

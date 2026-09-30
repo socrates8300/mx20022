@@ -15,7 +15,6 @@
 
 use std::any::Any;
 
-use super::xml_scan::{extract_all_elements, extract_attribute, extract_element};
 use super::SchemeValidator;
 use crate::error::{Severity, ValidationError, ValidationResult};
 
@@ -65,9 +64,6 @@ pub fn is_sepa_charset(s: &str) -> bool {
     s.chars().all(is_sepa_char)
 }
 
-/// Tags whose text content must conform to the SEPA character set.
-const CHARSET_TAGS: &[&str] = &["Nm", "Ustrd", "StrtNm", "TwnNm"];
-
 impl SchemeValidator for SepaValidator {
     fn name(&self) -> &'static str {
         "SEPA"
@@ -78,160 +74,13 @@ impl SchemeValidator for SepaValidator {
     }
 
     fn validate(&self, xml: &str, message_type: &str) -> ValidationResult {
-        let short_type = super::short_message_type(message_type);
-
-        if !self.supported_messages().contains(&short_type.as_str()) {
-            return ValidationResult::default();
-        }
-
-        let mut errors: Vec<ValidationError> = Vec::new();
-
-        // The field-level checks are pacs.008-specific.
-        if short_type != "pacs.008" {
-            return ValidationResult::new(errors);
-        }
-
-        // --- Currency must be EUR -------------------------------------------
-        if let Some(ccy) = extract_attribute(xml, "IntrBkSttlmAmt", "Ccy") {
-            if ccy != "EUR" {
-                errors.push(ValidationError::new(
-                    "/Document/FIToFICstmrCdtTrf/CdtTrfTxInf/IntrBkSttlmAmt/@Ccy",
-                    Severity::Error,
-                    "SEPA_CURRENCY",
-                    format!("SEPA only accepts EUR transactions; found currency \"{ccy}\""),
-                ));
-            }
-        }
-
-        // --- ChrgBr must be SLEV -------------------------------------------
-        if let Some(chrg_br) = extract_element(xml, "ChrgBr") {
-            if chrg_br != "SLEV" {
-                errors.push(ValidationError::new(
-                    "/Document/FIToFICstmrCdtTrf/CdtTrfTxInf/ChrgBr",
-                    Severity::Error,
-                    "SEPA_CHRGBR",
-                    format!("SEPA SCT requires ChrgBr = \"SLEV\", got \"{chrg_br}\""),
-                ));
-            }
-        } else {
-            errors.push(ValidationError::new(
-                "/Document/FIToFICstmrCdtTrf/CdtTrfTxInf/ChrgBr",
-                Severity::Error,
-                "SEPA_CHRGBR_REQUIRED",
-                "SEPA SCT requires ChrgBr = \"SLEV\"",
-            ));
-        }
-
-        // --- Settlement method must be CLRG ---------------------------------
-        if let Some(sttlm_mtd) = extract_element(xml, "SttlmMtd") {
-            if sttlm_mtd != "CLRG" {
-                errors.push(ValidationError::new(
-                    "/Document/FIToFICstmrCdtTrf/GrpHdr/SttlmInf/SttlmMtd",
-                    Severity::Error,
-                    "SEPA_STTLM_MTD",
-                    format!("SEPA requires SttlmMtd = \"CLRG\", got \"{sttlm_mtd}\""),
-                ));
-            }
-        }
-
-        // --- NbOfTxs must be "1" -------------------------------------------
-        if let Some(nb) = extract_element(xml, "NbOfTxs") {
-            if nb != "1" {
-                errors.push(ValidationError::new(
-                    "/Document/FIToFICstmrCdtTrf/GrpHdr/NbOfTxs",
-                    Severity::Error,
-                    "SEPA_SINGLE_TX",
-                    format!(
-                        "SEPA requires one transaction per group (NbOfTxs = \"1\"), got \"{nb}\""
-                    ),
-                ));
-            }
-        }
-
-        // --- Debtor name required, max 70 chars -----------------------------
-        check_name(xml, "Dbtr", 70, &mut errors, "SEPA_DBTR_NM");
-        // --- Creditor name required, max 70 chars ---------------------------
-        check_name(xml, "Cdtr", 70, &mut errors, "SEPA_CDTR_NM");
-
-        // --- End-to-end ID max 35 chars -------------------------------------
-        if let Some(e2e) = extract_element(xml, "EndToEndId") {
-            if e2e.chars().count() > 35 {
-                errors.push(ValidationError::new(
-                    "/Document/FIToFICstmrCdtTrf/CdtTrfTxInf/PmtId/EndToEndId",
-                    Severity::Error,
-                    "SEPA_E2E_LENGTH",
-                    format!(
-                        "EndToEndId must be at most 35 characters; got {} characters",
-                        e2e.chars().count()
-                    ),
-                ));
-            }
-        }
-
-        // --- Ustrd total length max 140 chars --------------------------------
-        let ustrd_total: usize = extract_all_elements(xml, "Ustrd")
-            .iter()
-            .map(|s| s.chars().count())
-            .sum();
-        if ustrd_total > 140 {
-            errors.push(ValidationError::new(
-                "/Document/FIToFICstmrCdtTrf/CdtTrfTxInf/RmtInf/Ustrd",
-                Severity::Error,
-                "SEPA_USTRD_LENGTH",
-                format!(
-                    "RmtInf/Ustrd total length must not exceed 140 characters; got {ustrd_total}"
-                ),
-            ));
-        }
-
-        // --- Amount range ---------------------------------------------------
-        if let Some(amt_str) = extract_element(xml, "IntrBkSttlmAmt") {
-            Self::validate_sepa_amount(
-                amt_str,
-                "/Document/FIToFICstmrCdtTrf/CdtTrfTxInf/IntrBkSttlmAmt",
-                &mut errors,
-            );
-        }
-
-        // --- IBAN required for debtor and creditor --------------------------
-        // Presence check only — format is validated elsewhere.
-        let ibans = extract_all_elements(xml, "IBAN");
-        if ibans.is_empty() {
-            errors.push(ValidationError::new(
-                "/Document/FIToFICstmrCdtTrf/CdtTrfTxInf",
-                Severity::Error,
-                "SEPA_IBAN_REQUIRED",
-                "SEPA requires IBAN for both debtor and creditor accounts; none found",
-            ));
-        } else if ibans.len() < 2 {
-            errors.push(ValidationError::new(
-                "/Document/FIToFICstmrCdtTrf/CdtTrfTxInf",
-                Severity::Warning,
-                "SEPA_IBAN_BOTH",
-                "SEPA requires IBAN for both debtor and creditor; only one found",
-            ));
-        }
-
-        // --- SEPA character set check ---------------------------------------
-        for tag in CHARSET_TAGS {
-            for value in extract_all_elements(xml, tag) {
-                if !is_sepa_charset(value) {
-                    // Report just the offending characters.
-                    let bad: String = value.chars().filter(|&c| !is_sepa_char(c)).collect();
-                    errors.push(ValidationError::new(
-                        format!("//{tag}"),
-                        Severity::Error,
-                        "SEPA_CHARSET",
-                        format!(
-                            "Field <{tag}> contains characters outside the SEPA restricted \
-                             Latin character set: {bad:?}"
-                        ),
-                    ));
-                }
-            }
-        }
-
-        ValidationResult::new(errors)
+        super::run_xml(
+            self,
+            xml,
+            message_type,
+            |_, _| ValidationResult::default(),
+            |facts| self.validate_pacs008(facts),
+        )
     }
 
     fn validate_typed(&self, msg: &dyn Any, message_type: &str) -> Option<ValidationResult> {
@@ -248,7 +97,12 @@ impl SchemeValidator for SepaValidator {
 
         let doc = msg.downcast_ref::<pacs_008_001_13::Document>()?;
 
-        Some(self.validate_pacs008_typed(doc))
+        let facts = match super::pacs008::Facts::from_typed_with_additional_charset_fields(doc) {
+            Ok(facts) => facts,
+            Err(error) => return Some(super::scheme_parse_error(&error)),
+        };
+
+        Some(self.validate_pacs008(&facts))
     }
 }
 
@@ -294,85 +148,87 @@ impl SepaValidator {
         }
     }
 
-    /// Check that a name string conforms to the SEPA restricted Latin character set.
-    fn check_sepa_name(name: &str, errors: &mut Vec<ValidationError>) {
-        if !is_sepa_charset(name) {
-            let bad: String = name.chars().filter(|&c| !is_sepa_char(c)).collect();
+    /// Check that a field conforms to the SEPA restricted Latin character set.
+    fn check_sepa_text(tag: &str, value: &str, errors: &mut Vec<ValidationError>) {
+        if !is_sepa_charset(value) {
+            let bad: String = value.chars().filter(|&c| !is_sepa_char(c)).collect();
             errors.push(ValidationError::new(
-                "//Nm",
+                format!("//{tag}"),
                 Severity::Error,
                 "SEPA_CHARSET",
                 format!(
-                    "Field <Nm> contains characters outside the SEPA restricted \
+                    "Field <{tag}> contains characters outside the SEPA restricted \
                      Latin character set: {bad:?}"
                 ),
             ));
         }
     }
 
-    /// Typed validation for pacs.008 messages under SEPA SCT rules.
+    /// Validate version-neutral pacs.008 facts under SEPA SCT rules.
     #[allow(clippy::unused_self)]
-    fn validate_pacs008_typed(
-        &self,
-        doc: &mx20022_model::generated::pacs::pacs_008_001_13::Document,
-    ) -> ValidationResult {
-        use mx20022_model::generated::pacs::pacs_008_001_13::{
-            AccountIdentification4Choice, ChargeBearerType1Code, SettlementMethod1Code,
-        };
-
+    fn validate_pacs008(&self, facts: &super::pacs008::Facts) -> ValidationResult {
         let mut errors: Vec<ValidationError> = Vec::new();
-        let msg = &doc.fi_to_fi_cstmr_cdt_trf;
 
         // --- Settlement method must be CLRG ---------------------------------
-        if msg.grp_hdr.sttlm_inf.sttlm_mtd != SettlementMethod1Code::Clrg {
-            errors.push(ValidationError::new(
-                "/Document/FIToFICstmrCdtTrf/GrpHdr/SttlmInf/SttlmMtd",
-                Severity::Error,
-                "SEPA_STTLM_MTD",
-                format!(
-                    "SEPA requires SttlmMtd = \"CLRG\", got {:?}",
-                    msg.grp_hdr.sttlm_inf.sttlm_mtd
-                ),
-            ));
+        if let Some(settlement_method) = &facts.settlement_method {
+            if settlement_method != "CLRG" {
+                errors.push(ValidationError::new(
+                    "/Document/FIToFICstmrCdtTrf/GrpHdr/SttlmInf/SttlmMtd",
+                    Severity::Error,
+                    "SEPA_STTLM_MTD",
+                    format!("SEPA requires SttlmMtd = \"CLRG\", got \"{settlement_method}\""),
+                ));
+            }
         }
 
-        // --- NbOfTxs must be "1" -------------------------------------------
-        if msg.grp_hdr.nb_of_txs.0 != "1" {
+        // --- Declared and actual transaction count must both be one ---------
+        let actual_transactions = facts.transactions.len();
+        if facts.nb_of_txs.as_deref() != Some("1") || actual_transactions != 1 {
+            let declared_transactions = facts.nb_of_txs.as_deref().unwrap_or("<missing>");
             errors.push(ValidationError::new(
                 "/Document/FIToFICstmrCdtTrf/GrpHdr/NbOfTxs",
                 Severity::Error,
                 "SEPA_SINGLE_TX",
                 format!(
-                    "SEPA requires one transaction per group (NbOfTxs = \"1\"), got \"{}\"",
-                    msg.grp_hdr.nb_of_txs.0
+                    "SEPA requires exactly one transaction per group (NbOfTxs = \"1\" and one CdtTrfTxInf); declared \"{declared_transactions}\", found {actual_transactions} CdtTrfTxInf element(s)"
                 ),
             ));
         }
 
-        for tx in &msg.cdt_trf_tx_inf {
+        for tx in &facts.transactions {
             // --- Currency must be EUR ---------------------------------------
-            let ccy = &tx.intr_bk_sttlm_amt.ccy.0;
-            if ccy != "EUR" {
-                errors.push(ValidationError::new(
-                    "/Document/FIToFICstmrCdtTrf/CdtTrfTxInf/IntrBkSttlmAmt/@Ccy",
-                    Severity::Error,
-                    "SEPA_CURRENCY",
-                    format!("SEPA only accepts EUR transactions; found currency \"{ccy}\""),
-                ));
+            if let Some(currency) = &tx.currency {
+                if currency != "EUR" {
+                    errors.push(ValidationError::new(
+                        "/Document/FIToFICstmrCdtTrf/CdtTrfTxInf/IntrBkSttlmAmt/@Ccy",
+                        Severity::Error,
+                        "SEPA_CURRENCY",
+                        format!(
+                            "SEPA only accepts EUR transactions; found currency \"{currency}\""
+                        ),
+                    ));
+                }
             }
 
             // --- ChrgBr must be SLEV ----------------------------------------
-            if tx.chrg_br != ChargeBearerType1Code::Slev {
-                errors.push(ValidationError::new(
+            match tx.charge_bearer.as_deref() {
+                Some("SLEV") => {}
+                Some(charge_bearer) => errors.push(ValidationError::new(
                     "/Document/FIToFICstmrCdtTrf/CdtTrfTxInf/ChrgBr",
                     Severity::Error,
                     "SEPA_CHRGBR",
-                    format!("SEPA SCT requires ChrgBr = \"SLEV\", got {:?}", tx.chrg_br),
-                ));
+                    format!("SEPA SCT requires ChrgBr = \"SLEV\", got \"{charge_bearer}\""),
+                )),
+                None => errors.push(ValidationError::new(
+                    "/Document/FIToFICstmrCdtTrf/CdtTrfTxInf/ChrgBr",
+                    Severity::Error,
+                    "SEPA_CHRGBR_REQUIRED",
+                    "SEPA SCT requires ChrgBr = \"SLEV\"",
+                )),
             }
 
             // --- Debtor name required, max 70 chars -------------------------
-            match &tx.dbtr.nm {
+            match &tx.debtor_name {
                 None => {
                     errors.push(ValidationError::new(
                         "/Document/FIToFICstmrCdtTrf/CdtTrfTxInf/Dbtr/Nm",
@@ -381,14 +237,14 @@ impl SepaValidator {
                         "Dbtr/Nm is required for SEPA",
                     ));
                 }
-                Some(nm) if nm.0.chars().count() > 70 => {
+                Some(name) if name.chars().count() > 70 => {
                     errors.push(ValidationError::new(
                         "/Document/FIToFICstmrCdtTrf/CdtTrfTxInf/Dbtr/Nm",
                         Severity::Error,
                         "SEPA_DBTR_NM",
                         format!(
                             "Dbtr/Nm must be at most 70 characters; got {} characters",
-                            nm.0.chars().count()
+                            name.chars().count()
                         ),
                     ));
                 }
@@ -396,7 +252,7 @@ impl SepaValidator {
             }
 
             // --- Creditor name required, max 70 chars -----------------------
-            match &tx.cdtr.nm {
+            match &tx.creditor_name {
                 None => {
                     errors.push(ValidationError::new(
                         "/Document/FIToFICstmrCdtTrf/CdtTrfTxInf/Cdtr/Nm",
@@ -405,27 +261,42 @@ impl SepaValidator {
                         "Cdtr/Nm is required for SEPA",
                     ));
                 }
-                Some(nm) if nm.0.chars().count() > 70 => {
+                Some(name) if name.chars().count() > 70 => {
                     errors.push(ValidationError::new(
                         "/Document/FIToFICstmrCdtTrf/CdtTrfTxInf/Cdtr/Nm",
                         Severity::Error,
                         "SEPA_CDTR_NM",
                         format!(
                             "Cdtr/Nm must be at most 70 characters; got {} characters",
-                            nm.0.chars().count()
+                            name.chars().count()
                         ),
                     ));
                 }
                 Some(_) => {}
             }
 
-            // --- End-to-end ID max 35 chars ---------------------------------
-            // Max35Text enforces 35 via XSD. Typed path trusts XSD validation
-            // for length but checks that it's present (it's a required field).
+            // --- End-to-end ID max 35 Unicode scalars -----------------------
+            if let Some(end_to_end_id) = &tx.end_to_end_id {
+                let end_to_end_length = end_to_end_id.chars().count();
+                if end_to_end_length > 35 {
+                    errors.push(ValidationError::new(
+                        "/Document/FIToFICstmrCdtTrf/CdtTrfTxInf/PmtId/EndToEndId",
+                        Severity::Error,
+                        "SEPA_E2E_LENGTH",
+                        format!(
+                            "EndToEndId must be at most 35 characters; got {end_to_end_length} characters"
+                        ),
+                    ));
+                }
+            }
 
             // --- Ustrd total length max 140 chars ---------------------------
-            if let Some(rmt_inf) = &tx.rmt_inf {
-                let ustrd_total: usize = rmt_inf.ustrd.iter().map(|u| u.0.chars().count()).sum();
+            if !tx.unstructured_remittance.is_empty() {
+                let ustrd_total: usize = tx
+                    .unstructured_remittance
+                    .iter()
+                    .map(|value| value.chars().count())
+                    .sum();
                 if ustrd_total > 140 {
                     errors.push(ValidationError::new(
                         "/Document/FIToFICstmrCdtTrf/CdtTrfTxInf/RmtInf/Ustrd",
@@ -438,57 +309,37 @@ impl SepaValidator {
                 }
 
                 // SEPA character set check on Ustrd.
-                for ustrd in &rmt_inf.ustrd {
-                    if !is_sepa_charset(&ustrd.0) {
-                        let bad: String = ustrd.0.chars().filter(|&c| !is_sepa_char(c)).collect();
-                        errors.push(ValidationError::new(
-                            "//Ustrd",
-                            Severity::Error,
-                            "SEPA_CHARSET",
-                            format!(
-                                "Field <Ustrd> contains characters outside the SEPA restricted \
-                                 Latin character set: {bad:?}"
-                            ),
-                        ));
-                    }
+                for unstructured in &tx.unstructured_remittance {
+                    Self::check_sepa_text("Ustrd", unstructured, &mut errors);
                 }
             }
 
             // --- Amount range -----------------------------------------------
-            let amt_str: &str = &tx.intr_bk_sttlm_amt.value.0;
-            Self::validate_sepa_amount(
-                amt_str,
-                "/Document/FIToFICstmrCdtTrf/CdtTrfTxInf/IntrBkSttlmAmt",
-                &mut errors,
-            );
+            if let Some(amount) = &tx.amount {
+                Self::validate_sepa_amount(
+                    amount,
+                    "/Document/FIToFICstmrCdtTrf/CdtTrfTxInf/IntrBkSttlmAmt",
+                    &mut errors,
+                );
+            }
 
             // --- SEPA character set check on names --------------------------
-            if let Some(nm) = &tx.dbtr.nm {
-                Self::check_sepa_name(&nm.0, &mut errors);
+            if let Some(name) = &tx.debtor_name {
+                Self::check_sepa_text("Nm", name, &mut errors);
             }
-            if let Some(nm) = &tx.cdtr.nm {
-                Self::check_sepa_name(&nm.0, &mut errors);
+            if let Some(name) = &tx.creditor_name {
+                Self::check_sepa_text("Nm", name, &mut errors);
             }
 
             // --- IBAN required for debtor and creditor accounts ---
-            let has_dbtr_iban = tx.dbtr_acct.as_ref().is_some_and(|acct| {
-                acct.id.as_ref().is_some_and(|choice| {
-                    matches!(choice.inner, AccountIdentification4Choice::IBAN(_))
-                })
-            });
-            let has_cdtr_iban = tx.cdtr_acct.as_ref().is_some_and(|acct| {
-                acct.id.as_ref().is_some_and(|choice| {
-                    matches!(choice.inner, AccountIdentification4Choice::IBAN(_))
-                })
-            });
-            if !has_dbtr_iban && !has_cdtr_iban {
+            if !tx.has_debtor_iban && !tx.has_creditor_iban {
                 errors.push(ValidationError::new(
                     "/Document/FIToFICstmrCdtTrf/CdtTrfTxInf",
                     Severity::Error,
                     "SEPA_IBAN_REQUIRED",
                     "SEPA requires IBAN for both debtor and creditor accounts; none found",
                 ));
-            } else if !has_dbtr_iban || !has_cdtr_iban {
+            } else if !tx.has_debtor_iban || !tx.has_creditor_iban {
                 errors.push(ValidationError::new(
                     "/Document/FIToFICstmrCdtTrf/CdtTrfTxInf",
                     Severity::Warning,
@@ -498,30 +349,13 @@ impl SepaValidator {
             }
         }
 
+        // --- SEPA character set check on other names and addresses ---------
+        for field in &facts.additional_charset_fields {
+            Self::check_sepa_text(field.tag, &field.value, &mut errors);
+        }
+
         ValidationResult::new(errors)
     }
-}
-
-/// Validate that the `<Nm>` child of `<parent_tag>` is present and within
-/// `max_len` characters.
-fn check_name(
-    xml: &str,
-    parent_tag: &str,
-    max_len: usize,
-    errors: &mut Vec<ValidationError>,
-    rule_id: &str,
-) {
-    let path = format!("/Document/FIToFICstmrCdtTrf/CdtTrfTxInf/{parent_tag}");
-    super::common::check_name_in_parent(
-        xml,
-        parent_tag,
-        Some(max_len),
-        &path,
-        rule_id,
-        "SEPA",
-        errors,
-        true,
-    );
 }
 
 #[cfg(test)]
@@ -566,25 +400,10 @@ mod tests {
         assert!(!is_sepa_charset("Алиса")); // Cyrillic
     }
 
-    /// Build a minimal pacs.008 XML with the given amount for SEPA validation.
-    fn sepa_xml_with_amount(amount: &str) -> String {
-        format!(
-            r#"<Document xmlns="urn:iso:std:iso:20022:tech:xsd:pacs.008.001.13">
-  <FIToFICstmrCdtTrf>
-    <GrpHdr><NbOfTxs>1</NbOfTxs><SttlmInf><SttlmMtd>CLRG</SttlmMtd></SttlmInf></GrpHdr>
-    <CdtTrfTxInf>
-      <IntrBkSttlmAmt Ccy="EUR">{amount}</IntrBkSttlmAmt>
-      <ChrgBr>SLEV</ChrgBr>
-      <Dbtr><Nm>Alice</Nm></Dbtr>
-      <Cdtr><Nm>Bob</Nm></Cdtr>
-      <DbtrAgt><FinInstnId><BICFI>BANKDEFF</BICFI></FinInstnId></DbtrAgt>
-      <CdtrAgt><FinInstnId><BICFI>BANKDEFF</BICFI></FinInstnId></CdtrAgt>
-      <DbtrAcct><Id><IBAN>DE89370400440532013000</IBAN></Id></DbtrAcct>
-      <CdtrAcct><Id><IBAN>DE89370400440532013000</IBAN></Id></CdtrAcct>
-    </CdtTrfTxInf>
-  </FIToFICstmrCdtTrf>
-</Document>"#
-        )
+    fn validate_amount(amount: &str) -> ValidationResult {
+        let mut errors = Vec::new();
+        SepaValidator::validate_sepa_amount(amount, "/Document/Amount", &mut errors);
+        ValidationResult::new(errors)
     }
 
     fn has_error(result: &ValidationResult, code: &str) -> bool {
@@ -593,9 +412,7 @@ mod tests {
 
     #[test]
     fn sepa_amount_at_max_boundary() {
-        let v = SepaValidator::new();
-        let xml = sepa_xml_with_amount("999999999.99");
-        let result = v.validate(&xml, "pacs.008.001.13");
+        let result = validate_amount("999999999.99");
         assert!(
             !has_error(&result, "SEPA_AMOUNT_MAX"),
             "999999999.99 should be within SEPA max; errors: {:?}",
@@ -605,17 +422,13 @@ mod tests {
 
     #[test]
     fn sepa_amount_just_under_max() {
-        let v = SepaValidator::new();
-        let xml = sepa_xml_with_amount("999999999.98");
-        let result = v.validate(&xml, "pacs.008.001.13");
+        let result = validate_amount("999999999.98");
         assert!(!has_error(&result, "SEPA_AMOUNT_MAX"));
     }
 
     #[test]
     fn sepa_amount_exceeds_max() {
-        let v = SepaValidator::new();
-        let xml = sepa_xml_with_amount("1000000000.00");
-        let result = v.validate(&xml, "pacs.008.001.13");
+        let result = validate_amount("1000000000.00");
         assert!(
             has_error(&result, "SEPA_AMOUNT_MAX"),
             "1000000000.00 should exceed SEPA max"
@@ -624,9 +437,7 @@ mod tests {
 
     #[test]
     fn sepa_amount_at_min_boundary() {
-        let v = SepaValidator::new();
-        let xml = sepa_xml_with_amount("0.01");
-        let result = v.validate(&xml, "pacs.008.001.13");
+        let result = validate_amount("0.01");
         assert!(
             !has_error(&result, "SEPA_AMOUNT_MIN"),
             "0.01 should be within SEPA min"
@@ -635,9 +446,7 @@ mod tests {
 
     #[test]
     fn sepa_amount_below_min() {
-        let v = SepaValidator::new();
-        let xml = sepa_xml_with_amount("0.00");
-        let result = v.validate(&xml, "pacs.008.001.13");
+        let result = validate_amount("0.00");
         assert!(
             has_error(&result, "SEPA_AMOUNT_MIN"),
             "0.00 should be below SEPA min"

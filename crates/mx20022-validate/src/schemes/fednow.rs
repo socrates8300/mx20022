@@ -6,7 +6,8 @@
 //! - Only USD transactions are accepted.
 //! - Settlement method must be `CLRG`.
 //! - Charges bearer must be `SLEV`.
-//! - A single transaction per group (`NbOfTxs = "1"`).
+//! - A single transaction per group (`NbOfTxs = "1"` and exactly one
+//!   `CdtTrfTxInf`).
 //! - UETR is mandatory (UUID v4 format).
 //! - End-to-end ID is mandatory (≤ 35 characters).
 //! - Amount in `[0.01, 500_000.00]` USD (the upper bound is configurable up to
@@ -18,7 +19,6 @@ use std::sync::OnceLock;
 
 use regex::Regex;
 
-use super::xml_scan::{extract_attribute, extract_element, has_element, xml_byte_size};
 use super::SchemeValidator;
 use crate::error::{Severity, ValidationError, ValidationResult};
 
@@ -97,169 +97,9 @@ impl SchemeValidator for FedNowValidator {
     }
 
     fn validate(&self, xml: &str, message_type: &str) -> ValidationResult {
-        let short_type = super::short_message_type(message_type);
-
-        if !self.supported_messages().contains(&short_type.as_str()) {
-            return ValidationResult::default();
-        }
-
-        let mut errors: Vec<ValidationError> = Vec::new();
-
-        // --- Message size ---------------------------------------------------
-        let size = xml_byte_size(xml);
-        let size_limit: usize = if short_type == "pacs.028" {
-            32 * 1024
-        } else {
-            64 * 1024
-        };
-        if size > size_limit {
-            errors.push(ValidationError::new(
-                "/Document",
-                Severity::Error,
-                "FEDNOW_MSG_SIZE",
-                format!(
-                    "Message size {size} bytes exceeds FedNow limit of {size_limit} bytes for {short_type}"
-                ),
-            ));
-        }
-
-        // The remaining checks are pacs.008-specific field rules.
-        if short_type != "pacs.008" {
-            return ValidationResult::new(errors);
-        }
-
-        // --- NbOfTxs must be "1" -------------------------------------------
-        if let Some(nb) = extract_element(xml, "NbOfTxs") {
-            if nb != "1" {
-                errors.push(ValidationError::new(
-                    "/Document/FIToFICstmrCdtTrf/GrpHdr/NbOfTxs",
-                    Severity::Error,
-                    "FEDNOW_SINGLE_TX",
-                    format!(
-                        "FedNow requires exactly one transaction per group (NbOfTxs = \"1\"), got \"{nb}\""
-                    ),
-                ));
-            }
-        }
-
-        // --- Settlement method must be CLRG ---------------------------------
-        if let Some(sttlm_mtd) = extract_element(xml, "SttlmMtd") {
-            if sttlm_mtd != "CLRG" {
-                errors.push(ValidationError::new(
-                    "/Document/FIToFICstmrCdtTrf/GrpHdr/SttlmInf/SttlmMtd",
-                    Severity::Error,
-                    "FEDNOW_STTLM_MTD",
-                    format!("FedNow requires SttlmMtd = \"CLRG\", got \"{sttlm_mtd}\""),
-                ));
-            }
-        }
-
-        // --- ChrgBr must be SLEV --------------------------------------------
-        if let Some(chrg_br) = extract_element(xml, "ChrgBr") {
-            if chrg_br != "SLEV" {
-                errors.push(ValidationError::new(
-                    "/Document/FIToFICstmrCdtTrf/CdtTrfTxInf/ChrgBr",
-                    Severity::Error,
-                    "FEDNOW_CHRGBR",
-                    format!("FedNow requires ChrgBr = \"SLEV\", got \"{chrg_br}\""),
-                ));
-            }
-        }
-
-        // --- Currency must be USD -------------------------------------------
-        if let Some(ccy) = extract_attribute(xml, "IntrBkSttlmAmt", "Ccy") {
-            if ccy != "USD" {
-                errors.push(ValidationError::new(
-                    "/Document/FIToFICstmrCdtTrf/CdtTrfTxInf/IntrBkSttlmAmt/@Ccy",
-                    Severity::Error,
-                    "FEDNOW_CURRENCY",
-                    format!("FedNow only accepts USD transactions; found currency \"{ccy}\""),
-                ));
-            }
-        }
-
-        // --- Amount range ---------------------------------------------------
-        if let Some(amt_str) = extract_element(xml, "IntrBkSttlmAmt") {
-            self.validate_amount(
-                amt_str,
-                "/Document/FIToFICstmrCdtTrf/CdtTrfTxInf/IntrBkSttlmAmt",
-                &mut errors,
-            );
-        }
-
-        // --- UETR is required and must be UUID v4 ---------------------------
-        if let Some(uetr) = extract_element(xml, "UETR") {
-            if !is_valid_uetr(uetr) {
-                errors.push(ValidationError::new(
-                    "/Document/FIToFICstmrCdtTrf/CdtTrfTxInf/PmtId/UETR",
-                    Severity::Error,
-                    "FEDNOW_UETR_FORMAT",
-                    format!("UETR must be a valid UUID v4; got \"{uetr}\""),
-                ));
-            }
-        } else {
-            errors.push(ValidationError::new(
-                "/Document/FIToFICstmrCdtTrf/CdtTrfTxInf/PmtId/UETR",
-                Severity::Error,
-                "FEDNOW_UETR_REQUIRED",
-                "FedNow requires a UETR (UUID v4) in PmtId",
-            ));
-        }
-
-        // --- End-to-end ID is required and max 35 chars ---------------------
-        if let Some(e2e) = extract_element(xml, "EndToEndId") {
-            if e2e.chars().count() > 35 {
-                errors.push(ValidationError::new(
-                    "/Document/FIToFICstmrCdtTrf/CdtTrfTxInf/PmtId/EndToEndId",
-                    Severity::Error,
-                    "FEDNOW_E2E_LENGTH",
-                    format!(
-                        "EndToEndId must be at most 35 characters; got {} characters",
-                        e2e.chars().count()
-                    ),
-                ));
-            }
-        } else {
-            errors.push(ValidationError::new(
-                "/Document/FIToFICstmrCdtTrf/CdtTrfTxInf/PmtId/EndToEndId",
-                Severity::Error,
-                "FEDNOW_E2E_REQUIRED",
-                "FedNow requires an EndToEndId in PmtId",
-            ));
-        }
-
-        // --- Debtor name max 140 chars --------------------------------------
-        // We check the first <Nm> inside <Dbtr>. A simple heuristic: scan for
-        // the Dbtr block and extract the Nm within it.
-        check_name_length(xml, "Dbtr", &mut errors, "FEDNOW_DBTR_NM_LENGTH");
-        check_name_length(xml, "Cdtr", &mut errors, "FEDNOW_CDTR_NM_LENGTH");
-
-        // --- RmtInf/Ustrd max 140 chars per element -------------------------
-        for ustrd in super::xml_scan::extract_all_elements(xml, "Ustrd") {
-            if ustrd.chars().count() > 140 {
-                errors.push(ValidationError::new(
-                    "/Document/FIToFICstmrCdtTrf/CdtTrfTxInf/RmtInf/Ustrd",
-                    Severity::Error,
-                    "FEDNOW_USTRD_LENGTH",
-                    format!(
-                        "Ustrd element must be at most 140 characters; got {} characters",
-                        ustrd.chars().count()
-                    ),
-                ));
-            }
-        }
-
-        // --- AppHdr presence is a soft check (not required but common) ------
-        if !has_element(xml, "AppHdr") && !has_element(xml, "BizMsgIdr") {
-            errors.push(ValidationError::new(
-                "/AppHdr",
-                Severity::Warning,
-                "FEDNOW_APPHDR_MISSING",
-                "Business Application Header (AppHdr) is recommended for FedNow messages",
-            ));
-        }
-
-        ValidationResult::new(errors)
+        super::run_xml(self, xml, message_type, Self::validate_raw, |facts| {
+            self.validate_pacs008(facts)
+        })
     }
 
     fn validate_typed(&self, msg: &dyn Any, message_type: &str) -> Option<ValidationResult> {
@@ -277,11 +117,46 @@ impl SchemeValidator for FedNowValidator {
 
         let doc = msg.downcast_ref::<pacs_008_001_13::Document>()?;
 
-        Some(self.validate_pacs008_typed(doc))
+        Some(self.validate_pacs008(&super::pacs008::Facts::from(doc)))
     }
 }
 
 impl FedNowValidator {
+    /// Validate rules that require the original XML envelope.
+    fn validate_raw(xml: &str, short_type: &str) -> ValidationResult {
+        let mut errors = Vec::new();
+        let size = super::raw::byte_len(xml);
+        let size_limit = if short_type == "pacs.028" {
+            32 * 1024
+        } else {
+            64 * 1024
+        };
+        if size > size_limit {
+            errors.push(ValidationError::new(
+                "/Document",
+                Severity::Error,
+                "FEDNOW_MSG_SIZE",
+                format!(
+                    "Message size {size} bytes exceeds FedNow limit of {size_limit} bytes for {short_type}"
+                ),
+            ));
+        }
+
+        if short_type == "pacs.008" {
+            let (has_app_header, has_business_message_id) = super::raw::header_presence(xml);
+            if !has_app_header && !has_business_message_id {
+                errors.push(ValidationError::new(
+                    "/AppHdr",
+                    Severity::Warning,
+                    "FEDNOW_APPHDR_MISSING",
+                    "Business Application Header (AppHdr) is recommended for FedNow messages",
+                ));
+            }
+        }
+
+        ValidationResult::new(errors)
+    }
+
     fn validate_amount(&self, amt_str: &str, path: &str, errors: &mut Vec<ValidationError>) {
         let decimal_ok = amt_str
             .find('.')
@@ -293,6 +168,7 @@ impl FedNowValidator {
                 "FEDNOW_AMOUNT_DECIMALS",
                 format!("FedNow amounts must have exactly 2 decimal places; got \"{amt_str}\""),
             ));
+            return;
         }
         match parse_amount_cents(amt_str) {
             Some(cents) => {
@@ -328,83 +204,81 @@ impl FedNowValidator {
         }
     }
 
-    /// Typed validation for pacs.008 messages.
-    fn validate_pacs008_typed(
-        &self,
-        doc: &mx20022_model::generated::pacs::pacs_008_001_13::Document,
-    ) -> ValidationResult {
-        use mx20022_model::generated::pacs::pacs_008_001_13::{
-            ChargeBearerType1Code, SettlementMethod1Code,
-        };
-
+    /// Validate version-neutral pacs.008 facts.
+    fn validate_pacs008(&self, facts: &super::pacs008::Facts) -> ValidationResult {
         let mut errors: Vec<ValidationError> = Vec::new();
-        let msg = &doc.fi_to_fi_cstmr_cdt_trf;
 
-        // --- NbOfTxs must be "1" -------------------------------------------
-        if msg.grp_hdr.nb_of_txs.0 != "1" {
+        // --- Declared and actual transaction count must both be one ---------
+        let actual_transactions = facts.transactions.len();
+        if facts.nb_of_txs.as_deref() != Some("1") || actual_transactions != 1 {
+            let declared_transactions = facts.nb_of_txs.as_deref().unwrap_or("<missing>");
             errors.push(ValidationError::new(
                 "/Document/FIToFICstmrCdtTrf/GrpHdr/NbOfTxs",
                 Severity::Error,
                 "FEDNOW_SINGLE_TX",
                 format!(
-                    "FedNow requires exactly one transaction per group (NbOfTxs = \"1\"), got \"{}\"",
-                    msg.grp_hdr.nb_of_txs.0
+                    "FedNow requires exactly one transaction per group (NbOfTxs = \"1\" and one CdtTrfTxInf); declared \"{declared_transactions}\", found {actual_transactions} CdtTrfTxInf element(s)"
                 ),
             ));
         }
 
         // --- Settlement method must be CLRG ---------------------------------
-        if msg.grp_hdr.sttlm_inf.sttlm_mtd != SettlementMethod1Code::Clrg {
-            errors.push(ValidationError::new(
-                "/Document/FIToFICstmrCdtTrf/GrpHdr/SttlmInf/SttlmMtd",
-                Severity::Error,
-                "FEDNOW_STTLM_MTD",
-                format!(
-                    "FedNow requires SttlmMtd = \"CLRG\", got {:?}",
-                    msg.grp_hdr.sttlm_inf.sttlm_mtd
-                ),
-            ));
+        if let Some(settlement_method) = &facts.settlement_method {
+            if settlement_method != "CLRG" {
+                errors.push(ValidationError::new(
+                    "/Document/FIToFICstmrCdtTrf/GrpHdr/SttlmInf/SttlmMtd",
+                    Severity::Error,
+                    "FEDNOW_STTLM_MTD",
+                    format!("FedNow requires SttlmMtd = \"CLRG\", got \"{settlement_method}\""),
+                ));
+            }
         }
 
         // Validate each credit transfer transaction.
-        for tx in &msg.cdt_trf_tx_inf {
+        for tx in &facts.transactions {
             // --- ChrgBr must be SLEV ----------------------------------------
-            if tx.chrg_br != ChargeBearerType1Code::Slev {
-                errors.push(ValidationError::new(
-                    "/Document/FIToFICstmrCdtTrf/CdtTrfTxInf/ChrgBr",
-                    Severity::Error,
-                    "FEDNOW_CHRGBR",
-                    format!("FedNow requires ChrgBr = \"SLEV\", got {:?}", tx.chrg_br),
-                ));
+            if let Some(charge_bearer) = &tx.charge_bearer {
+                if charge_bearer != "SLEV" {
+                    errors.push(ValidationError::new(
+                        "/Document/FIToFICstmrCdtTrf/CdtTrfTxInf/ChrgBr",
+                        Severity::Error,
+                        "FEDNOW_CHRGBR",
+                        format!("FedNow requires ChrgBr = \"SLEV\", got \"{charge_bearer}\""),
+                    ));
+                }
             }
 
             // --- Currency must be USD ---------------------------------------
-            let ccy = &tx.intr_bk_sttlm_amt.ccy.0;
-            if ccy != "USD" {
-                errors.push(ValidationError::new(
-                    "/Document/FIToFICstmrCdtTrf/CdtTrfTxInf/IntrBkSttlmAmt/@Ccy",
-                    Severity::Error,
-                    "FEDNOW_CURRENCY",
-                    format!("FedNow only accepts USD transactions; found currency \"{ccy}\""),
-                ));
+            if let Some(currency) = &tx.currency {
+                if currency != "USD" {
+                    errors.push(ValidationError::new(
+                        "/Document/FIToFICstmrCdtTrf/CdtTrfTxInf/IntrBkSttlmAmt/@Ccy",
+                        Severity::Error,
+                        "FEDNOW_CURRENCY",
+                        format!(
+                            "FedNow only accepts USD transactions; found currency \"{currency}\""
+                        ),
+                    ));
+                }
             }
 
             // --- Amount range -----------------------------------------------
-            let amt_str = &tx.intr_bk_sttlm_amt.value.0;
-            self.validate_amount(
-                amt_str,
-                "/Document/FIToFICstmrCdtTrf/CdtTrfTxInf/IntrBkSttlmAmt",
-                &mut errors,
-            );
+            if let Some(amount) = &tx.amount {
+                self.validate_amount(
+                    amount,
+                    "/Document/FIToFICstmrCdtTrf/CdtTrfTxInf/IntrBkSttlmAmt",
+                    &mut errors,
+                );
+            }
 
             // --- UETR is required and must be UUID v4 -----------------------
-            match &tx.pmt_id.uetr {
-                Some(uetr) if !is_valid_uetr(&uetr.0) => {
+            match &tx.uetr {
+                Some(uetr) if !is_valid_uetr(uetr) => {
                     errors.push(ValidationError::new(
                         "/Document/FIToFICstmrCdtTrf/CdtTrfTxInf/PmtId/UETR",
                         Severity::Error,
                         "FEDNOW_UETR_FORMAT",
-                        format!("UETR must be a valid UUID v4; got \"{}\"", uetr.0),
+                        format!("UETR must be a valid UUID v4; got \"{uetr}\""),
                     ));
                 }
                 None => {
@@ -418,69 +292,82 @@ impl FedNowValidator {
                 Some(_) => {} // Valid UETR
             }
 
-            // --- End-to-end ID is required (length covered by XSD) ----------
-            // Max35Text is the type — XSD validation handles the 35-char limit.
-            // We only need to check it's not empty/whitespace for FedNow.
-            if tx.pmt_id.end_to_end_id.0.trim().is_empty() {
-                errors.push(ValidationError::new(
+            // --- End-to-end ID is required and max 35 Unicode scalars -------
+            match &tx.end_to_end_id {
+                None => errors.push(ValidationError::new(
                     "/Document/FIToFICstmrCdtTrf/CdtTrfTxInf/PmtId/EndToEndId",
                     Severity::Error,
                     "FEDNOW_E2E_REQUIRED",
-                    "FedNow requires a non-empty EndToEndId in PmtId",
-                ));
+                    "FedNow requires an EndToEndId in PmtId",
+                )),
+                Some(end_to_end_id) => {
+                    if end_to_end_id.trim().is_empty() {
+                        errors.push(ValidationError::new(
+                            "/Document/FIToFICstmrCdtTrf/CdtTrfTxInf/PmtId/EndToEndId",
+                            Severity::Error,
+                            "FEDNOW_E2E_REQUIRED",
+                            "FedNow requires a non-empty EndToEndId in PmtId",
+                        ));
+                    }
+                    let end_to_end_length = end_to_end_id.chars().count();
+                    if end_to_end_length > 35 {
+                        errors.push(ValidationError::new(
+                            "/Document/FIToFICstmrCdtTrf/CdtTrfTxInf/PmtId/EndToEndId",
+                            Severity::Error,
+                            "FEDNOW_E2E_LENGTH",
+                            format!(
+                                "EndToEndId must be at most 35 characters; got {end_to_end_length} characters"
+                            ),
+                        ));
+                    }
+                }
             }
 
             // --- Debtor name max 140 chars ----------------------------------
-            if let Some(nm) = &tx.dbtr.nm {
-                if nm.0.chars().count() > 140 {
+            if let Some(name) = &tx.debtor_name {
+                if name.chars().count() > 140 {
                     errors.push(ValidationError::new(
                         "/Document/FIToFICstmrCdtTrf/CdtTrfTxInf/Dbtr/Nm",
                         Severity::Error,
                         "FEDNOW_DBTR_NM_LENGTH",
                         format!(
                             "Dbtr/Nm must be at most 140 characters; got {} characters",
-                            nm.0.chars().count()
+                            name.chars().count()
                         ),
                     ));
                 }
             }
 
             // --- Creditor name max 140 chars --------------------------------
-            if let Some(nm) = &tx.cdtr.nm {
-                if nm.0.chars().count() > 140 {
+            if let Some(name) = &tx.creditor_name {
+                if name.chars().count() > 140 {
                     errors.push(ValidationError::new(
                         "/Document/FIToFICstmrCdtTrf/CdtTrfTxInf/Cdtr/Nm",
                         Severity::Error,
                         "FEDNOW_CDTR_NM_LENGTH",
                         format!(
                             "Cdtr/Nm must be at most 140 characters; got {} characters",
-                            nm.0.chars().count()
+                            name.chars().count()
                         ),
                     ));
                 }
             }
 
             // --- RmtInf/Ustrd max 140 chars per element ---------------------
-            if let Some(rmt_inf) = &tx.rmt_inf {
-                for ustrd in &rmt_inf.ustrd {
-                    if ustrd.0.chars().count() > 140 {
-                        errors.push(ValidationError::new(
-                            "/Document/FIToFICstmrCdtTrf/CdtTrfTxInf/RmtInf/Ustrd",
-                            Severity::Error,
-                            "FEDNOW_USTRD_LENGTH",
-                            format!(
-                                "Ustrd element must be at most 140 characters; got {} characters",
-                                ustrd.0.chars().count()
-                            ),
-                        ));
-                    }
+            for unstructured in &tx.unstructured_remittance {
+                if unstructured.chars().count() > 140 {
+                    errors.push(ValidationError::new(
+                        "/Document/FIToFICstmrCdtTrf/CdtTrfTxInf/RmtInf/Ustrd",
+                        Severity::Error,
+                        "FEDNOW_USTRD_LENGTH",
+                        format!(
+                            "Ustrd element must be at most 140 characters; got {} characters",
+                            unstructured.chars().count()
+                        ),
+                    ));
                 }
             }
         }
-
-        // Note: AppHdr check and message size check require raw XML and are
-        // not covered by the typed path. Those remain in the XML-based
-        // `validate` method.
 
         ValidationResult::new(errors)
     }
@@ -488,26 +375,6 @@ impl FedNowValidator {
 
 // Amount parsing functions are defined in `super::common`.
 use super::common::parse_amount_cents;
-
-/// Check that the `<Nm>` child inside `<parent_tag>` does not exceed 140 chars.
-fn check_name_length(
-    xml: &str,
-    parent_tag: &str,
-    errors: &mut Vec<ValidationError>,
-    rule_id: &str,
-) {
-    let path = format!("/Document/FIToFICstmrCdtTrf/CdtTrfTxInf/{parent_tag}");
-    super::common::check_name_in_parent(
-        xml,
-        parent_tag,
-        Some(140),
-        &path,
-        rule_id,
-        "FedNow",
-        errors,
-        false, // FedNow doesn't require names, only limits length
-    );
-}
 
 #[cfg(test)]
 mod tests {

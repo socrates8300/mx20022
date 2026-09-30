@@ -7,6 +7,57 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Added `mx20022_parse::de::document_xml`, which returns the complete payload
+  `Document` as a zero-copy XML slice whether it is bare or nested below an
+  arbitrary transport wrapper. Descendant `Document` elements inside that
+  payload are not treated as additional candidates.
+
+### Changed
+
+- Bumped all seven workspace crates and their internal dependency requirements
+  to 0.4.0. This source change is not a published release.
+- Scheme validation now unwraps `Document`, routes `pacs.008` by its
+  authoritative namespace, deserializes `pacs.008.001.13`, and delegates all
+  field rules to `validate_typed`. Other `pacs.008` versions retain raw checks,
+  apply the same version-neutral field rules, and report
+  `SCHEME_UNTYPED_VERSION`.
+- FedNow and SEPA EndToEndId length checks now operate on typed values and count
+  Unicode scalar values. Parse or required-field failures report one
+  `SCHEME_PARSE` finding at `/Document`; independent raw findings are preserved
+  alongside extraction, namespace-routing, and deserialization failures.
+- CLI generic IBAN, BIC, LEI, currency, and date checks use command-private XML
+  extraction helpers; scheme validation invokes `SchemeValidator::validate`
+  once.
+
+### Fixed
+
+- `mx20022-cli validate` now reads the complete XML stream before reporting a
+  valid message type, so malformed or truncated XML without `--scheme` prints
+  a parse diagnostic and exits non-zero instead of reporting success.
+- `FEDNOW_SINGLE_TX` now checks both the declared `NbOfTxs` and the actual
+  number of `CdtTrfTxInf` elements. A message declaring one transaction while
+  carrying multiple transactions is rejected on typed and older-version
+  validation paths.
+- Nested `CdtTrfTxInf` elements inside `SplmtryData` no longer terminate the
+  enclosing transaction during older-version pacs.008 fact extraction, so
+  subsequent scheme value rules cannot be bypassed.
+- `SEPA_SINGLE_TX` now checks both declared and actual transaction counts, and
+  SEPA restricted-Latin checks again cover all `Nm`, `StrtNm`, and `TwnNm`
+  fields in addition to `Ustrd` on typed and older-version validation paths.
+
+### Removed
+
+- Removed the public `mx20022_validate::schemes::xml_scan` module and the
+  scanner-based scheme field-rule path. This is a deliberate breaking change
+  for 0.4.0.
+- On typed `pacs.008.001.13` parse failures, required or invalid generated
+  fields now consolidate into `SCHEME_PARSE` rather than the scanner-era
+  `CBPR_CHRGBR_REQUIRED`, `CBPR_CHRGBR_VALUE`, `CBPR_E2E_REQUIRED`, or
+  `SEPA_CHRGBR_REQUIRED` IDs. The version-neutral path for older `pacs.008`
+  versions still emits these scheme IDs when applicable.
+
 ## [0.3.2] - 2026-08-12
 
 ### Changed
