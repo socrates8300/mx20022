@@ -41,7 +41,7 @@ mx20022 fills that gap with a high-performance, memory-safe implementation in Ru
 | Language | Rust (Edition 2021, MSRV 1.86.0) |
 | License | Apache-2.0 |
 | Safety | `unsafe` code forbidden workspace-wide; clippy pedantic lints enforced |
-| CI | Automated checks on stable + MSRV: build, test, lint, format, dependency audit |
+| CI | Walden CI (`ci-walden/full-pipeline`) via `ci-walden/tenant.sh`: format, check, clippy (`-D warnings`), test, and rustdoc |
 | Modularity | Feature-flagged message families — compile only what you use |
 
 ## Current Status

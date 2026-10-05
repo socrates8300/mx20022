@@ -16,6 +16,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Moved CI from GitHub Actions to Walden CI. The repo now carries the
+  tenant interface v5 (`ci-walden/interface.json` plus the generated
+  `ci-walden/tenant.sh`) and a push to a watched branch posts a
+  `ci-walden/full-pipeline` commit status. The declared entry runs the same
+  commands as `just ci` minus `cargo deny`, which the runner image does not
+  provide: format check, `cargo check`, `cargo clippy -D warnings`,
+  `cargo test`, and rustdoc with `-D warnings`.
 - Raised the declared minimum supported Rust version from 1.79 to 1.86 and
   updated `quick-xml` from 0.41 to 0.42. The new release ships an edition-2024
   manifest, so Cargo 1.86 or newer is required to parse it. The port drops the

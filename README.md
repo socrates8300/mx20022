@@ -7,7 +7,6 @@ you need to build, validate, and migrate financial messages in a single crate.
 
 [![Crates.io](https://img.shields.io/crates/v/mx20022.svg)](https://crates.io/crates/mx20022)
 [![docs.rs](https://docs.rs/mx20022/badge.svg)](https://docs.rs/mx20022)
-[![CI](https://github.com/socrates8300/mx20022/actions/workflows/ci.yml/badge.svg)](https://github.com/socrates8300/mx20022/actions/workflows/ci.yml)
 [![License: Apache-2.0](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](#license)
 [![MSRV: 1.86.0](https://img.shields.io/badge/MSRV-1.86.0-orange.svg)](https://releases.rs/docs/1.86.0/)
 
@@ -268,8 +267,17 @@ cargo run -p mx20022 --example roundtrip
 4. Open a pull request against `main`
 
 All code must pass `cargo check`, `cargo test`, `cargo clippy -- -D warnings`,
-and `cargo fmt --check` before merge. CI runs these on both stable and MSRV
-1.86.0.
+and `cargo fmt --check` before merge.
+
+CI is **Walden CI**, not GitHub Actions — the repo carries no workflow files.
+The gate is declared in [`ci-walden/interface.json`](ci-walden/interface.json)
+and executed by [`ci-walden/tenant.sh`](ci-walden/tenant.sh); a push to a
+watched branch posts a `ci-walden/full-pipeline` commit status. Run the same
+gate locally with `bash ci-walden/tenant.sh` or `just ci`.
+
+The declared MSRV is 1.86.0. Walden CI runs the repository's gate on the
+runner image's Rust toolchain, so check the 1.86 floor explicitly with
+`just msrv` before release.
 
 `unsafe` code is forbidden workspace-wide.
 

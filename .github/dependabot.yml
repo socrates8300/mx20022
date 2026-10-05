@@ -8,11 +8,9 @@ updates:
     labels: [dependencies]
     # No ignore rules: the previous MSRV 1.79 caps on clap, criterion, and
     # indexmap are satisfied by the current MSRV 1.86 (clap 4.6 needs 1.85,
-    # indexmap 2.12 needs 1.82, criterion 0.6 needs 1.80). The "Check (1.86.0)"
-    # CI lane validates every proposed bump against the declared MSRV.
-
-  - package-ecosystem: github-actions
-    directory: /
-    schedule:
-      interval: weekly
-    labels: [ci]
+    # indexmap 2.12 needs 1.82, criterion 0.6 needs 1.80). A bump that exceeds
+    # the declared MSRV shows up as a red `ci-walden/full-pipeline` run, and
+    # `just msrv` checks the 1.86 floor locally.
+    #
+    # There is deliberately no `github-actions` ecosystem entry: GitHub Actions
+    # are banned in this fleet and the repo carries no workflow files.

@@ -929,7 +929,9 @@ testdata/
 
 - **553 tests** (547 pass, 3 ignored, 0 fail as of v0.4)
 - **Zero TODO/FIXME/unimplemented** in codebase
-- CI runs on both stable and MSRV 1.86.0
+- CI is Walden CI (`ci-walden/full-pipeline`), driven by
+  `ci-walden/interface.json` and `ci-walden/tenant.sh`; the repo carries no
+  GitHub Actions workflows
 
 ---
 
