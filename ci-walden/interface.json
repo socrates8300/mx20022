@@ -1,0 +1,4 @@
+{
+  "version": 1,
+  "entry": "cargo fmt --all -- --check && cargo check --workspace --all-features && cargo clippy --workspace --all-features -- -D warnings && cargo test --workspace --all-features && RUSTDOCFLAGS=\"--cfg docsrs -Dwarnings\" cargo doc --workspace --all-features --no-deps"
+}

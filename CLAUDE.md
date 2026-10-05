@@ -20,6 +20,12 @@ Rust ISO 20022 financial message library. Cargo workspace with 7 crates.
 - **Lint:** `cargo clippy --workspace --all-features -- -D warnings`
 - **Format:** `cargo fmt --all -- --check`
 - **Edition:** 2021, MSRV 1.86.0, License: Apache-2.0
+- **CI:** Walden CI, not GitHub Actions. GitHub Actions workflows are banned in
+  this fleet and the self-audit stage fails a run if it finds one — do not add
+  anything under `.github/workflows/`. The gate is declared in
+  `ci-walden/interface.json` and executed by the generated
+  `ci-walden/tenant.sh`; run it locally with `bash ci-walden/tenant.sh`.
+  Never hand-edit `tenant.sh` — edit `interface.json` and regenerate.
 
 ## Workspace Layout
 
